@@ -208,6 +208,7 @@ func main() {
 	}
 	fmt.Printf("Default upstream server: %s\n", auth.Default_redirect_host)
 
+	auth.LoadEnv()
 
 	//register handlers for supported url paths, can't register same path twice
 	http.HandleFunc("/v1.18/containers/", endpoint_handler)			//  /<v>/containers/<id>/logs ... hijack
