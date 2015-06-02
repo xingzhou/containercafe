@@ -6,10 +6,12 @@ import (
 	"strings"
 	"httphelper"  // my httphelper
 	"os"
+	"io/ioutil"
+	"bytes"
 )
 
 var ccsapi_host = "127.0.0.1:8081"
-var ccsapi_uri = "/v3/admin/GetComputeNode"
+var ccsapi_uri = "/v3/admin/getHost/"   //ends with id
 var ccsapi_compute_node_header = "X-Compute-Node"
 var ccsapi_id_header = "X-Container-Id"
 var ccsapi_id_type_header = "X-Id-Type"				//Container or Exec
@@ -54,15 +56,15 @@ func Auth(r *http.Request) (bool, string) {
 	}
 	if id == "" {
 		fmt.Printf("@ Auth: id not found in uri\n")
-		//TODO fail here, for now allow a request uri not including <id> to be authenticated
-		//fmt.Printf("@ Auth result: %b, %s\n", ok, node)
-		//return ok, node
+		//fail here, for now allow a request uri not including <id> to be authenticated
+		fmt.Printf("@ Auth result: %b, %s\n", ok, node)
+		return ok, node
 	}else{
 		fmt.Printf("@ Auth: id=%s, id_type=%s\n", id, id_type)
 	}
 
 	//forward r header only without body to ccsapi auth endpoint, add X-Container-Id header
-	req, _ := http.NewRequest(r.Method, "http://"+ccsapi_host+ccsapi_uri, nil)
+	req, _ := http.NewRequest(r.Method, "http://"+ccsapi_host+ccsapi_uri+id, nil)
 	req.Header = r.Header
 	req.URL.Host = ccsapi_host
 	req.Header.Add(ccsapi_id_header, id)
@@ -81,9 +83,16 @@ func Auth(r *http.Request) (bool, string) {
 	//get auth response status, and X-Compute-Node header
 	if resp.StatusCode == 200 {
 		ok = true
+		//first check for header
 		node = httphelper.GetHeader(resp.Header, ccsapi_compute_node_header)
 		if node == ""{
-			node = Default_redirect_host   //TODO remove this testing default
+			//second check for text response
+			defer resp.Body.Close()
+			body, _ := ioutil.ReadAll(resp.Body)			//Default_redirect_host   //testing default
+			//TODO err check
+			//convert byte array to string
+			n := bytes.Index(body, []byte{0})
+			node=string(body[:n])
 		}
 	}
 
