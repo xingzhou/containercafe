@@ -35,8 +35,8 @@ func LoadEnv(){
 }
 
 func get_id_from_uri(uri string, pattern string) string{
-	slice1 := strings.SplitAfter(uri, pattern)
-	slice2 := strings.Split(slice1[0], "/")
+	slice1 := strings.Split(uri, pattern)
+	slice2 := strings.Split(slice1[1], "/")
 	return slice2[0]
 }
 
