@@ -214,8 +214,8 @@ func main() {
 	http.HandleFunc("/v1.18/containers/", endpoint_handler)			//  /<v>/containers/<id>/logs ... hijack
 	//http.HandleFunc("/v1.18/containers/", endpoint_handler)   	//  /<v>/containers/<id>/attach ... hijack
 	http.HandleFunc("/v1.18/exec/", endpoint_handler)				//  /<v>/exec/<id>/start ... hijack
-	//http.HandleFunc("/v1.18/exec/", endpoint_handler)	//  /<v>/exec/<id>/resize
-	//http.HandleFunc("/v1.18/exec/", endpoint_handler)  //  /<v>/exec/<id>/json
+	//http.HandleFunc("/v1.18/exec/", endpoint_handler)				//  /<v>/exec/<id>/resize
+	//http.HandleFunc("/v1.18/exec/", endpoint_handler)  			//  /<v>/exec/<id>/json
 	//http.HandleFunc("/v1.18/containers/", endpoint_handler)		//  /<v>/containers/<id>/resize
 							// TODO ensure ccsapi supports create interactive, no hard-coding of create std params
 							// TODO /<v>/containers/<id>/exec  ... ccsapi to implement exec, new state id to maintain
