@@ -58,7 +58,7 @@ func Auth(r *http.Request) (bool, string) {
 	if id == "" {
 		fmt.Printf("@ Auth: id not found in uri\n")
 		//fail here, for now allow a request uri not including <id> to be authenticated
-		fmt.Printf("@ Auth result: %b, %s\n", ok, node)
+		fmt.Printf("@ Auth result: %b, node='%s'\n", ok, node)
 		return ok, node
 	}else{
 		fmt.Printf("@ Auth: id=%s, id_type=%s\n", id, id_type)
@@ -77,7 +77,7 @@ func Auth(r *http.Request) (bool, string) {
 	if (err != nil) {
 		fmt.Printf("@ Auth: Error in auth request... %v\n", err)
 
-		fmt.Printf("@ Auth result: %b, %s\n", ok, node)
+		fmt.Printf("@ Auth result: %b, node='%s'\n", ok, node)
 		return ok, node
 	}
 
@@ -97,6 +97,6 @@ func Auth(r *http.Request) (bool, string) {
 		}
 	}
 
-	fmt.Printf("@ Auth result: %b, %s\n", ok, node)
+	fmt.Printf("@ Auth result: %b, node='%s'\n", ok, node)
 	return ok, node
 }
