@@ -7,7 +7,6 @@ import (
 	"httphelper"  // my httphelper
 	"os"
 	"io/ioutil"
-	"bytes"
 )
 
 var ccsapi_host = "127.0.0.1:8081"
@@ -15,6 +14,7 @@ var ccsapi_uri = "/v3/admin/getHost/"   //ends with id
 var ccsapi_compute_node_header = "X-Compute-Node"
 var ccsapi_id_header = "X-Container-Id"
 var ccsapi_id_type_header = "X-Id-Type"				//Container or Exec
+var docker_port="5000"
 
 var Default_redirect_host = "localhost:5000"		//TODO remove this testing default
 
@@ -32,6 +32,7 @@ func LoadEnv(){
 	load_env_var("ccsapi_compute_node_header", &ccsapi_compute_node_header)
 	load_env_var("ccsapi_id_header", &ccsapi_id_header)
 	load_env_var("ccsapi_id_type_header", &ccsapi_id_type_header)
+	load_env_var("docker_port", &docker_port)
 }
 
 func get_id_from_uri(uri string, pattern string) string{
@@ -91,8 +92,8 @@ func Auth(r *http.Request) (bool, string) {
 			body, _ := ioutil.ReadAll(resp.Body)			//Default_redirect_host   //testing default
 			//TODO err check
 			//convert byte array to string
-			n := bytes.Index(body, []byte{0})
-			node=string(body[:n])
+			node=string(body[:len(body)])
+			node= node + ":" + docker_port
 		}
 	}
 
