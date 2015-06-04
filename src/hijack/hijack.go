@@ -198,10 +198,12 @@ func main() {
 	//register handlers for supported url paths, can't register same path twice
 	http.HandleFunc("/v1.18/containers/", endpoint_handler)			//  /<v>/containers/<id>/logs ... hijack
 	http.HandleFunc("/v1.17/containers/", endpoint_handler)
+	http.HandleFunc("/v1.20/containers/", endpoint_handler)
 	http.HandleFunc("/v3/containers/", endpoint_handler)
 	//http.HandleFunc("/v1.18/containers/", endpoint_handler)   	//  /<v>/containers/<id>/attach ... hijack
 	http.HandleFunc("/v1.18/exec/", endpoint_handler)				//  /<v>/exec/<id>/start ... hijack
 	http.HandleFunc("/v1.17/exec/", endpoint_handler)
+	http.HandleFunc("/v1.20/exec/", endpoint_handler)
 	http.HandleFunc("/v3/exec/", endpoint_handler)
 	//http.HandleFunc("/v1.18/exec/", endpoint_handler)				//  /<v>/exec/<id>/resize
 	//http.HandleFunc("/v1.18/exec/", endpoint_handler)  			//  /<v>/exec/<id>/json
