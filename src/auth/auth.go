@@ -15,8 +15,9 @@ var ccsapi_compute_node_header = "X-Compute-Node"
 var ccsapi_id_header = "X-Container-Id"
 var ccsapi_id_type_header = "X-Id-Type"				//Container or Exec
 var docker_port="5000"
+var docker_api_ver="v1.17"
 
-var Default_redirect_host = "localhost:5000"		//TODO remove this testing default
+var Default_redirect_host = "vizio-dev-host2:5000"		//TODO remove this testing default
 
 func load_env_var(env_name string, target *string) {
 	s:=os.Getenv(env_name)
@@ -33,6 +34,8 @@ func LoadEnv(){
 	load_env_var("ccsapi_id_header", &ccsapi_id_header)
 	load_env_var("ccsapi_id_type_header", &ccsapi_id_type_header)
 	load_env_var("docker_port", &docker_port)
+	load_env_var("docker_api_ver", &docker_api_ver)
+
 }
 
 func get_id_from_uri(uri string, pattern string) string{
@@ -41,9 +44,11 @@ func get_id_from_uri(uri string, pattern string) string{
 	return slice2[0]
 }
 
-func Auth(r *http.Request) (bool, string) {
+//returns auth=true/false, compute node name, container/exec id
+func Auth(r *http.Request) (bool, string, string) {
 	ok:=false
 	node:=""
+	docker_id:=""
 
 	//parse r.RequestURI for container id or exec id
 	uri := r.RequestURI
@@ -59,7 +64,7 @@ func Auth(r *http.Request) (bool, string) {
 		fmt.Printf("@ Auth: id not found in uri\n")
 		//fail here, for now allow a request uri not including <id> to be authenticated
 		fmt.Printf("@ Auth result: %b, node='%s'\n", ok, node)
-		return ok, node
+		return ok, node, docker_id
 	}else{
 		fmt.Printf("@ Auth: id=%s, id_type=%s\n", id, id_type)
 	}
@@ -78,7 +83,7 @@ func Auth(r *http.Request) (bool, string) {
 		fmt.Printf("@ Auth: Error in auth request... %v\n", err)
 
 		fmt.Printf("@ Auth result: %b, node='%s'\n", ok, node)
-		return ok, node
+		return ok, node, docker_id
 	}
 
 	//get auth response status, and X-Compute-Node header
@@ -93,10 +98,32 @@ func Auth(r *http.Request) (bool, string) {
 			//TODO err check
 			//convert byte array to string
 			node=string(body[:len(body)])
-			node= node + ":" + docker_port
+		}
+		node= node + ":" + docker_port
+		if id_type == "Container" {
+			//TODO get the nova container id from ccsapi response
+			docker_id = "nova-"+id
+		}else{
+			//TODO: get the nova exec id from ccsapi response
+			docker_id = id
 		}
 	}
+	//TODO remove the following demo exec auth
+	if id_type == "Exec" {
+		ok = true
+		node = Default_redirect_host
+		docker_id = id
+	}
 
-	fmt.Printf("@ Auth result: %b, node='%s'\n", ok, node)
-	return ok, node
+	fmt.Printf("@ Auth result: %b, node='%s', docker_id='%s'\n", ok, node, docker_id)
+	return ok, node, docker_id
+}
+
+//Convert /v*/containers/id/*  to  /<docker_api_ver>/containers/<redirect_resource_id>/*
+//Convert /v*/exec/id/*  to  /<docker_api_ver>/exec/<redirect_resource_id>/*
+func RewriteURI(reqURI string, redirect_resource_id string) string{
+	sl := strings.Split(reqURI, "/")
+	redirectURI := "/" + docker_api_ver + "/" + sl[2] + "/" + redirect_resource_id + "/" + sl[4]
+	fmt.Printf("@ RewriteURI: '%s' --> '%s'\n", reqURI, redirectURI)
+	return redirectURI
 }

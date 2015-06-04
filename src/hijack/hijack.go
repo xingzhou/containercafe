@@ -31,23 +31,7 @@ func get_req_id() int{
 	return req_id
 }
 
-func redirect(r *http.Request, body []byte, redirect_host string) (*http.Response, error){
-	//resp := http.Response{}
-	//forward request to server
-	req, _ := http.NewRequest(r.Method, "http://"+redirect_host+r.RequestURI, bytes.NewReader(body))
-	req.Header = r.Header
-	client := &http.Client{
-		CheckRedirect: nil,
-	}
-	//req.Host = redirect_host
-	req.URL.Host = redirect_host
-	resp, err := client.Do(req)
-
-	//defer resp.Body.Close()
-	return resp, err
-}
-
-func redirect_lowlevel(r *http.Request, body []byte, redirect_host string) (*http.Response, error, *httputil.ClientConn){
+func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redirect_resource_id string) (*http.Response, error, *httputil.ClientConn){
 	//forward request to server
 	//var c net.Conn
 	//var buf *bufio.Reader = nil
@@ -59,7 +43,8 @@ func redirect_lowlevel(r *http.Request, body []byte, redirect_host string) (*htt
 		return nil,err,nil
 	}
 	cc := httputil.NewClientConn(c, nil)
-	req, _ := http.NewRequest(r.Method, "http://"+redirect_host+r.RequestURI, bytes.NewReader(body))
+	req, _ := http.NewRequest(r.Method, "http://"+redirect_host+auth.RewriteURI(r.RequestURI, redirect_resource_id),
+				bytes.NewReader(body))
 	req.Header = r.Header
 	//req.Host = redirect_host
 	req.URL.Host = redirect_host
@@ -70,7 +55,7 @@ func redirect_lowlevel(r *http.Request, body []byte, redirect_host string) (*htt
 	return resp, err, cc
 }
 
-func handler(w http.ResponseWriter, r *http.Request, redirect_host string) {
+func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redirect_resource_id string) {
 	req_UPGRADE := false
 	resp_UPGRADE := false
 	resp_STREAM := false
@@ -94,7 +79,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string) {
 	}
 
 	//resp, err := redirect(r, body, redirect_host)
-	resp, err, cc := redirect_lowlevel(r, body, redirect_host)
+	resp, err, cc := redirect_lowlevel(r, body, redirect_host, redirect_resource_id)
 	if (err != nil) {
 		fmt.Printf("Error in redirection... %v\n", err)
 		//log.Fatal(err) //this would terminate the server
@@ -180,11 +165,11 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string) {
 //http proxy forwarding with hijack support handler
 func endpoint_handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("@ endpoint_handler triggered, URI: %s\n", r.RequestURI)
-	ok, node := auth.Auth(r)
+	ok, node, docker_id := auth.Auth(r)  // ok=true/false, node=host:port, docker_id=url resource id understood by docker
 	if !ok {
 		return
 	}
-	handler(w, r, node)
+	handler(w, r, node, docker_id)
 }
 
 //Return 404 for all non-supported URIs
@@ -212,8 +197,12 @@ func main() {
 
 	//register handlers for supported url paths, can't register same path twice
 	http.HandleFunc("/v1.18/containers/", endpoint_handler)			//  /<v>/containers/<id>/logs ... hijack
+	http.HandleFunc("/v1.17/containers/", endpoint_handler)
+	http.HandleFunc("/v3/containers/", endpoint_handler)
 	//http.HandleFunc("/v1.18/containers/", endpoint_handler)   	//  /<v>/containers/<id>/attach ... hijack
 	http.HandleFunc("/v1.18/exec/", endpoint_handler)				//  /<v>/exec/<id>/start ... hijack
+	http.HandleFunc("/v1.17/exec/", endpoint_handler)
+	http.HandleFunc("/v3/exec/", endpoint_handler)
 	//http.HandleFunc("/v1.18/exec/", endpoint_handler)				//  /<v>/exec/<id>/resize
 	//http.HandleFunc("/v1.18/exec/", endpoint_handler)  			//  /<v>/exec/<id>/json
 	//http.HandleFunc("/v1.18/containers/", endpoint_handler)		//  /<v>/containers/<id>/resize

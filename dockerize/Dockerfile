@@ -10,5 +10,7 @@ ENV ccsapi_compute_node_header="X-Compute-Node"
 ENV ccsapi_id_header="X-Container-Id"
 ENV ccsapi_id_type_header="X-Id-Type"
 ENV docker_port="5000"
+ENV docker_api_ver="v1.17"
+
 EXPOSE 8087
 CMD ["/hijack/bin/hijack", "8087"]
