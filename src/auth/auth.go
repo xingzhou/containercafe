@@ -7,6 +7,7 @@ import (
 	"httphelper"  // my httphelper
 	"os"
 	"io/ioutil"
+	"encoding/json"
 )
 
 var ccsapi_host = "127.0.0.1:8081"
@@ -36,12 +37,6 @@ func LoadEnv(){
 	load_env_var("docker_port", &docker_port)
 	load_env_var("docker_api_ver", &docker_api_ver)
 
-}
-
-func get_id_from_uri(uri string, pattern string) string{
-	slice1 := strings.Split(uri, pattern)
-	slice2 := strings.Split(slice1[1], "/")
-	return slice2[0]
 }
 
 //returns auth=true/false, compute node name, container/exec id
@@ -89,30 +84,36 @@ func Auth(r *http.Request) (bool, string, string) {
 	//get auth response status, and X-Compute-Node header
 	if resp.StatusCode == 200 {
 		ok = true
-		//first check for header
+		//first check in header
 		node = httphelper.GetHeader(resp.Header, ccsapi_compute_node_header)
-		if node == ""{
-			//second check for text response
+		if node == "" {
+			//second check for json response in body
 			defer resp.Body.Close()
-			body, _ := ioutil.ReadAll(resp.Body)			//Default_redirect_host   //testing default
-			//TODO err check
-			//convert byte array to string
-			node=string(body[:len(body)])
+			body, e := ioutil.ReadAll(resp.Body)            //Default_redirect_host   //testing default
+			if e == nil {
+				//convert byte array to string
+				//node=string(body[:len(body)])
+				fmt.Printf("@ Auth: ccsapi response=%s", httphelper.PrettyJson(body))
+				node, docker_id = parse_getHost_Response(body)
+			}else {
+				//error reading ccsapi response
+				fmt.Printf("@ Auth result: %b, node='%s'\n", ok, node)
+				return ok, node, docker_id
+			}
 		}
-		node= node + ":" + docker_port
+		node = node+":"+docker_port
 		if id_type == "Container" {
-			//TODO get the nova container id from ccsapi response
-			docker_id = "nova-"+id
-		}else{
-			//TODO: get the nova exec id from ccsapi response
+			//container id needs nova- prefix
+			//exec id does not need a prefix
+			docker_id = "nova-" + docker_id
+		}
+	}else {
+		//TODO remove the following demo exec authentication even if status!=200
+		if id_type == "Exec" {
+			ok = true
+			node = Default_redirect_host
 			docker_id = id
 		}
-	}
-	//TODO remove the following demo exec auth
-	if id_type == "Exec" {
-		ok = true
-		node = Default_redirect_host
-		docker_id = id
 	}
 
 	fmt.Printf("@ Auth result: %b, node='%s', docker_id='%s'\n", ok, node, docker_id)
@@ -126,4 +127,27 @@ func RewriteURI(reqURI string, redirect_resource_id string) string{
 	redirectURI := "/" + docker_api_ver + "/" + sl[2] + "/" + redirect_resource_id + "/" + sl[4]
 	fmt.Printf("@ RewriteURI: '%s' --> '%s'\n", reqURI, redirectURI)
 	return redirectURI
+}
+
+func get_id_from_uri(uri string, pattern string) string{
+	slice1 := strings.Split(uri, pattern)
+	slice2 := strings.Split(slice1[1], "/")
+	return slice2[0]
+}
+
+func parse_getHost_Response(body []byte) (string, string){
+
+	type Resp struct {
+		container_id  	string
+		container_name 	string
+		host 			string
+	}
+
+	var resp Resp
+	err := json.Unmarshal(body, &resp)
+	if err != nil {
+		fmt.Println("@ parse_getHost_Response: error=%v", err)
+	}
+
+	return resp.host, resp.container_id
 }

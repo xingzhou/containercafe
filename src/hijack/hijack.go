@@ -174,9 +174,14 @@ func endpoint_handler(w http.ResponseWriter, r *http.Request) {
 
 //Return 404 for all non-supported URIs
 func no_endpoint_handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("@ no_endpoint_handler, URI: %s, returning error 404\n", r.RequestURI)
+	fmt.Printf("@ no_endpoint_handler triggered, URI: %s, returning error 404\n", r.RequestURI)
 	//w.WriteHeader(404)
 	http.NotFound(w, r)
+}
+
+func health_endpoint_handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("@ health_endpoint_handler triggered, URI: %s\n", r.RequestURI)
+	fmt.Fprintf(w,"hjproxy up\n")
 }
 
 func main() {
@@ -210,6 +215,12 @@ func main() {
 	//http.HandleFunc("/v1.18/containers/", endpoint_handler)		//  /<v>/containers/<id>/resize
 							// TODO ensure ccsapi supports create interactive, no hard-coding of create std params
 							// TODO /<v>/containers/<id>/exec  ... ccsapi to implement exec, new state id to maintain
+
+	//Healthcheck handler
+	http.HandleFunc("/v1.18/hjproxy/", health_endpoint_handler)				//  /<v>/exec/<id>/start ... hijack
+	http.HandleFunc("/v1.17/hjproxy/", health_endpoint_handler)
+	http.HandleFunc("/v1.20/hjproxy/", health_endpoint_handler)
+	http.HandleFunc("/v3/hjproxy/", health_endpoint_handler)
 
 	//Trap handler for all other non-supported uris
 	http.HandleFunc("/", no_endpoint_handler)

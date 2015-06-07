@@ -17,3 +17,16 @@ func PrintJson(b []byte) {
 		fmt.Printf("\n%s\n", out.Bytes())
 	}
 }
+
+func PrettyJson(b []byte) string{
+	var out bytes.Buffer
+	var s string
+	err := json.Indent(&out, b, "", "\t")
+	if err != nil {
+		fmt.Sprintf(s, "\n%s\n", b)
+	}else {
+		//out.WriteTo(os.Stdout)
+		fmt.Sprintf(s, "\n%s\n", out.Bytes())
+	}
+	return s
+}
