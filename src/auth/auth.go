@@ -143,8 +143,9 @@ func parse_getHost_Response(body []byte) (string, string){
 		container_name 	string
 		host 			string
 	}
-
 	var resp Resp
+
+	fmt.Printf("@ parse_getHost_Response: json=%s\n", body)
 	err := json.Unmarshal(body, &resp)
 	if err != nil {
 		fmt.Println("@ parse_getHost_Response: error=%v", err)
