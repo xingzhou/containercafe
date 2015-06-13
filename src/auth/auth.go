@@ -93,6 +93,7 @@ func Auth(r *http.Request) (bool, string, string) {
 			if e == nil {
 				//convert byte array to string
 				//node=string(body[:len(body)])
+				fmt.Printf("@ Auth: ccsapi raw response=%s\n", body)
 				fmt.Printf("@ Auth: ccsapi response=%s", httphelper.PrettyJson(body))
 				node, docker_id = parse_getHost_Response(body)
 			}else {
@@ -148,6 +149,6 @@ func parse_getHost_Response(body []byte) (string, string){
 	if err != nil {
 		fmt.Println("@ parse_getHost_Response: error=%v", err)
 	}
-
+	fmt.Println("@ parse_getHost_Response: host=%s, container_id=%s", rep.host, resp.container_id)
 	return resp.host, resp.container_id
 }
