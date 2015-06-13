@@ -66,7 +66,7 @@ func Auth(r *http.Request) (bool, string, string) {
 
 	//forward r header only without body to ccsapi auth endpoint, add X-Container-Id header
 	req, _ := http.NewRequest(r.Method, "http://"+ccsapi_host+ccsapi_uri+id, nil)
-	req.Header = r.Header
+	httphelper.CopyHeader(req.Header, r.Header)  //req.Header = r.Header
 	req.URL.Host = ccsapi_host
 	req.Header.Add(ccsapi_id_header, id)
 	req.Header.Add(ccsapi_id_type_header, id_type)
@@ -149,6 +149,6 @@ func parse_getHost_Response(body []byte) (string, string){
 	if err != nil {
 		fmt.Println("@ parse_getHost_Response: error=%v", err)
 	}
-	fmt.Println("@ parse_getHost_Response: host=%s, container_id=%s", rep.host, resp.container_id)
+	fmt.Println("@ parse_getHost_Response: host=%s, container_id=%s", resp.host, resp.container_id)
 	return resp.host, resp.container_id
 }
