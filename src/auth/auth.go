@@ -15,10 +15,10 @@ var ccsapi_uri = "/v3/admin/getHost/"   //ends with id
 var ccsapi_compute_node_header = "X-Compute-Node"
 var ccsapi_id_header = "X-Container-Id"
 var ccsapi_id_type_header = "X-Id-Type"				//Container or Exec
-var docker_port="5000"
+var docker_port="8089"
 var docker_api_ver="v1.17"
 
-var Default_redirect_host = "vizio-dev-host2:5000"		//TODO remove this testing default
+var Default_redirect_host = "vizio-dev-host2:8089"		//TODO remove this testing default
 
 func load_env_var(env_name string, target *string) {
 	s:=os.Getenv(env_name)
