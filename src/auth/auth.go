@@ -58,7 +58,7 @@ func Auth(r *http.Request) (bool, string, string) {
 	if id == "" {
 		fmt.Printf("@ Auth: id not found in uri\n")
 		//fail here, for now allow a request uri not including <id> to be authenticated
-		fmt.Printf("@ Auth result: %t, node='%s'\n", ok, node)
+		fmt.Printf("@ Auth result: ok=%t, node='%s'\n", ok, node)
 		return ok, node, docker_id
 	}else{
 		fmt.Printf("@ Auth: id=%s, id_type=%s\n", id, id_type)
@@ -77,7 +77,7 @@ func Auth(r *http.Request) (bool, string, string) {
 	if (err != nil) {
 		fmt.Printf("@ Auth: Error in auth request... %v\n", err)
 
-		fmt.Printf("@ Auth result: %t, node='%s'\n", ok, node)
+		fmt.Printf("@ Auth result: ok=%t, node='%s'\n", ok, node)
 		return ok, node, docker_id
 	}
 
@@ -98,7 +98,7 @@ func Auth(r *http.Request) (bool, string, string) {
 				node, docker_id = parse_getHost_Response(body)
 			}else {
 				//error reading ccsapi response
-				fmt.Printf("@ Auth result: %t, node='%s'\n", ok, node)
+				fmt.Printf("@ Auth result: ok=%t, node='%s'\n", ok, node)
 				return ok, node, docker_id
 			}
 		}
@@ -117,7 +117,7 @@ func Auth(r *http.Request) (bool, string, string) {
 		}
 	}
 
-	fmt.Printf("@ Auth result: %t, node='%s', docker_id='%s'\n", ok, node, docker_id)
+	fmt.Printf("@ Auth result: ok=%t, node='%s', docker_id='%s'\n", ok, node, docker_id)
 	return ok, node, docker_id
 }
 
