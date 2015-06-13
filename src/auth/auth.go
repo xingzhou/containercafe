@@ -139,9 +139,9 @@ func get_id_from_uri(uri string, pattern string) string{
 func parse_getHost_Response(body []byte) (string, string){
 
 	type Resp struct {
-		container_id  	string
-		container_name 	string
-		host 			string
+		Container_id  	string
+		Container_name 	string
+		Host 			string
 	}
 	var resp Resp
 
@@ -150,6 +150,6 @@ func parse_getHost_Response(body []byte) (string, string){
 	if err != nil {
 		fmt.Println("@ parse_getHost_Response: error=%v", err)
 	}
-	fmt.Printf("@ parse_getHost_Response: host=%s, container_id=%s\n", resp.host, resp.container_id)
+	fmt.Printf("@ parse_getHost_Response: host=%s, container_id=%s\n", resp.Host, resp.Container_id)
 	return resp.host, resp.container_id
 }
