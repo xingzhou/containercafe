@@ -18,6 +18,7 @@ func PrintJson(b []byte) {
 	}
 }
 
+//TODO needs to be tested
 func PrettyJson(b []byte) string{
 	var out bytes.Buffer
 	var s string
