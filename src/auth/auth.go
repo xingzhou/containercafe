@@ -149,6 +149,6 @@ func parse_getHost_Response(body []byte) (string, string){
 	if err != nil {
 		fmt.Println("@ parse_getHost_Response: error=%v", err)
 	}
-	fmt.Println("@ parse_getHost_Response: host=%s, container_id=%s", resp.host, resp.container_id)
+	fmt.Printf("@ parse_getHost_Response: host=%s, container_id=%s\n", resp.host, resp.container_id)
 	return resp.host, resp.container_id
 }
