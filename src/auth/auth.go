@@ -131,9 +131,17 @@ func RewriteURI(reqURI string, redirect_resource_id string) string{
 }
 
 func get_id_from_uri(uri string, pattern string) string{
+	var id string
 	slice1 := strings.Split(uri, pattern)
-	slice2 := strings.Split(slice1[1], "/")
-	return slice2[0]
+	fmt.Printf("@ get_id_from_uri: pattern=%s, slice1=%v\n", pattern, slice1)
+	if len(slice1) > 1 {
+		slice2 := strings.Split(slice1[1], "/")
+		id=slice2[0]
+	}else{
+		id=""
+	}
+	fmt.Printf("@ get_id_from_uri: id=%s\n", id)
+	return id
 }
 
 func parse_getHost_Response(body []byte) (string, string){

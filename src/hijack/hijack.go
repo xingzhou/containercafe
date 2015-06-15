@@ -185,7 +185,7 @@ func health_endpoint_handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	fmt.Printf("Hijack microservice started...\n")
+	fmt.Printf("Hijack proxy microservice started...\n")
 	//parse args
 	listen_port := 8087
 	nargs := len(os.Args)
@@ -201,29 +201,27 @@ func main() {
 	auth.LoadEnv()
 
 	//register handlers for supported url paths, can't register same path twice
+
+	//Healthcheck handler
+	http.HandleFunc("/hjproxy/", health_endpoint_handler)
+
+	//Rely on NGINX to route accepted url paths
+	http.HandleFunc("/", endpoint_handler)
+	/*
 	http.HandleFunc("/v1.18/containers/", endpoint_handler)			//  /<v>/containers/<id>/logs ... hijack
-	http.HandleFunc("/v1.17/containers/", endpoint_handler)
+	http.HandleFunc("/v1.17/containers/", endpoint_handler)			//  /<v>/containers/<id>/attach ... hijack
 	http.HandleFunc("/v1.20/containers/", endpoint_handler)
 	http.HandleFunc("/v3/containers/", endpoint_handler)
-	//http.HandleFunc("/v1.18/containers/", endpoint_handler)   	//  /<v>/containers/<id>/attach ... hijack
 	http.HandleFunc("/v1.18/exec/", endpoint_handler)				//  /<v>/exec/<id>/start ... hijack
 	http.HandleFunc("/v1.17/exec/", endpoint_handler)
 	http.HandleFunc("/v1.20/exec/", endpoint_handler)
 	http.HandleFunc("/v3/exec/", endpoint_handler)
-	//http.HandleFunc("/v1.18/exec/", endpoint_handler)				//  /<v>/exec/<id>/resize
-	//http.HandleFunc("/v1.18/exec/", endpoint_handler)  			//  /<v>/exec/<id>/json
-	//http.HandleFunc("/v1.18/containers/", endpoint_handler)		//  /<v>/containers/<id>/resize
-							// TODO ensure ccsapi supports create interactive, no hard-coding of create std params
-							// TODO /<v>/containers/<id>/exec  ... ccsapi to implement exec, new state id to maintain
+	*/
+		// TODO ensure ccsapi supports create interactive, no hard-coding of create std params
+		// TODO /<v>/containers/<id>/exec  ... ccsapi to implement exec, new state id to maintain
 
-	//Healthcheck handler
-	http.HandleFunc("/v1.18/hjproxy/", health_endpoint_handler)				//  /<v>/exec/<id>/start ... hijack
-	http.HandleFunc("/v1.17/hjproxy/", health_endpoint_handler)
-	http.HandleFunc("/v1.20/hjproxy/", health_endpoint_handler)
-	http.HandleFunc("/v3/hjproxy/", health_endpoint_handler)
-
-	//Trap handler for all other non-supported uris
-	http.HandleFunc("/", no_endpoint_handler)
+	//Disable trap handler for non-supported url paths. Rely on NGINX to route accepted url paths
+	//http.HandleFunc("/", no_endpoint_handler)
 
 	//init server on any interface + listen_port
     err := http.ListenAndServe(":"+strconv.Itoa(listen_port), nil)
