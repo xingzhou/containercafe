@@ -186,19 +186,27 @@ func health_endpoint_handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	fmt.Printf("Hijack proxy microservice started...\n")
+	auth.LoadEnv()
+	listen_port := auth.GetDefaultListenPort()
 	//parse args
-	listen_port := 8087
 	nargs := len(os.Args)
 	if nargs > 1 {
 		listen_port, _=strconv.Atoi(os.Args[1])
 	}
-	fmt.Printf("Listening on port %d\n", listen_port)
+	fmt.Printf("@ Listening on port %d\n", listen_port)
 	if nargs > 2 {
 		auth.Default_redirect_host = os.Args[2]
 	}
-	fmt.Printf("Default upstream server: %s\n", auth.Default_redirect_host)
-
-	auth.LoadEnv()
+	fmt.Printf("@ Default upstream server: %s\n", auth.Default_redirect_host)
+	if nargs > 3 {
+		if strings.ToLower(os.Args[3]) == "true" {
+			auth.SetTlsInbound(true)
+		}
+		if strings.ToLower(os.Args[3]) == "false" {
+			auth.SetTlsInbound(false)
+		}
+	}
+	fmt.Printf("@ tls setup: %t\n", auth.IsTlsInbound())
 
 	//register handlers for supported url paths, can't register same path twice
 
@@ -224,7 +232,13 @@ func main() {
 	//http.HandleFunc("/", no_endpoint_handler)
 
 	//init server on any interface + listen_port
-    err := http.ListenAndServe(":"+strconv.Itoa(listen_port), nil)
+
+	var err error
+	if auth.IsTlsInbound() {
+		err = http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), auth.GetCertFile(), auth.GetKeyFile(), nil)
+	} else {
+		err = http.ListenAndServe(":"+strconv.Itoa(listen_port), nil)
+	}
 
 	//print something and exit on fatal error
 	if err != nil {

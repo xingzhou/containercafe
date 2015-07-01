@@ -10,14 +10,21 @@ import (
 	"encoding/json"
 )
 
+//TODO move env settings to separate conf module
+//ENV defaults
 var ccsapi_host = "127.0.0.1:8081"
 var ccsapi_uri = "/v3/admin/getHost/"   //ends with id
 var ccsapi_compute_node_header = "X-Compute-Node"
 var ccsapi_id_header = "X-Container-Id"
 var ccsapi_id_type_header = "X-Id-Type"				//Container or Exec
-var docker_port="8089"
-var docker_api_ver="v1.17"
+var docker_port = "8089"
+var docker_api_ver = "v1.17"
+var tls_inbound = "false"
+var tls_outbound = "false"
+var cert_file = "cert.pem"
+var key_file = "key.pem"
 
+var default_listen_port = 8087
 var Default_redirect_host = "vizio-dev-host2:8089"		//TODO remove this testing default
 
 func load_env_var(env_name string, target *string) {
@@ -36,7 +43,38 @@ func LoadEnv(){
 	load_env_var("ccsapi_id_type_header", &ccsapi_id_type_header)
 	load_env_var("docker_port", &docker_port)
 	load_env_var("docker_api_ver", &docker_api_ver)
+	load_env_var("tls_inbound", &tls_inbound)
+	load_env_var("tls_outbound", &tls_outbound)
+	load_env_var("cert_file", &cert_file)
+	load_env_var("key_file", &key_file)
+}
 
+func GetDefaultListenPort() int {
+	return default_listen_port
+}
+
+func SetTlsInbound (b bool){
+	if b {
+		tls_inbound = "true"
+	}else {
+		tls_inbound = "false"
+	}
+}
+
+func IsTlsInbound() bool {
+	if tls_inbound == "true" {
+		return true
+	} else {
+		return false
+	}
+}
+
+func GetCertFile() string{
+	return cert_file
+}
+
+func GetKeyFile() string{
+	return key_file
 }
 
 //returns auth=true/false, compute node name, container/exec id
