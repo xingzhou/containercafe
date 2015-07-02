@@ -4,78 +4,11 @@ import (
 	"net/http"
 	"fmt"
 	"strings"
-	"httphelper"  // my httphelper
-	"os"
 	"io/ioutil"
 	"encoding/json"
+	"httphelper"  	// my httphelper
+	"conf"  		// my conf package
 )
-
-//TODO move env settings to separate conf module
-//ENV defaults
-var ccsapi_host = "127.0.0.1:8081"
-var ccsapi_uri = "/v3/admin/getHost/"   //ends with id
-var ccsapi_compute_node_header = "X-Compute-Node"
-var ccsapi_id_header = "X-Container-Id"
-var ccsapi_id_type_header = "X-Id-Type"				//Container or Exec
-var docker_port = "8089"
-var docker_api_ver = "v1.17"
-var tls_inbound = "false"
-var tls_outbound = "false"
-var cert_file = "cert.pem"
-var key_file = "key.pem"
-
-var default_listen_port = 8087
-var Default_redirect_host = "vizio-dev-host2:8089"		//TODO remove this testing default
-
-func load_env_var(env_name string, target *string) {
-	s:=os.Getenv(env_name)
-	if s != "" {
-		*target = s
-	}
-	fmt.Printf("@ load_env_var: %s=%s\n",env_name, *target)
-}
-
-func LoadEnv(){
-	load_env_var("ccsapi_host", &ccsapi_host)
-	load_env_var("ccsapi_uri", &ccsapi_uri)
-	load_env_var("ccsapi_compute_node_header", &ccsapi_compute_node_header)
-	load_env_var("ccsapi_id_header", &ccsapi_id_header)
-	load_env_var("ccsapi_id_type_header", &ccsapi_id_type_header)
-	load_env_var("docker_port", &docker_port)
-	load_env_var("docker_api_ver", &docker_api_ver)
-	load_env_var("tls_inbound", &tls_inbound)
-	load_env_var("tls_outbound", &tls_outbound)
-	load_env_var("cert_file", &cert_file)
-	load_env_var("key_file", &key_file)
-}
-
-func GetDefaultListenPort() int {
-	return default_listen_port
-}
-
-func SetTlsInbound (b bool){
-	if b {
-		tls_inbound = "true"
-	}else {
-		tls_inbound = "false"
-	}
-}
-
-func IsTlsInbound() bool {
-	if tls_inbound == "true" {
-		return true
-	} else {
-		return false
-	}
-}
-
-func GetCertFile() string{
-	return cert_file
-}
-
-func GetKeyFile() string{
-	return key_file
-}
 
 //returns auth=true/false, compute node name, container/exec id
 func Auth(r *http.Request) (bool, string, string) {
@@ -103,11 +36,11 @@ func Auth(r *http.Request) (bool, string, string) {
 	}
 
 	//forward r header only without body to ccsapi auth endpoint, add X-Container-Id header
-	req, _ := http.NewRequest(r.Method, "http://"+ccsapi_host+ccsapi_uri+id, nil)
+	req, _ := http.NewRequest(r.Method, "http://"+conf.GetCcsapiHost()+conf.GetCcsapiUri()+id, nil)
 	httphelper.CopyHeader(req.Header, r.Header)  //req.Header = r.Header
-	req.URL.Host = ccsapi_host
-	req.Header.Add(ccsapi_id_header, id)
-	req.Header.Add(ccsapi_id_type_header, id_type)
+	req.URL.Host = conf.GetCcsapiHost()
+	req.Header.Add(conf.GetCcsapiIdHeader(), id)
+	req.Header.Add(conf.GetCcsapiIdTypeHeader(), id_type)
 	client := &http.Client{
 		CheckRedirect: nil,
 	}
@@ -123,7 +56,7 @@ func Auth(r *http.Request) (bool, string, string) {
 	if resp.StatusCode == 200 {
 		ok = true
 		//first check in header
-		node = httphelper.GetHeader(resp.Header, ccsapi_compute_node_header)
+		node = httphelper.GetHeader(resp.Header, conf.GetCcsapiComputeNodeHeader())
 		if node == "" {
 			//second check for json response in body
 			defer resp.Body.Close()
@@ -140,7 +73,7 @@ func Auth(r *http.Request) (bool, string, string) {
 				return ok, node, docker_id
 			}
 		}
-		node = node+":"+docker_port
+		node = node+":"+conf.GetDockerPort()
 		if id_type == "Container" {
 			//container id needs nova- prefix
 			//exec id does not need a prefix
@@ -150,7 +83,7 @@ func Auth(r *http.Request) (bool, string, string) {
 		//TODO remove the following demo exec authentication even if status!=200
 		if id_type == "Exec" {
 			ok = true
-			node = Default_redirect_host
+			node = conf.Default_redirect_host
 			docker_id = id
 		}
 	}
@@ -163,7 +96,7 @@ func Auth(r *http.Request) (bool, string, string) {
 //Convert /v*/exec/id/*  to  /<docker_api_ver>/exec/<redirect_resource_id>/*
 func RewriteURI(reqURI string, redirect_resource_id string) string{
 	sl := strings.Split(reqURI, "/")
-	redirectURI := "/" + docker_api_ver + "/" + sl[2] + "/" + redirect_resource_id + "/" + sl[4]
+	redirectURI := "/" + conf.GetDockerApiVer() + "/" + sl[2] + "/" + redirect_resource_id + "/" + sl[4]
 	fmt.Printf("@ RewriteURI: '%s' --> '%s'\n", reqURI, redirectURI)
 	return redirectURI
 }
