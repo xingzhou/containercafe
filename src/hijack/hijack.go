@@ -16,6 +16,7 @@ import (
 	"sync"
 	"auth"  // my auth package
 	"conf"  // my conf package
+	"crypto/tls"
 )
 
 //TODO logging
@@ -35,7 +36,10 @@ func get_req_id() int{
 func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redirect_resource_id string) (*http.Response, error, *httputil.ClientConn){
 	//forward request to server
 	//var c net.Conn
+	//var err error
 	//var buf *bufio.Reader = nil
+	//var c_tls *tls.Conn
+	var cc *httputil.ClientConn
 
 	c , err := net.Dial("tcp", redirect_host)
 	if err != nil {
@@ -43,7 +47,14 @@ func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redir
 		fmt.Printf("Error connecting to server %s, %v\n", redirect_host, err)
 		return nil,err,nil
 	}
-	cc := httputil.NewClientConn(c, nil)
+
+	if conf.IsTlsOutbound() {
+		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true})
+		cc = httputil.NewClientConn(c_tls, nil)
+	}else{
+		cc = httputil.NewClientConn(c, nil)
+	}
+
 	req, _ := http.NewRequest(r.Method, "http://"+redirect_host+auth.RewriteURI(r.RequestURI, redirect_resource_id),
 				bytes.NewReader(body))
 	req.Header = r.Header
@@ -202,9 +213,11 @@ func main() {
 	if nargs > 3 {
 		if strings.ToLower(os.Args[3]) == "true" {
 			conf.SetTlsInbound(true)
+			conf.SetTlsOutbound(true)
 		}
 		if strings.ToLower(os.Args[3]) == "false" {
 			conf.SetTlsInbound(false)
+			conf.SetTlsOutbound(true)
 		}
 	}
 	fmt.Printf("@ tls setup: Inbound=%t, Outbound=%t\n", conf.IsTlsInbound(), conf.IsTlsOutbound())
