@@ -15,6 +15,8 @@ ENV tls_inbound="true"
 ENV tls_outbound="true"
 ENV cert_file="cert.pem"
 ENV key_file="key.pem"
+ENV ccsapi_admin_user ""
+ENV ccsapi_admin_psswd ""
 
 #Copy the self-signed server cert and key
 ADD cert.pem /hijack/cert.pem
