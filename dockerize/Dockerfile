@@ -17,8 +17,8 @@ ENV cert_file="cert.pem"
 ENV key_file="key.pem"
 
 #Copy the self-signed server cert and key
-ADD cert.pem /cert.pem
-ADD key.pem  /key.pem
+ADD cert.pem /hijack/cert.pem
+ADD key.pem  /hijack/key.pem
 
 EXPOSE 8087
 CMD ["/hijack/bin/hijack", "8087"]
