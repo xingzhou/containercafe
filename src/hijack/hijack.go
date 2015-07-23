@@ -162,7 +162,11 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 				if is_container_exec_call(r.RequestURI){
 					container_id := strip_nova_prefix(redirect_resource_id)
 					exec_id := get_exec_id_from_response(resp_body)
-					conf.RedisSet(exec_id, container_id)
+					if exec_id == ""{
+						fmt.Printf("Error: error in retrieving exec id from response body\n")
+					}else {
+						conf.RedisSet(exec_id, container_id)
+					}
 				}
 
 				//Printout the response body
@@ -216,8 +220,21 @@ func strip_nova_prefix(id string) string{
 	return id
 }
 
-func get_exec_id_from_response(resp_body []byte) string{
-	return ""
+func get_exec_id_from_response(body []byte) string{
+	type Resp struct {
+		Id  		string
+		Warnings 	[]string
+	}
+	var resp Resp
+
+	fmt.Printf("@ get_exec_id_from_response: json=%s\n", body)
+	err := json.Unmarshal(body, &resp)
+	if err != nil {
+		fmt.Println("@ get_exec_id_from_response: error=%v", err)
+		return ""
+	}
+	fmt.Printf("@ get_exec_id_from_response: Id=%s\n", resp.Id)
+	return resp.Id
 }
 
 func main() {
