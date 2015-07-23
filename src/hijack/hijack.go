@@ -19,7 +19,7 @@ import (
 	"crypto/tls"
 )
 
-//TODO logging
+//TODO logging refinement
 //TODO use req id generator using hashing fn
 
 var glob_req_id = 0
@@ -98,6 +98,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 		fmt.Printf("___________________________ id: %d \n", req_id)
 		return
 	}
+
 	//write out resp
 	now = time.Now()
 	fmt.Printf("<------ id: %d, time: %s\n", req_id, now)
@@ -155,12 +156,23 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 			if err != nil {
 				fmt.Printf("Error: error in reading server response body\n")
 			}else {
+
+				//Check if Redis caching is required
+				//if request uri contains "/container/" and "/exec" then store in Redis the returned exec id (in resp body) and container id (in uri)
+				if is_container_exec_call(r.RequestURI){
+					container_id := strip_nova_prefix(redirect_resource_id)
+					exec_id := get_exec_id_from_response(resp_body)
+					conf.RedisSet(exec_id, container_id)
+				}
+
+				//Printout the response body
 				if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
 					httphelper.PrintJson(resp_body)
 				}else{
 					//fmt.Printf("Received %d bytes\n", len(resp_body))
 					fmt.Printf("\n%s\n", string(resp_body))
 				}
+
 				//forward server response to calling client
 				fmt.Fprintf(w, "%s", resp_body)
 			}
@@ -194,6 +206,18 @@ func no_endpoint_handler(w http.ResponseWriter, r *http.Request) {
 func health_endpoint_handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("@ health_endpoint_handler triggered, URI: %s\n", r.RequestURI)
 	fmt.Fprintf(w,"hjproxy up\n")
+}
+
+func is_container_exec_call(uri string) bool{
+	return false
+}
+
+func strip_nova_prefix(id string) string{
+	return id
+}
+
+func get_exec_id_from_response(resp_body []byte) string{
+	return ""
 }
 
 func main() {
@@ -259,3 +283,4 @@ func main() {
 		log.Fatal("Hijack microservice aborting because could not start ListenAndServe: ", err)
 	}
 }
+

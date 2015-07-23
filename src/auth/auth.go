@@ -32,15 +32,24 @@ func Auth(r *http.Request) (bool, string, string) {
 		fmt.Printf("@ Auth result: ok=%t, node='%s'\n", ok, node)
 		return ok, node, docker_id
 	}else{
+		//id found in uri
 		fmt.Printf("@ Auth: id=%s, id_type=%s\n", id, id_type)
 	}
 
+	//if type is Exec then get container id from redis cache to forward to getHost api
+	var container_id string
+	if id_type == "Exec" {
+		container_id = conf.RedisGet(id)
+	}else{
+		container_id = id
+	}
+
 	//forward r header only without body to ccsapi auth endpoint, add X-Container-Id header
-	req, _ := http.NewRequest(r.Method, "http://"+conf.GetCcsapiHost()+conf.GetCcsapiUri()+id, nil)
+	req, _ := http.NewRequest(r.Method, "http://"+conf.GetCcsapiHost()+conf.GetCcsapiUri()+container_id, nil)
 	httphelper.CopyHeader(req.Header, r.Header)  //req.Header = r.Header
 	req.URL.Host = conf.GetCcsapiHost()
-	req.Header.Add(conf.GetCcsapiIdHeader(), id)
-	req.Header.Add(conf.GetCcsapiIdTypeHeader(), id_type)
+	req.Header.Add(conf.GetCcsapiIdHeader(), container_id)
+	req.Header.Add(conf.GetCcsapiIdTypeHeader(), "Container" /*id_type*/)
 	client := &http.Client{
 		CheckRedirect: nil,
 	}
@@ -74,18 +83,20 @@ func Auth(r *http.Request) (bool, string, string) {
 			}
 		}
 		node = node+":"+conf.GetDockerPort()
+		//container id needs nova- prefix
+		//exec id does not need a prefix
 		if id_type == "Container" {
-			//container id needs nova- prefix
-			//exec id does not need a prefix
-			docker_id = "nova-" + docker_id
+			docker_id = "nova-" + docker_id   //append nova to the id returned from getHost
+		}else{
+			docker_id = id  //use the exec id that came in the original req
 		}
 	}else {
-		//TODO remove the following demo exec authentication even if status!=200
-		if id_type == "Exec" {
-			ok = true
-			node = conf.Default_redirect_host
-			docker_id = id
-		}
+		//demo: exec authentication even if status!=200
+		//if id_type == "Exec" {
+		//	ok = true
+		//	node = conf.Default_redirect_host
+		//	docker_id = id
+		//}
 	}
 
 	fmt.Printf("@ Auth result: ok=%t, node='%s', docker_id='%s'\n", ok, node, docker_id)
