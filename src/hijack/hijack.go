@@ -17,6 +17,7 @@ import (
 	"auth"  // my auth package
 	"conf"  // my conf package
 	"crypto/tls"
+	"encoding/json"
 )
 
 //TODO logging refinement
@@ -212,12 +213,17 @@ func health_endpoint_handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w,"hjproxy up\n")
 }
 
-func is_container_exec_call(uri string) bool{
-	return false
+//return true if it is /<v>/containers/<id>/exec api call
+func is_container_exec_call(uri string) bool {
+	if strings.Contains(uri, "/containers/") && strings.Contains(uri, "/exec") {
+		return true
+	}else{
+		return false
+	}
 }
 
 func strip_nova_prefix(id string) string{
-	return id
+	return strings.TrimPrefix(id, "nova-")
 }
 
 func get_exec_id_from_response(body []byte) string{
