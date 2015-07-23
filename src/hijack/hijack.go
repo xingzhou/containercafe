@@ -17,6 +17,7 @@ import (
 	"auth"  // my auth package
 	"conf"  // my conf package
 	"crypto/tls"
+	"encoding/json"
 )
 
 //TODO logging refinement
@@ -162,7 +163,11 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 				if is_container_exec_call(r.RequestURI){
 					container_id := strip_nova_prefix(redirect_resource_id)
 					exec_id := get_exec_id_from_response(resp_body)
-					conf.RedisSet(exec_id, container_id)
+					if exec_id == ""{
+						fmt.Printf("Error: error in retrieving exec id from response body\n")
+					}else {
+						conf.RedisSet(exec_id, container_id)
+					}
 				}
 
 				//Printout the response body
@@ -208,16 +213,34 @@ func health_endpoint_handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w,"hjproxy up\n")
 }
 
-func is_container_exec_call(uri string) bool{
-	return false
+//return true if it is /<v>/containers/<id>/exec api call
+func is_container_exec_call(uri string) bool {
+	if strings.Contains(uri, "/containers/") && strings.Contains(uri, "/exec") {
+		return true
+	}else{
+		return false
+	}
 }
 
 func strip_nova_prefix(id string) string{
-	return id
+	return strings.TrimPrefix(id, "nova-")
 }
 
-func get_exec_id_from_response(resp_body []byte) string{
-	return ""
+func get_exec_id_from_response(body []byte) string{
+	type Resp struct {
+		Id  		string
+		Warnings 	[]string
+	}
+	var resp Resp
+
+	fmt.Printf("@ get_exec_id_from_response: json=%s\n", body)
+	err := json.Unmarshal(body, &resp)
+	if err != nil {
+		fmt.Println("@ get_exec_id_from_response: error=%v", err)
+		return ""
+	}
+	fmt.Printf("@ get_exec_id_from_response: Id=%s\n", resp.Id)
+	return resp.Id
 }
 
 func main() {
