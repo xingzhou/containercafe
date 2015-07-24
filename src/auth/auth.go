@@ -45,7 +45,7 @@ func Auth(r *http.Request) (bool, string, string) {
 	}
 
 	//forward r header only without body to ccsapi auth endpoint, add X-Container-Id header
-	req, _ := http.NewRequest(r.Method, "http://"+conf.GetCcsapiHost()+conf.GetCcsapiUri()+"getHost/"+container_id, nil)
+	req, _ := http.NewRequest("GET", "http://"+conf.GetCcsapiHost()+conf.GetCcsapiUri()+"getHost/"+container_id, nil)
 	httphelper.CopyHeader(req.Header, r.Header)  //req.Header = r.Header
 	req.URL.Host = conf.GetCcsapiHost()
 	req.Header.Add(conf.GetCcsapiIdHeader(), container_id)
