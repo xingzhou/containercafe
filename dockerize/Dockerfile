@@ -22,5 +22,10 @@ ENV ccsapi_admin_psswd ""
 ADD cert.pem /hijack/cert.pem
 ADD key.pem  /hijack/key.pem
 
+#add compute nodes to /etc/hosts
+ADD hosts /hijack/hosts
+RUN cat /hijack/hosts >> /etc/hosts
+RUN cat /etc/hosts
+
 EXPOSE 8087
 CMD ["/hijack/bin/hijack", "8087"]
