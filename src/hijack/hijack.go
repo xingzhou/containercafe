@@ -91,6 +91,11 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 		req_UPGRADE = true
 	}
 
+	//TODO ***** Filter framework for Interception of commands before forwarding request to server *****
+	if is_container_attach_call(r.RequestURI) {
+		//insert delay to allow for the container creation on the prior create command
+		time.Sleep(15*time.Second)
+	}
 	//resp, err := redirect(r, body, redirect_host)
 	resp, err, cc := redirect_lowlevel(r, body, redirect_host, redirect_resource_id)
 	if (err != nil) {
@@ -133,6 +138,8 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 		resp_DOCKER = true
 	}
 
+	//TODO ***** Filter framework for Interception of commands before forwarding resp to client (1) *****
+
 	proto := strings.ToUpper(httphelper.GetHeader(resp.Header, "Upgrade"))
 	if (req_UPGRADE || resp_UPGRADE) && (proto != "TCP") {
 		fmt.Printf("@ Warning: will start hijack proxy loop although Upgrade proto %s is not TCP\n", proto)
@@ -157,7 +164,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 			if err != nil {
 				fmt.Printf("Error: error in reading server response body\n")
 			}else {
-
+				//TODO ***** Filter framework for Interception of commands before returning result to client (2) *****
 				//Check if Redis caching is required
 				//if request uri contains "/container/" and "/exec" then store in Redis the returned exec id (in resp body) and container id (in uri)
 				if is_container_exec_call(r.RequestURI){
@@ -216,6 +223,14 @@ func health_endpoint_handler(w http.ResponseWriter, r *http.Request) {
 //return true if it is /<v>/containers/<id>/exec api call
 func is_container_exec_call(uri string) bool {
 	if strings.Contains(uri, "/containers/") && strings.Contains(uri, "/exec") {
+		return true
+	}else{
+		return false
+	}
+}
+
+func is_container_attach_call(uri string) bool {
+	if strings.Contains(uri, "/containers/") && strings.Contains(uri, "/attach") {
 		return true
 	}else{
 		return false
