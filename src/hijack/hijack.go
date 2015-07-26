@@ -93,9 +93,10 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 
 	//TODO ***** Filter framework for Interception of commands before forwarding request to server *****
 	if is_container_attach_call(r.RequestURI) {
-		//insert delay to allow for the container creation on the prior create command
+		//insert delay to allow for completion of container creation on the prior create command
 		time.Sleep(15*time.Second)
 	}
+
 	//resp, err := redirect(r, body, redirect_host)
 	resp, err, cc := redirect_lowlevel(r, body, redirect_host, redirect_resource_id)
 	if (err != nil) {
