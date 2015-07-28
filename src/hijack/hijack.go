@@ -73,7 +73,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	resp_UPGRADE := false
 	resp_STREAM := false
 	resp_DOCKER := false
-	req_LOGS := false
+	//req_LOGS := false
 
 	var err error = nil
 
@@ -97,10 +97,10 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 		//insert delay to allow for completion of container creation on the prior create command
 		time.Sleep(15*time.Second)
 	}
-	if is_container_logs_call(r.RequestURI) {
-		fmt.Printf("@ Logs request detected\n")
-		req_LOGS = true
-	}
+	//if is_container_logs_call(r.RequestURI) {
+	//	fmt.Printf("@ Logs request detected\n")
+	//	req_LOGS = true
+	//}
 
 
 	//resp, err := redirect(r, body, redirect_host)
@@ -146,19 +146,17 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	}
 
 	//TODO ***** Filter framework for Interception of commands before forwarding resp to client (1) *****
-	if req_LOGS {
-		//insert streaming header in response to client
-		w.Header().Set("Content-Type", "application/octet-stream")
-	}
+	//if req_LOGS {
+	//	//insert streaming header in response to client
+	//	w.Header().Set("Content-Type", "application/octet-stream")
+	//}
 
 	proto := strings.ToUpper(httphelper.GetHeader(resp.Header, "Upgrade"))
 	if (req_UPGRADE || resp_UPGRADE) && (proto != "TCP") {
 		fmt.Printf("@ Warning: will start hijack proxy loop although Upgrade proto %s is not TCP\n", proto)
-		//req_UPGRADE = false
-		//resp_UPGRADE = false
 	}
 
-	if req_UPGRADE || resp_UPGRADE || resp_STREAM || resp_DOCKER || req_LOGS{
+	if req_UPGRADE || resp_UPGRADE || resp_STREAM || resp_DOCKER {  // || req_LOGS{
 
 		//resp header is sent first thing on hijacked conn
 		w.WriteHeader(resp.StatusCode)
@@ -184,7 +182,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 					if exec_id == ""{
 						fmt.Printf("Error: error in retrieving exec id from response body\n")
 					}else {
-						conf.RedisSet(exec_id, container_id)
+						conf.RedisSetExpire(exec_id, container_id, 60*60)
 					}
 				}
 
