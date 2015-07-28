@@ -148,7 +148,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	//TODO ***** Filter framework for Interception of commands before forwarding resp to client (1) *****
 	if req_LOGS {
 		//insert streaming header in response to client
-		w.Header().Add("Content-Type", "application/octet-stream")
+		w.Header().Set("Content-Type", "application/octet-stream")
 	}
 
 	proto := strings.ToUpper(httphelper.GetHeader(resp.Header, "Upgrade"))
