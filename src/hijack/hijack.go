@@ -73,6 +73,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	resp_UPGRADE := false
 	resp_STREAM := false
 	resp_DOCKER := false
+	req_LOGS := false
 
 	var err error = nil
 
@@ -96,6 +97,11 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 		//insert delay to allow for completion of container creation on the prior create command
 		time.Sleep(15*time.Second)
 	}
+	if is_container_logs_call(r.RequestURI) {
+		fmt.Printf("@ Logs request detected\n")
+		req_LOGS = true
+	}
+
 
 	//resp, err := redirect(r, body, redirect_host)
 	resp, err, cc := redirect_lowlevel(r, body, redirect_host, redirect_resource_id)
@@ -148,7 +154,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 		//resp_UPGRADE = false
 	}
 
-	if req_UPGRADE || resp_UPGRADE || resp_STREAM || resp_DOCKER {
+	if req_UPGRADE || resp_UPGRADE || resp_STREAM || resp_DOCKER || req_LOGS{
 
 		//resp header is sent first thing on hijacked conn
 		w.WriteHeader(resp.StatusCode)
@@ -302,8 +308,6 @@ func main() {
 	http.HandleFunc("/v1.20/exec/", endpoint_handler)
 	http.HandleFunc("/v3/exec/", endpoint_handler)
 	*/
-		// TODO ensure ccsapi supports create interactive, no hard-coding of create std params
-		// TODO /<v>/containers/<id>/exec  ... ccsapi to implement exec, new state id to maintain
 
 	//Disable trap handler for non-supported url paths. Rely on NGINX to route accepted url paths
 	//http.HandleFunc("/", no_endpoint_handler)
