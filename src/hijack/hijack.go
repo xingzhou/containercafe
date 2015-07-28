@@ -244,6 +244,14 @@ func is_container_attach_call(uri string) bool {
 	}
 }
 
+func is_container_logs_call(uri string) bool {
+	if strings.Contains(uri, "/containers/") && strings.Contains(uri, "/logs") {
+		return true
+	}else{
+		return false
+	}
+}
+
 func strip_nova_prefix(id string) string{
 	return strings.TrimPrefix(id, "nova-")
 }
