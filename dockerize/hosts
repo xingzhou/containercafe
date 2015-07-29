@@ -1,10 +1,10 @@
---add-host vizio-dev-host1:10.120.35.72 \
---add-host vizio-dev-host2:10.120.35.80 \
---add-host vizio-dev-host3:10.120.35.92 \
---add-host vizio-dev-host4:10.120.35.90 \
---add-host vizio-dev-host5:10.120.35.82 \
---add-host vizio-dev-host6:10.120.35.70 \
---add-host vizio-dev-host7:10.120.35.86 \
---add-host vizio-dev-host8:10.120.35.88 \
---add-host vizio-dev-host9:10.120.35.84 \
---add-host vizio-dev-host10:10.120.35.94 \
+--add-host vizio-dev-host1:10.120.35.72
+--add-host vizio-dev-host2:10.120.35.80
+--add-host vizio-dev-host3:10.120.35.92
+--add-host vizio-dev-host4:10.120.35.90
+--add-host vizio-dev-host5:10.120.35.82
+--add-host vizio-dev-host6:10.120.35.70
+--add-host vizio-dev-host7:10.120.35.86
+--add-host vizio-dev-host8:10.120.35.88
+--add-host vizio-dev-host9:10.120.35.84
+--add-host vizio-dev-host10:10.120.35.94
