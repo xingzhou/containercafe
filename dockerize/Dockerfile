@@ -12,15 +12,22 @@ ENV ccsapi_id_type_header="X-Id-Type"
 ENV docker_port="8089"
 ENV docker_api_ver="v1.17"
 ENV tls_inbound="true"
-ENV tls_outbound="false"
-ENV cert_file="cert.pem"
-ENV key_file="key.pem"
+ENV tls_outbound="true"
+ENV client_cert_file="hjclient.pem"
+ENV client_key_file="hjclient.key"
+ENV server_cert_file="hjserver.pem"
+ENV server_key_file="hjserver.key"
 ENV ccsapi_admin_user ""
 ENV ccsapi_admin_psswd ""
 
 #Copy the self-signed server cert and key
-ADD cert.pem /hijack/cert.pem
-ADD key.pem  /hijack/key.pem
+#ADD cert.pem /hijack/cert.pem
+#ADD key.pem  /hijack/key.pem
+ADD hjserver.pem /hijack/hjserver.pem
+ADD hjserver.key  /hijack/hjserver.key
+ADD hjclient.pem /hijack/hjclient.pem
+ADD hjclient.key  /hijack/hjclient.key
+
 
 EXPOSE 8087
 CMD ["/hijack/bin/hijack", "8087"]

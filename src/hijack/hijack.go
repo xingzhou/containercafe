@@ -50,7 +50,13 @@ func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redir
 	}
 
 	if conf.IsTlsOutbound() {
-		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true})
+		cert, er := tls.LoadX509KeyPair(conf.GetClientCertFile(), conf.GetClientKeyFile())
+		if er != nil {
+			fmt.Printf("Error loading client key pair, %v\n", er)
+			return nil,err,nil
+		}
+
+		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{cert}})
 		cc = httputil.NewClientConn(c_tls, nil)
 	}else{
 		cc = httputil.NewClientConn(c, nil)
@@ -326,7 +332,7 @@ func main() {
 
 	var err error
 	if conf.IsTlsInbound() {
-		err = http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), conf.GetCertFile(), conf.GetKeyFile(), nil)
+		err = http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), conf.GetServerCertFile(), conf.GetServerKeyFile(), nil)
 	} else {
 		err = http.ListenAndServe(":"+strconv.Itoa(listen_port), nil)
 	}
