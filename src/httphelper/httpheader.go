@@ -1,7 +1,7 @@
 package httphelper
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -16,11 +16,11 @@ func CopyHeader (dst http.Header, src http.Header) {
 
 func DumpHeader (src http.Header) {
 	for k, v := range src {
-		fmt.Printf("%s: ",k)
+		log.Printf("%s: ",k)
 		for _, vv := range v {
-			fmt.Printf("%s ", vv)
+			log.Printf("%s ", vv)
 		}
-		fmt.Printf("\n")
+		log.Printf("\n")
     }
 }
 

@@ -5,8 +5,7 @@ import(
 	"net/http"
 	"net/http/httputil"
 	"bufio"
-	"fmt"
-	//"log"
+	"log"
 	"strconv"
 	"sync"
 	"time"
@@ -21,13 +20,13 @@ func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id int,
 	//hijack client conn (act as server on this conn)
 	hj, ok := w.(http.Hijacker)
 	if !ok {
-		fmt.Printf("@ httproxy doesn't support hijacking\n")
+		log.Printf("httproxy doesn't support hijacking\n")
 		http.Error(w, "httproxy doesn't support hijacking", http.StatusInternalServerError)
 		return
 	}
 	cli_conn, cli_bufrw, err = hj.Hijack()
 	if err != nil {
-		fmt.Printf("@ httproxy hijacking error\n")
+		log.Printf("httproxy hijacking error\n")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -43,7 +42,7 @@ func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id int,
 		tcpHijack(cli_conn, cli_bufrw, srv_conn, srv_bufrw, req_id)
 		time.Sleep(100*time.Millisecond) //allow time for go routines to shutdown after hijack completion
 	}else{
-		fmt.Printf("@ hijack protocol %s not supported\n", proto)
+		log.Printf("hijack protocol %s not supported\n", proto)
 	}
 }
 
@@ -68,8 +67,8 @@ func tcpHijack (cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Con
 	//the 2 conn closures happen at exit of tcpHijack, so the other go routine will receive read error and exit
 	wg.Wait()
 	wg.Add(1)
-	prefix = "@ (req id: " + strconv.Itoa(req_id) + ")"
-	fmt.Printf("%s Hijack exit and connections close\n", prefix)
+	prefix = "(req id: " + strconv.Itoa(req_id) + ")"
+	log.Printf("%s Hijack exit and connections close\n", prefix)
 }
 
 func rwloop (src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
@@ -77,16 +76,15 @@ func rwloop (src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
 
 	defer wg.Done()
 
-	fmt.Printf("%s rwloop started\n", print_prefix)
+	log.Printf("%s rwloop started\n", print_prefix)
 	//s, err := src_buf.ReadString('\n')
 	b, err := src_buf.ReadByte()
 	for (err == nil) {
-		//fmt.Printf("%s %s", print_prefix, s)
 		//_, werr := dest_buf.WriteString(s)
 		werr := dest_buf.WriteByte(b)
 		dest_buf.Flush()
 		if werr != nil {
-			fmt.Printf("%s Error writing data: %v\n", print_prefix, werr)
+			log.Printf("%s Error writing data: %v\n", print_prefix, werr)
 			//raise flag for other loop to exit
 			//dest_conn.Close()   // reader on this conn will get error and exit his loop as well
 			return
@@ -95,9 +93,7 @@ func rwloop (src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
 		b, err = src_buf.ReadByte()
 	}
 	if err != nil {
-		//fmt.Printf("%s ", print_prefix)
-		//log.Printf("Error reading string: %v", err)
-		fmt.Printf("%s Error reading data: %v\n", print_prefix, err)
+		log.Printf("%s Error reading data: %v\n", print_prefix, err)
 		return
 	}
 }

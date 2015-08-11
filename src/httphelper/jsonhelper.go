@@ -5,29 +5,29 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 )
 
 func PrintJson(b []byte) {
 	var out bytes.Buffer
 	err := json.Indent(&out, b, "", "\t")
 	if err != nil {
-		fmt.Printf("\nError parsing JSON\n%s\n", b)
+		log.Printf("\nError parsing JSON\n%s\n", b)
 	}else {
 		//out.WriteTo(os.Stdout)
-		fmt.Printf("\n%s\n", out.Bytes())
+		log.Printf("\n%s\n", out.Bytes())
 	}
 }
 
-//TODO needs to be tested
 func PrettyJson(b []byte) string{
 	var out bytes.Buffer
 	var s string
 	err := json.Indent(&out, b, "", "\t")
 	if err != nil {
-		fmt.Sprintf(s, "\n%s\n", b)
+		s = fmt.Sprintf("\n%s\n", b)
 	}else {
 		//out.WriteTo(os.Stdout)
-		fmt.Sprintf(s, "\n%s\n", out.Bytes())
+		s = fmt.Sprintf("\n%s\n", out.Bytes())
 	}
 	return s
 }

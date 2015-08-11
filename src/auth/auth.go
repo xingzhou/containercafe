@@ -2,7 +2,7 @@ package auth
 
 import (
 	"net/http"
-	"fmt"
+	"log"
 	"strings"
 	"io/ioutil"
 	"encoding/json"
@@ -27,13 +27,13 @@ func Auth(r *http.Request) (bool, string, string) {
 		id_type="Exec"
 	}
 	if id == "" {
-		fmt.Printf("@ Auth: id not found in uri\n")
-		//fail here, for now allow a request uri not including <id> to be authenticated
-		fmt.Printf("@ Auth result: ok=%t, node='%s'\n", ok, node)
+		log.Printf("Auth: id not found in uri\n")
+		//TODO fail here, for now allow a request uri not including <id> to be authenticated
+		log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
 		return ok, node, docker_id
 	}else{
 		//id found in uri
-		fmt.Printf("@ Auth: id=%s, id_type=%s\n", id, id_type)
+		log.Printf("Auth: id=%s, id_type=%s\n", id, id_type)
 	}
 
 	//if type is Exec then get container id from redis cache to forward to getHost api
@@ -55,9 +55,9 @@ func Auth(r *http.Request) (bool, string, string) {
 	}
 	resp, err := client.Do(req)
 	if (err != nil) {
-		fmt.Printf("@ Auth: Error in auth request... %v\n", err)
+		log.Printf("Auth: Error in auth request... %v\n", err)
 
-		fmt.Printf("@ Auth result: ok=%t, node='%s'\n", ok, node)
+		log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
 		return ok, node, docker_id
 	}
 
@@ -73,12 +73,11 @@ func Auth(r *http.Request) (bool, string, string) {
 			if e == nil {
 				//convert byte array to string
 				//node=string(body[:len(body)])
-				fmt.Printf("@ Auth: ccsapi raw response=%s\n", body)
-					//fmt.Printf("@ Auth: ccsapi response=%s", httphelper.PrettyJson(body))
+				log.Printf("Auth: ccsapi raw response=%s\n", body)
 				node, docker_id = parse_getHost_Response(body)
 			}else {
 				//error reading ccsapi response
-				fmt.Printf("@ Auth result: ok=%t, node='%s'\n", ok, node)
+				log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
 				return ok, node, docker_id
 			}
 		}
@@ -99,7 +98,7 @@ func Auth(r *http.Request) (bool, string, string) {
 		//}
 	}
 
-	fmt.Printf("@ Auth result: ok=%t, node='%s', docker_id='%s'\n", ok, node, docker_id)
+	log.Printf("Auth result: ok=%t, node='%s', docker_id='%s'\n", ok, node, docker_id)
 	return ok, node, docker_id
 }
 
@@ -108,21 +107,21 @@ func Auth(r *http.Request) (bool, string, string) {
 func RewriteURI(reqURI string, redirect_resource_id string) string{
 	sl := strings.Split(reqURI, "/")
 	redirectURI := "/" + conf.GetDockerApiVer() + "/" + sl[2] + "/" + redirect_resource_id + "/" + sl[4]
-	fmt.Printf("@ RewriteURI: '%s' --> '%s'\n", reqURI, redirectURI)
+	log.Printf("RewriteURI: '%s' --> '%s'\n", reqURI, redirectURI)
 	return redirectURI
 }
 
 func get_id_from_uri(uri string, pattern string) string{
 	var id string
 	slice1 := strings.Split(uri, pattern)
-	fmt.Printf("@ get_id_from_uri: pattern=%s, slice1=%v\n", pattern, slice1)
+	log.Printf("get_id_from_uri: pattern=%s, slice1=%v\n", pattern, slice1)
 	if len(slice1) > 1 {
 		slice2 := strings.Split(slice1[1], "/")
 		id=slice2[0]
 	}else{
 		id=""
 	}
-	fmt.Printf("@ get_id_from_uri: id=%s\n", id)
+	log.Printf("get_id_from_uri: id=%s\n", id)
 	return id
 }
 
@@ -137,8 +136,8 @@ func parse_getHost_Response(body []byte) (string, string){
 
 	err := json.Unmarshal(body, &resp)
 	if err != nil {
-		fmt.Println("@ parse_getHost_Response: error=%v", err)
+		log.Println("parse_getHost_Response: error=%v", err)
 	}
-	fmt.Printf("@ parse_getHost_Response: host=%s, container_id=%s\n", resp.Host, resp.Container_id)
+	log.Printf("parse_getHost_Response: host=%s, container_id=%s\n", resp.Host, resp.Container_id)
 	return resp.Host, resp.Container_id
 }
