@@ -88,8 +88,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	log.Printf("------> req id: %d\n", req_id)
 
 	data, _ := httputil.DumpRequest(r, true)
-	log.Printf("Request dump of %d bytes:\n", len(data))
-	log.Printf("%s\n", string(data))
+	log.Printf("Request dump of %d bytes:\n%s", len(data), string(data))
 
 	body, _ := ioutil.ReadAll(r.Body)
 
@@ -126,15 +125,12 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	//fmt.Printf("%s\n", string(data2))
 
 	log.Printf("Resp Status: %s\n", resp.Status)
-	httphelper.DumpHeader(resp.Header)
+	log.Print( httphelper.DumpHeader(resp.Header) )
 
 	//echo r.Header in resp_header
 	//w.Header().Add("foo", "bar")   //ok
 	httphelper.CopyHeader(w.Header(), resp.Header)
 
-	//fmt.Printf(">> Debug forwarded response header BEGIN\n")
-	//httphelper.DumpHeader(w.Header())
-	//fmt.Printf("<< Debug forwarded response header END\n")
 
 	if (httphelper.IsUpgradeHeader(resp.Header)) {
 		log.Printf("@ Upgrade response detected\n")
@@ -174,6 +170,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 		w.WriteHeader(resp.StatusCode)
 
 		if resp.Body != nil {
+			//TODO chunked reads
 			resp_body, err := ioutil.ReadAll(resp.Body)
 			resp.Body.Close()
 			if err != nil {

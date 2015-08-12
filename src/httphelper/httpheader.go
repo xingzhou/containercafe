@@ -1,7 +1,6 @@
 package httphelper
 
 import (
-	"log"
 	"net/http"
 	"strings"
 )
@@ -14,14 +13,16 @@ func CopyHeader (dst http.Header, src http.Header) {
     }
 }
 
-func DumpHeader (src http.Header) {
+func DumpHeader (src http.Header) string{
+	s := "DumpHeader:\n"
 	for k, v := range src {
-		log.Printf("%s: ",k)
+		s = s + k + ": "
 		for _, vv := range v {
-			log.Printf("%s ", vv)
+			s = s + vv + " "
 		}
-		log.Printf("\n")
+		s = s + "\n"
     }
+	return(s)
 }
 
 func IsUpgradeHeader (h http.Header) bool{
