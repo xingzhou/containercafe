@@ -10,11 +10,8 @@ import (
 	"conf"  		// my conf package
 )
 
-//returns auth=true/false, compute node name, container/exec id
-func Auth(r *http.Request) (bool, string, string) {
-	ok:=false
-	node:=""
-	docker_id:=""
+//returns auth=true/false, compute node name, container/exec id, container id
+func Auth(r *http.Request) (ok bool, node string, docker_id string, container string) {
 
 	//parse r.RequestURI for container id or exec id
 	uri := r.RequestURI
@@ -28,9 +25,9 @@ func Auth(r *http.Request) (bool, string, string) {
 	}
 	if id == "" {
 		log.Printf("Auth: id not found in uri\n")
-		//TODO fail here, for now allow a request uri not including <id> to be authenticated
+		//fail here
 		log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
-		return ok, node, docker_id
+		return ok, node, docker_id, container
 	}else{
 		//id found in uri
 		log.Printf("Auth: id=%s, id_type=%s\n", id, id_type)
@@ -58,35 +55,34 @@ func Auth(r *http.Request) (bool, string, string) {
 		log.Printf("Auth: Error in auth request... %v\n", err)
 
 		log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
-		return ok, node, docker_id
+		return ok, node, docker_id, container
 	}
 
 	//get auth response status, and X-Compute-Node header
 	if resp.StatusCode == 200 {
 		ok = true
+
 		//first check in header
-		node = httphelper.GetHeader(resp.Header, conf.GetCcsapiComputeNodeHeader())
-		if node == "" {
-			//second check for json response in body
-			defer resp.Body.Close()
-			body, e := ioutil.ReadAll(resp.Body)            //Default_redirect_host   //testing default
-			if e == nil {
-				//convert byte array to string
-				//node=string(body[:len(body)])
-				log.Printf("Auth: ccsapi raw response=%s\n", body)
-				node, docker_id = parse_getHost_Response(body)
-			}else {
-				//error reading ccsapi response
-				log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
-				return ok, node, docker_id
-			}
+		//node = httphelper.GetHeader(resp.Header, conf.GetCcsapiComputeNodeHeader())
+		//second check for json response in body
+		defer resp.Body.Close()
+		body, e := ioutil.ReadAll(resp.Body)            //Default_redirect_host   //testing default
+		if e == nil {
+			//convert byte array to string
+			//node=string(body[:len(body)])
+			log.Printf("Auth: ccsapi raw response=%s\n", body)
+			node, container = parse_getHost_Response(body)
+		}else {
+			//error reading ccsapi response
+			log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
+			return ok, node, docker_id, container
 		}
 		node = node+":"+conf.GetDockerPort()
 		//container id needs nova- prefix
 		//exec id does not need a prefix
 		if id_type == "Container" {
-			docker_id = "nova-" + docker_id   //append nova to the id returned from getHost
-		}else{
+			docker_id = "nova-" + container   //append nova to the id returned from getHost
+		}else{//id_type == "Exec"
 			docker_id = id  //use the exec id that came in the original req
 		}
 	}else {
@@ -98,8 +94,8 @@ func Auth(r *http.Request) (bool, string, string) {
 		//}
 	}
 
-	log.Printf("Auth result: ok=%t, node='%s', docker_id='%s'\n", ok, node, docker_id)
-	return ok, node, docker_id
+	log.Printf("Auth result: ok=%t, node=%s, docker_id=%s, container=%s\n", ok, node, docker_id, container)
+	return ok, node, docker_id, container
 }
 
 //Convert /v*/containers/id/*  to  /<docker_api_ver>/containers/<redirect_resource_id>/*

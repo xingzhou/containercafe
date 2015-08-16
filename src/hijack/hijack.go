@@ -18,9 +18,8 @@ import (
 	"conf"  // my conf package
 	"crypto/tls"
 	"encoding/json"
+	"limit"  //my limits package
 )
-
-//TODO logging refinement
 //TODO use req id generator using hashing fn
 
 var glob_req_id = 0
@@ -74,7 +73,7 @@ func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redir
 	return resp, err, cc
 }
 
-func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redirect_resource_id string) {
+func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redirect_resource_id string, req_id int) {
 	req_UPGRADE := false
 	resp_UPGRADE := false
 	resp_STREAM := false
@@ -82,10 +81,6 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	req_LOGS := false
 
 	var err error = nil
-
-	//now := time.Now()
-	req_id := get_req_id()
-	log.Printf("------> req id: %d\n", req_id)
 
 	data, _ := httputil.DumpRequest(r, true)
 	log.Printf("Request dump of %d bytes:\n%s", len(data), string(data))
@@ -113,7 +108,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	if (err != nil) {
 		log.Printf("Error in redirection... %v\n", err)
 		//log.Fatal(err) //this would terminate the server
-		log.Printf("___________________________ id: %d \n", req_id)
+		log.Printf("------ Completed processing of request id=%d\n", req_id)
 		return
 	}
 
@@ -206,18 +201,33 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 		}
 	}
 
-	log.Printf("___________________________ id : %d \n", req_id)
 	return
 }
 
 //http proxy forwarding with hijack support handler
 func endpoint_handler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("endpoint_handler triggered, URI=%s\n", r.RequestURI)
-	ok, node, docker_id := auth.Auth(r)  // ok=true/false, node=host:port, docker_id=url resource id understood by docker
+	req_id := get_req_id()
+	log.Printf("------> endpoint_handler triggered, req_id=%d, URI=%s\n", req_id, r.RequestURI)
+
+	//Call Auth interceptor
+	ok, node, docker_id, container := auth.Auth(r)  // ok=true/false, node=host:port, docker_id=url resource id understood by docker
 	if !ok {
 		return
 	}
-	handler(w, r, node, docker_id)
+
+	//Call conn limiting interceptor(s) pre-processing
+	if !limit.OpenConn(container, conf.GetMaxContainerConn()) || !limit.OpenConn(node, conf.GetMaxNodeConn()) {
+		return
+	}
+
+	//Handle request
+	handler(w, r, node, docker_id, req_id)
+
+	//Call conn limiting interceptor(s) post-processing, to decrement conn count(s)
+	limit.CloseConn(container, conf.GetMaxContainerConn())
+	limit.CloseConn(node, conf.GetMaxNodeConn())
+
+	log.Printf("------ Completed processing of request req_id=%d\n", req_id)
 }
 
 //Return 404 for all non-supported URIs
