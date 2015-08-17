@@ -19,8 +19,8 @@ ENV server_cert_file="/opt/tls_certs/hjserver.pem"
 ENV server_key_file="/opt/tls_certs/hjserver.key"
 ENV ccsapi_admin_user=""
 ENV ccsapi_admin_psswd=""
-ENV max_container_conn="0"  # 0 == no limit
-ENV max_node_conn="0"       # 0 == no limit
+ENV max_container_conn="0"
+ENV max_node_conn="0"
 
 #Copy the self-signed server cert and key
 #ADD cert.pem /hijack/cert.pem
