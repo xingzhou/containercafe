@@ -281,7 +281,7 @@ func get_exec_id_from_response(body []byte) string{
 	log.Printf("get_exec_id_from_response: json=%s\n", body)
 	err := json.Unmarshal(body, &resp)
 	if err != nil {
-		log.Println("get_exec_id_from_response: error=%v", err)
+		log.Printf("get_exec_id_from_response: error=%v", err)
 		return ""
 	}
 	log.Printf("get_exec_id_from_response: Id=%s\n", resp.Id)
