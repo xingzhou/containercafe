@@ -57,6 +57,9 @@ func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redir
 
 		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{cert}})
 		cc = httputil.NewClientConn(c_tls, nil)
+		//The override is for the current request being processed only
+		//The override is a directive received from ccsapi getHost, for a swarm request when swarm master does not support tls
+		conf.SetTlsOutboundOverride(false)
 	}else{
 		cc = httputil.NewClientConn(c, nil)
 	}
