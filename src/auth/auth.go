@@ -6,9 +6,21 @@ import (
 	"strings"
 	"io/ioutil"
 	"encoding/json"
+	"fmt"
 	"httphelper"  	// my httphelper
 	"conf"  		// my conf package
 )
+
+//getHost response msg
+type GetHostResp struct {
+	Container_id  	string
+	Container_name 	string
+	Host 			string
+	Swarm			bool    // True if swarm manager is the target
+	Mgr_host		string  // swarm manager host:port
+	Swarm_tls		bool	// use tls if true in case of swarm, TODO: respect this flag
+	Space_id		string  // for Authorization (tenant isolation) in case of swarm
+}
 
 //returns auth=true/false, compute node name, container/exec id, container id
 func Auth(r *http.Request) (ok bool, node string, docker_id string, container string) {
@@ -67,17 +79,22 @@ func Auth(r *http.Request) (ok bool, node string, docker_id string, container st
 		//second check for json response in body
 		defer resp.Body.Close()
 		body, e := ioutil.ReadAll(resp.Body)            //Default_redirect_host   //testing default
-		if e == nil {
-			//convert byte array to string
-			//node=string(body[:len(body)])
-			log.Printf("Auth: ccsapi raw response=%s\n", body)
-			node, container = parse_getHost_Response(body)
-		}else {
-			//error reading ccsapi response
+		if e != nil {
+			log.Printf("error reading ccsapi response\n")
 			log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
 			return ok, node, docker_id, container
 		}
-		node = node+":"+conf.GetDockerPort()
+		log.Printf("Auth: ccsapi raw response=%s\n", body)
+		var resp GetHostResp
+		err := parse_getHost_Response(body, &resp)
+		if err != nil {
+			log.Printf("error parsing ccsapi response\n")
+			log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
+			return ok, node, docker_id, container
+		}
+		node = resp.Host
+		node = node + ":" + conf.GetDockerPort()
+		container = resp.Container_id
 		//container id needs nova- prefix
 		//exec id does not need a prefix
 		if id_type == "Container" {
@@ -85,13 +102,22 @@ func Auth(r *http.Request) (ok bool, node string, docker_id string, container st
 		}else{//id_type == "Exec"
 			docker_id = id  //use the exec id that came in the original req
 		}
+
+		if resp.Swarm {
+			node = resp.Mgr_host    //Mgr_host = host:port
+			//insert space_id in the header to be forwarded
+			r.Header.Set("X-Auth-Token", resp.Space_id)
+			if id_type == "Container" {
+				docker_id = container
+			}else{//id_type == "Exec"
+				docker_id = id  //use the exec id that came in the original req
+			}
+			if !resp.Swarm_tls{
+				conf.SetTlsOutboundOverride(true)
+			}
+		}
 	}else {
-		//demo: exec authentication even if status!=200
-		//if id_type == "Exec" {
-		//	ok = true
-		//	node = conf.Default_redirect_host
-		//	docker_id = id
-		//}
+		//status!=200
 	}
 
 	log.Printf("Auth result: ok=%t, node=%s, docker_id=%s, container=%s\n", ok, node, docker_id, container)
@@ -121,19 +147,17 @@ func get_id_from_uri(uri string, pattern string) string{
 	return id
 }
 
-func parse_getHost_Response(body []byte) (string, string){
-
-	type Resp struct {
-		Container_id  	string
-		Container_name 	string
-		Host 			string
-	}
-	var resp Resp
-
-	err := json.Unmarshal(body, &resp)
+func parse_getHost_Response(body []byte, resp *GetHostResp) error{
+	//var resp GetHostResp
+	err := json.Unmarshal(body, resp)
 	if err != nil {
 		log.Println("parse_getHost_Response: error=%v", err)
+		return err
 	}
-	log.Printf("parse_getHost_Response: host=%s, container_id=%s\n", resp.Host, resp.Container_id)
-	return resp.Host, resp.Container_id
+	s := fmt.Sprintf("parse_getHost_Response: host=%s container_id=%s ", resp.Host, resp.Container_id)
+	if resp.Swarm {
+		s = s + fmt.Sprintf("Mgr_host=%s Space_id=%s Swarm_tls=%t", resp.Mgr_host, resp.Space_id, resp.Swarm_tls)
+	}
+	log.Printf("%s\n", s)
+	return nil
 }

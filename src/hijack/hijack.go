@@ -48,7 +48,7 @@ func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redir
 		return nil,err,nil
 	}
 
-	if conf.IsTlsOutbound() {
+	if conf.IsTlsOutbound() && !conf.GetTlsOutboundOverride(){
 		cert, er := tls.LoadX509KeyPair(conf.GetClientCertFile(), conf.GetClientKeyFile())
 		if er != nil {
 			log.Printf("Error loading client key pair, %v\n", er)
