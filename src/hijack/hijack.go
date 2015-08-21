@@ -108,7 +108,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	if (err != nil) {
 		log.Printf("Error in redirection... %v\n", err)
 		//log.Fatal(err) //this would terminate the server
-		log.Printf("------ Completed processing of request id=%d\n", req_id)
+		//log.Printf("------ Completed processing of request id=%d\n", req_id)
 		return
 	}
 
