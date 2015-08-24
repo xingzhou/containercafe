@@ -69,6 +69,7 @@ func Auth(r *http.Request) (ok bool, node string, docker_id string, container st
 	client := &http.Client{
 		CheckRedirect: nil,
 	}
+	log.Println("Auth: will invoke CCSAPI to authenticate...")
 	resp, err := client.Do(req)
 	if (err != nil) {
 		log.Printf("Auth: Error in auth request... %v\n", err)

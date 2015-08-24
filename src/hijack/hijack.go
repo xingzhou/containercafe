@@ -70,6 +70,7 @@ func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redir
 	//req.Host = redirect_host
 	req.URL.Host = redirect_host
 
+	log.Println("will forward request to server...")
 	resp, err := cc.Do(req)
 
 	//defer resp.Body.Close()
