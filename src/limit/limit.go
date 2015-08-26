@@ -9,6 +9,9 @@ func OpenConn(resource string, max int) bool{
 	if max == 0 {
 		return true
 	}
+	if resource == "" {
+		return true
+	}
 
 	//incr and get counter (from Redis)
 	count := conf.RedisIncr(resource)
@@ -24,6 +27,9 @@ func OpenConn(resource string, max int) bool{
 
 func CloseConn(resource string, max int){
 	if max == 0 {
+		return
+	}
+	if resource == "" {
 		return
 	}
 

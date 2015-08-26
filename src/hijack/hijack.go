@@ -91,28 +91,41 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 
 	body, _ := ioutil.ReadAll(r.Body)
 
+	//***** Filter req/headers here before forwarding request to server *****
+
 	if (httphelper.IsUpgradeHeader(r.Header)) {
 		log.Printf("@ Upgrade request detected\n")
 		req_UPGRADE = true
-	}
-
-	//TODO ***** Filter framework for Interception of commands before forwarding request to server *****
-	if is_container_attach_call(r.RequestURI) {
-		//insert delay to allow for completion of container creation on the prior create command
-		time.Sleep(15*time.Second)
 	}
 	if is_container_logs_call(r.RequestURI) {
 		log.Printf("@ Logs request detected\n")
 		req_LOGS = true
 	}
 
+	maxRetries := 1
+	backOffTimeout := 0
+	if is_container_attach_call(r.RequestURI) {
+		//insert delay to allow for completion of container creation on the prior create command
+		//time.Sleep(15*time.Second)
+		maxRetries = conf.GetMaxRetries()
+		backOffTimeout = conf.GetBackOffTimeout()
+	}
 
-	//resp, err := redirect(r, body, redirect_host)
-	resp, err, cc := redirect_lowlevel(r, body, redirect_host, redirect_resource_id)
+	var (resp *http.Response
+		cc *httputil.ClientConn
+	)
+	for i:=0; i<maxRetries; i++ {
+		resp, err, cc = redirect_lowlevel(r, body, redirect_host, redirect_resource_id)
+		if (err != nil){
+			log.Printf("redirect retry=%d failed", i)
+			if (i+1) < maxRetries {
+				log.Printf("will sleep secs=%d before retry", backOffTimeout)
+				time.Sleep( time.Duration(backOffTimeout) * time.Second)
+			}
+		}
+	}
 	if (err != nil) {
-		log.Printf("Error in redirection... %v\n", err)
-		//log.Fatal(err) //this would terminate the server
-		//log.Printf("------ Completed processing of request id=%d\n", req_id)
+		log.Printf("Error in redirection, will abort req=%d ... err=%v\n", req_id, err)
 		return
 	}
 
@@ -130,17 +143,14 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	//w.Header().Add("foo", "bar")   //ok
 	httphelper.CopyHeader(w.Header(), resp.Header)
 
-
 	if (httphelper.IsUpgradeHeader(resp.Header)) {
 		log.Printf("@ Upgrade response detected\n")
 		resp_UPGRADE = true
 	}
-
 	if httphelper.IsStreamHeader(resp.Header) {
 		log.Printf("@ application/octet-stream detected\n")
 		resp_STREAM = true
 	}
-
 	if httphelper.IsDockerHeader(resp.Header) {
 		log.Printf("@ application/vnd.docker.raw-stream detected\n")
 		resp_DOCKER = true
@@ -158,53 +168,52 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	}
 
 	if req_UPGRADE || resp_UPGRADE || resp_STREAM || resp_DOCKER || req_LOGS{
-
 		//resp header is sent first thing on hijacked conn
 		w.WriteHeader(resp.StatusCode)
 
 		log.Printf("starting tcp hijack proxy loop\n")
 		httphelper.InitProxyHijack(w, cc, req_id, "TCP") // TCP is the only supported proto now
-	}else {
-		//If no hijacking, forward full response to client
-		w.WriteHeader(resp.StatusCode)
+		return
+	}
+	//If no hijacking, forward full response to client
+	w.WriteHeader(resp.StatusCode)
 
-		if resp.Body != nil {
-			//TODO chunked reads
-			resp_body, err := ioutil.ReadAll(resp.Body)
-			resp.Body.Close()
-			if err != nil {
-				log.Printf("Error: error in reading server response body\n")
-			}else {
-				//TODO ***** Filter framework for Interception of commands before returning result to client (2) *****
-				//Check if Redis caching is required
-				//if request uri contains "/container/" and "/exec" then store in Redis the returned exec id (in resp body) and container id (in uri)
-				if is_container_exec_call(r.RequestURI){
-					container_id := strip_nova_prefix(redirect_resource_id)
-					exec_id := get_exec_id_from_response(resp_body)
-					if exec_id == ""{
-						log.Printf("Error: error in retrieving exec id from response body\n")
-					}else {
-						conf.RedisSetExpire(exec_id, container_id, 60*60)
-					}
-				}
+	if resp.Body == nil {
+		log.Printf("\n")
+		fmt.Fprintf(w, "\n")
+		return
+	}
+	//TODO chunked reads
+	resp_body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		log.Printf("Error: error in reading server response body\n")
+		return
+	}
 
-				//Printout the response body
-				if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
-					httphelper.PrintJson(resp_body)
-				}else{
-					//fmt.Printf("Received %d bytes\n", len(resp_body))
-					log.Printf("\n%s\n", string(resp_body))
-				}
-
-				//forward server response to calling client
-				fmt.Fprintf(w, "%s", resp_body)
-			}
+	//TODO ***** Filter framework for Interception of commands before returning result to client (2) *****
+	//Check if Redis caching is required
+	//if request uri contains "/container/" and "/exec" then store in Redis the returned exec id (in resp body) and container id (in uri)
+	if is_container_exec_call(r.RequestURI){
+		container_id := strip_nova_prefix(redirect_resource_id)
+		exec_id := get_exec_id_from_response(resp_body)
+		if exec_id == ""{
+			log.Printf("Error: error in retrieving exec id from response body\n")
 		}else {
-			log.Printf("\n")
-			fmt.Fprintf(w, "\n")
+			conf.RedisSetExpire(exec_id, container_id, 60*60)
 		}
 	}
 
+	//Printout the response body
+	if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
+		httphelper.PrintJson(resp_body)
+	}else{
+		//fmt.Printf("Received %d bytes\n", len(resp_body))
+		log.Printf("\n%s\n", string(resp_body))
+	}
+
+	//forward server response to calling client
+	fmt.Fprintf(w, "%s", resp_body)
 	return
 }
 
@@ -307,8 +316,8 @@ func main() {
 	log.Printf("Listening on port %d\n", listen_port)
 	if nargs > 2 {
 		conf.Default_redirect_host = os.Args[2]
+		log.Printf("Default upstream server: %s\n", conf.Default_redirect_host)
 	}
-	log.Printf("Default upstream server: %s\n", conf.Default_redirect_host)
 	if nargs > 3 {
 		if strings.ToLower(os.Args[3]) == "true" {
 			conf.SetTlsInbound(true)
@@ -318,8 +327,8 @@ func main() {
 			conf.SetTlsInbound(false)
 			conf.SetTlsOutbound(true)
 		}
+		log.Printf("tls setup: Inbound=%t, Outbound=%t\n", conf.IsTlsInbound(), conf.IsTlsOutbound())
 	}
-	log.Printf("tls setup: Inbound=%t, Outbound=%t\n", conf.IsTlsInbound(), conf.IsTlsOutbound())
 
 	//register handlers for supported url paths, can't register same path twice
 
@@ -342,4 +351,3 @@ func main() {
 		log.Fatal("Aborting because ListenAndServe could not start: ", err)
 	}
 }
-
