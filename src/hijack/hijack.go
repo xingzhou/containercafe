@@ -116,7 +116,10 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	)
 	for i:=0; i<maxRetries; i++ {
 		resp, err, cc = redirect_lowlevel(r, body, redirect_host, redirect_resource_id)
-		if (err != nil){
+		if err == nil {
+			break
+		}
+		if err != nil {
 			log.Printf("redirect retry=%d failed", i)
 			if (i+1) < maxRetries {
 				log.Printf("will sleep secs=%d before retry", backOffTimeout)
