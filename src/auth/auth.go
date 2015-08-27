@@ -146,8 +146,12 @@ func RewriteURI(reqURI string, redirect_resource_id string) string{
 	var redirectURI string
 	sl := strings.Split(reqURI, "/")
 	if redirect_resource_id == "" {
-		//TODO support /v../build ,  /version
-		redirectURI = conf.GetDockerApiVer()+"/"+sl[2]+"/"+sl[3]
+		//supports /v../containers/json  /v../build  /v../build?foo=bar
+		//redirectURI = conf.GetDockerApiVer()+"/"+sl[2]+"/"+sl[3]
+		redirectURI = conf.GetDockerApiVer()
+		for i:=2; i < len(sl); i++ {
+			redirectURI += "/" + sl[i]
+		}
 	}else {
 		redirectURI = conf.GetDockerApiVer()+"/"+sl[2]+"/"+redirect_resource_id+"/"+sl[4]
 	}
@@ -158,15 +162,58 @@ func RewriteURI(reqURI string, redirect_resource_id string) string{
 func get_id_from_uri(uri string, pattern string) string{
 	var id string
 	slice1 := strings.Split(uri, pattern)
-	log.Printf("get_id_from_uri: pattern=%s, slice1=%v\n", pattern, slice1)
+	//log.Printf("get_id_from_uri: pattern=%s, slice1=%v\n", pattern, slice1)
 	if len(slice1) > 1 {
 		slice2 := strings.Split(slice1[1], "/")
-		id=slice2[0]
+		id = slice2[0]
+		slice3 := strings.Split(id, "?")
+		id = slice3[0]
 	}else{
 		id=""
 	}
-	log.Printf("get_id_from_uri: id=%s\n", id)
+	//log.Printf("get_id_from_uri: id=%s\n", id)
 	return id
+}
+
+func get_id_and_type(uri string) (id string, id_type string){
+	patterns := []string {
+		"/containers/json",
+		"/containers/create",
+		"/images",
+		"/build",
+		"/version",
+		"/_ping",
+	}
+
+	found := false
+	for i:=0; i < len(patterns); i++ {
+		//if uri contains patterns[i]
+		if strings.Contains(uri, patterns[i]) {
+			found = true
+		}
+	}
+	if found {
+		id=""
+		id_type = "None"
+		log.Printf("id=%s, id_type=%s\n", id, id_type)
+		return id, id_type
+	}
+
+	//1st: look for /containers/<id>/
+	id = get_id_from_uri(uri, "/containers/")
+	id_type="Container"
+	if id == "" {
+		//2nd: look for /exec/<id>/
+		id = get_id_from_uri(uri, "/exec/")
+		if id == "" {
+			id_type = "None"
+		}else {
+			//id found in uri
+			id_type = "Exec"
+		}
+	}
+	log.Printf("id=%s, id_type=%s\n", id, id_type)
+	return id, id_type
 }
 
 func parse_getHost_Response(body []byte, resp *GetHostResp) error{
