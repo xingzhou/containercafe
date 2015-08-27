@@ -156,7 +156,11 @@ func RewriteURI(reqURI string, redirect_resource_id string) string{
 			redirectURI += "/" + sl[i]
 		}
 	}else {
-		redirectURI = conf.GetDockerApiVer()+"/"+sl[2]+"/"+redirect_resource_id+"/"+sl[4]
+		//redirectURI = conf.GetDockerApiVer()+"/"+sl[2]+"/"+redirect_resource_id+"/"+sl[4]
+		redirectURI = conf.GetDockerApiVer()+"/"+sl[2]+"/"+redirect_resource_id
+		for i:=4; i < len(sl); i++ {
+			redirectURI += "/" + sl[i]
+		}
 	}
 	log.Printf("RewriteURI: '%s' --> '%s'\n", reqURI, redirectURI)
 	return redirectURI
