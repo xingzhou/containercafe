@@ -27,6 +27,8 @@ func Auth(r *http.Request) (ok bool, node string, docker_id string, container st
 
 	//parse r.RequestURI for container id or exec id
 	uri := r.RequestURI
+	id, id_type := get_id_and_type(uri)
+	/*
 	//1st: look for /containers/<id>/
 	id := get_id_from_uri(uri, "/containers/")
 	id_type:="Container"
@@ -46,6 +48,7 @@ func Auth(r *http.Request) (ok bool, node string, docker_id string, container st
 			log.Printf("Auth: id=%s, id_type=%s\n", id, id_type)
 		}
 	}
+	*/
 	//if type is Exec then get container id from redis cache to forward to getHost api
 	var container_id string
 	if id_type == "Exec" {
