@@ -162,7 +162,7 @@ func RewriteURI(reqURI string, redirect_resource_id string) string{
 			redirectURI += "/" + sl[i]
 		}
 		//what if there is ?foo=bar in last slice and last slice is resource_id e.g., DELETE /v/containers/123?foo=bar
-		if len(sl) < 4 {
+		if len(sl) <= 4 {
 			sl2 := strings.Split(sl[len(sl)-1], "?")
 			if len(sl2) > 1{
 				redirectURI += "?" + sl2[1]
