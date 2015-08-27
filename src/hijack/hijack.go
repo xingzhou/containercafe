@@ -225,11 +225,20 @@ func endpoint_handler(w http.ResponseWriter, r *http.Request) {
 	//Call Auth interceptor
 	ok, node, docker_id, container := auth.Auth(r)  // ok=true/false, node=host:port, docker_id=url resource id understood by docker
 	if !ok {
+		log.Printf("Authentication failed for req_id=%d", req_id)
+		log.Printf("------ Completed processing of request req_id=%d\n", req_id)
 		return
 	}
 
 	//Call conn limiting interceptor(s) pre-processing
-	if !limit.OpenConn(container, conf.GetMaxContainerConn()) || !limit.OpenConn(node, conf.GetMaxNodeConn()) {
+	if !limit.OpenConn(container, conf.GetMaxContainerConn()) {
+		log.Printf("Max conn limit reached for container...aborting request")
+		log.Printf("------ Completed processing of request req_id=%d\n", req_id)
+		return
+	}
+	if !limit.OpenConn(node, conf.GetMaxNodeConn()) {
+		log.Printf("Max conn limit reached for host node...aborting request")
+		log.Printf("------ Completed processing of request req_id=%d\n", req_id)
 		return
 	}
 
