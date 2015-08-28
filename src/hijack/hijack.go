@@ -128,7 +128,7 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 		}
 	}
 	if (err != nil) {
-		log.Printf("Error in redirection, will abort req=%d ... err=%v\n", req_id, err)
+		log.Printf("Error in redirection, will abort req_id=%d ... err=%v\n", req_id, err)
 		return
 	}
 
