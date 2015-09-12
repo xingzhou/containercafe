@@ -21,6 +21,7 @@ ENV ccsapi_admin_user=""
 ENV ccsapi_admin_psswd=""
 ENV max_container_conn="4"
 ENV max_node_conn="0"
+ENV surrogate_ids="false"
 
 #Copy the self-signed server cert and key
 #ADD cert.pem /hijack/cert.pem

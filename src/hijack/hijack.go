@@ -23,13 +23,11 @@ import (
 	"encoding/base64"
 )
 
-// use surrogate vs hashed request Ids
-var surrogate_Ids bool = true
 var glob_req_id = 0
 var glob_req_id_mutex sync.Mutex
 
 func get_req_id() string{
-	if (surrogate_Ids) {
+	if (conf.IsSurrogateIds()) {
 		glob_req_id_mutex.Lock()
 		glob_req_id += 1  //this op should be in a critical section
 		req_id := glob_req_id
