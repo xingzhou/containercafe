@@ -19,26 +19,37 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"limit"  //my limits package
+	"crypto/rand"
+	"encoding/base64"
 )
-//TODO use req id generator using hashing fn
 
+// use surrogate vs hashed request Ids
+var surrogate_Ids bool = true
 var glob_req_id = 0
 var glob_req_id_mutex sync.Mutex
 
-func get_req_id() int{
-	glob_req_id_mutex.Lock()
-	glob_req_id += 1  //this op should be in a critical section
-	req_id := glob_req_id
-	glob_req_id_mutex.Unlock()
+func get_req_id() string{
+	if (surrogate_Ids) {
+		glob_req_id_mutex.Lock()
+		glob_req_id += 1  //this op should be in a critical section
+		req_id := glob_req_id
+		glob_req_id_mutex.Unlock()
+		return strconv.Itoa(req_id)
+	}
+
+	b := make([]byte, 10)
+	_, err := rand.Read(b)
+	if err != nil {
+		log.Println("error in rand num generator:", err)
+		return "0"
+	}
+	// The slice should now contain random bytes instead of only zeroes.
+	req_id := base64.StdEncoding.EncodeToString( b )
 	return req_id
 }
 
 func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redirect_resource_id string) (*http.Response, error, *httputil.ClientConn){
 	//forward request to server
-	//var c net.Conn
-	//var err error
-	//var buf *bufio.Reader = nil
-	//var c_tls *tls.Conn
 	var cc *httputil.ClientConn
 
 	c , err := net.Dial("tcp", redirect_host)
@@ -54,7 +65,6 @@ func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redir
 			log.Printf("Error loading client key pair, %v\n", er)
 			return nil,err,nil
 		}
-
 		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{cert}})
 		cc = httputil.NewClientConn(c_tls, nil)
 	}else{
@@ -78,7 +88,7 @@ func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redir
 	return resp, err, cc
 }
 
-func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redirect_resource_id string, req_id int) {
+func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redirect_resource_id string, req_id string) {
 	req_UPGRADE := false
 	resp_UPGRADE := false
 	resp_STREAM := false
@@ -120,22 +130,20 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 		if err == nil {
 			break
 		}
-		if err != nil {
-			log.Printf("redirect retry=%d failed", i)
-			if (i+1) < maxRetries {
-				log.Printf("will sleep secs=%d before retry", backOffTimeout)
-				time.Sleep( time.Duration(backOffTimeout) * time.Second)
-			}
+		log.Printf("redirect retry=%d failed", i)
+		if (i+1) < maxRetries {
+			log.Printf("will sleep secs=%d before retry", backOffTimeout)
+			time.Sleep( time.Duration(backOffTimeout) * time.Second)
 		}
 	}
 	if (err != nil) {
-		log.Printf("Error in redirection, will abort req_id=%d ... err=%v\n", req_id, err)
+		log.Printf("Error in redirection, will abort req_id=%s ... err=%v\n", req_id, err)
 		return
 	}
 
 	//write out resp
 	//now = time.Now()
-	log.Printf("<------ id: %d\n", req_id)
+	log.Printf("<------ req_id=%s\n", req_id)
 	//data2, _ := httputil.DumpResponse(resp, true)
 	//fmt.Printf("Response dump of %d bytes:\n", len(data2))
 	//fmt.Printf("%s\n", string(data2))
@@ -224,25 +232,25 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 //http proxy forwarding with hijack support handler
 func endpoint_handler(w http.ResponseWriter, r *http.Request) {
 	req_id := get_req_id()
-	log.Printf("------> endpoint_handler triggered, req_id=%d, URI=%s\n", req_id, r.RequestURI)
+	log.Printf("------> endpoint_handler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
 
 	//Call Auth interceptor
 	ok, node, docker_id, container := auth.Auth(r)  // ok=true/false, node=host:port, docker_id=url resource id understood by docker
 	if !ok {
-		log.Printf("Authentication failed for req_id=%d", req_id)
-		log.Printf("------ Completed processing of request req_id=%d\n", req_id)
+		log.Printf("Authentication failed for req_id=%s", req_id)
+		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 
 	//Call conn limiting interceptor(s) pre-processing
 	if !limit.OpenConn(container, conf.GetMaxContainerConn()) {
 		log.Printf("Max conn limit reached for container...aborting request")
-		log.Printf("------ Completed processing of request req_id=%d\n", req_id)
+		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 	if !limit.OpenConn(node, conf.GetMaxNodeConn()) {
 		log.Printf("Max conn limit reached for host node...aborting request")
-		log.Printf("------ Completed processing of request req_id=%d\n", req_id)
+		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 
@@ -253,7 +261,7 @@ func endpoint_handler(w http.ResponseWriter, r *http.Request) {
 	limit.CloseConn(container, conf.GetMaxContainerConn())
 	limit.CloseConn(node, conf.GetMaxNodeConn())
 
-	log.Printf("------ Completed processing of request req_id=%d\n", req_id)
+	log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 }
 
 //Return 404 for all non-supported URIs

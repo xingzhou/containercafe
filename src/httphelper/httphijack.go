@@ -6,12 +6,11 @@ import(
 	"net/http/httputil"
 	"bufio"
 	"log"
-	"strconv"
 	"sync"
 	"time"
 )
 
-func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id int, proto string){
+func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id string, proto string){
 	var cli_conn, srv_conn  net.Conn
 	var cli_bufrw, srv_bufrw *bufio.ReadWriter
 	var srv_bufr *bufio.Reader
@@ -48,7 +47,7 @@ func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id int,
 
 //implement tcp hijack loop forwarding raw tcp messages between cli and srv
 func tcpHijack (cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Conn, srv_bufrw *bufio.ReadWriter,
-	req_id int) {
+	req_id string) {
 	//start 2 blocking read/forward loops, BUT exit as soon as one of them exits
 	var wg sync.WaitGroup
 	defer cli_conn.Close()
@@ -56,10 +55,10 @@ func tcpHijack (cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Con
 
 	wg.Add(1) //add 1 only not 2, to proceed when one of the two go routines finishes
 
-	prefix := "> (req id: " + strconv.Itoa(req_id) + ")"
+	prefix := "> (req id: " + req_id + ")"
 	go rwloop(cli_bufrw, srv_bufrw, cli_conn, srv_conn, prefix, &wg)
 
-	prefix = "< (req id: " + strconv.Itoa(req_id) + ")"
+	prefix = "< (req id: " + req_id + ")"
 	go rwloop(srv_bufrw, cli_bufrw, srv_conn, cli_conn, prefix, &wg)
 
 	//wait until one go routines finishes...
@@ -67,7 +66,7 @@ func tcpHijack (cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Con
 	//the 2 conn closures happen at exit of tcpHijack, so the other go routine will receive read error and exit
 	wg.Wait()
 	wg.Add(1)
-	prefix = "(req id: " + strconv.Itoa(req_id) + ")"
+	prefix = "(req id: " + req_id + ")"
 	log.Printf("%s Hijack exit and connections close\n", prefix)
 }
 
