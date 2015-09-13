@@ -11,23 +11,6 @@ import (
 	"conf"
 )
 
-//return true if uri pattern is supported
-func VerifyKubeUriPattern(uri string) bool{
-		patterns := []string {
-		"/api/v1/namespaces/",
-		"/api/v1/watch/namespaces/",
-		"/api/v1/proxy/namespaces/",
-	}
-
-	for i:=0; i < len(patterns); i++ {
-		//if uri contains patterns[i]
-		if strings.Contains(uri, patterns[i]) {
-			return true
-		}
-	}
-	return false
-}
-
 func KubeAuth(r *http.Request) (ok bool, node string, namespace string) {
 	ok, host := getHost(r, "NoneContainer")
 	if ok {
