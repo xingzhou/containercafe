@@ -227,7 +227,39 @@ func handler(w http.ResponseWriter, r *http.Request, redirect_host string, redir
 	return
 }
 
-//http proxy forwarding with hijack support handler
+func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string, redirect_resource_id string, req_id string) {
+	return
+}
+
+// handler for Kubernetes
+func kube_endpoint_handler(w http.ResponseWriter, r *http.Request) {
+	req_id := get_req_id()
+	log.Printf("------> kube_endpoint_handler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
+
+	// check if uri pattern is accepted
+	if ! auth.VerifyKubeUriPattern(r.RequestURI){
+		log.Printf("Kube pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
+		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
+	}
+
+	//Call Auth interceptor
+	ok, node, namespace := auth.KubeAuth(r)
+	if !ok {
+		log.Printf("Authentication failed for req_id=%s", req_id)
+		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
+	}
+
+	//Handle request
+	kubeHandler(w, r, node, namespace, req_id)
+
+	log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+}
+
+
+// http proxy forwarding with hijack support
+// handler for docker/swarm
 func endpoint_handler(w http.ResponseWriter, r *http.Request) {
 	req_id := get_req_id()
 	log.Printf("------> endpoint_handler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
@@ -351,13 +383,16 @@ func main() {
 
 	//register handlers for supported url paths, can't register same path twice
 
-	//Healthcheck handler
+	// Healthcheck handler
 	http.HandleFunc("/hjproxy/", health_endpoint_handler)
 
-	//Rely on NGINX to route accepted url paths
+	// set prefix pattern for Kubernetes handler
+	http.HandleFunc("/api/v1/", kube_endpoint_handler)
+
+	//Rely on NGINX to route accepted docker url paths only to hijackproxy
 	http.HandleFunc("/", endpoint_handler)
 
-	//init server on any interface + listen_port
+	// init server on any interface + listen_port
 	var err error
 	if conf.IsTlsInbound() {
 		err = http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), conf.GetServerCertFile(), conf.GetServerKeyFile(), nil)

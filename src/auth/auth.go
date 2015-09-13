@@ -5,26 +5,12 @@ import (
 	"log"
 	"strings"
 	"io/ioutil"
-	"encoding/json"
-	"fmt"
 	"httphelper"  	// my httphelper
 	"conf"  		// my conf package
 )
 
-//getHost response msg
-type GetHostResp struct {
-	Container_id  	string
-	Container_name 	string
-	Host 			string
-	Swarm			bool    // True if swarm manager is the target
-	Mgr_host		string  // swarm manager host:port
-	Swarm_tls		bool	// use tls if true in case of swarm, TODO: respect this flag
-	Space_id		string  // for Authorization (tenant isolation) in case of swarm
-}
-
 //returns auth=true/false, compute node name, container/exec id, container id
 func Auth(r *http.Request) (ok bool, node string, docker_id string, container string) {
-
 	//parse r.RequestURI for container id or exec id
 	uri := r.RequestURI
 	id, id_type := get_id_and_type(uri)
@@ -230,17 +216,4 @@ func get_id_and_type(uri string) (id string, id_type string){
 	return id, id_type
 }
 
-func parse_getHost_Response(body []byte, resp *GetHostResp) error{
-	//var resp GetHostResp
-	err := json.Unmarshal(body, resp)
-	if err != nil {
-		log.Println("parse_getHost_Response: error=%v", err)
-		return err
-	}
-	s := fmt.Sprintf("parse_getHost_Response: host=%s container_id=%s ", resp.Host, resp.Container_id)
-	if resp.Swarm {
-		s = s + fmt.Sprintf("Mgr_host=%s Space_id=%s Swarm_tls=%t", resp.Mgr_host, resp.Space_id, resp.Swarm_tls)
-	}
-	log.Printf("%s\n", s)
-	return nil
-}
+

@@ -19,9 +19,10 @@ ENV server_cert_file="/opt/tls_certs/hjserver.pem"
 ENV server_key_file="/opt/tls_certs/hjserver.key"
 ENV ccsapi_admin_user=""
 ENV ccsapi_admin_psswd=""
+ENV surrogate_ids="false"
 ENV max_container_conn="4"
 ENV max_node_conn="0"
-ENV surrogate_ids="false"
+ENV kube_port="6443"
 
 #Copy the self-signed server cert and key
 #ADD cert.pem /hijack/cert.pem
