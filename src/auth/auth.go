@@ -4,37 +4,17 @@ import (
 	"net/http"
 	"log"
 	"strings"
-	"io/ioutil"
-	"httphelper"  	// my httphelper
+
 	"conf"  		// my conf package
 )
 
 //returns auth=true/false, compute node name, container/exec id, container id
-func Auth(r *http.Request) (ok bool, node string, docker_id string, container string) {
+func Auth(r *http.Request) (ok bool, node string, docker_id string,
+	container string, tls_override bool) {
+
 	//parse r.RequestURI for container id or exec id
 	uri := r.RequestURI
 	id, id_type := get_id_and_type(uri)
-	/*
-	//1st: look for /containers/<id>/
-	id := get_id_from_uri(uri, "/containers/")
-	id_type:="Container"
-	if id == "" {
-		//2nd: look for /exec/<id>/
-		id = get_id_from_uri(uri, "/exec/")
-		if id == "" {
-			id_type = "None"
-			log.Printf("Auth: id not found in uri\n")
-			log.Printf("Auth: id=%s, id_type=%s\n", id, id_type)
-			//fail here
-			//log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
-			//return ok, node, docker_id, container
-		}else {
-			//id found in uri
-			id_type = "Exec"
-			log.Printf("Auth: id=%s, id_type=%s\n", id, id_type)
-		}
-	}
-	*/
 	//if type is Exec then get container id from redis cache to forward to getHost api
 	var container_id string
 	if id_type == "Exec" {
@@ -43,59 +23,37 @@ func Auth(r *http.Request) (ok bool, node string, docker_id string, container st
 		container_id = id
 	}
 
-	//forward r header only without body to ccsapi auth endpoint, add X-Container-Id header
-	var new_uri string
+	var host GetHostResp
 	if id_type == "None" {
-		new_uri = "http://"+conf.GetCcsapiHost()+conf.GetCcsapiUri()+"getHost/NoneContainer"
+		ok, host = getHost(r, "NoneContainer")
 	}else{
-		new_uri = "http://"+conf.GetCcsapiHost()+conf.GetCcsapiUri()+"getHost/"+container_id
+		ok, host = getHost(r, container_id)
 	}
-	req, _ := http.NewRequest("GET", new_uri, nil)
-	httphelper.CopyHeader(req.Header, r.Header)  //req.Header = r.Header
-	req.URL.Host = conf.GetCcsapiHost()
-	req.Header.Add(conf.GetCcsapiIdHeader(), container_id)
-	req.Header.Add(conf.GetCcsapiIdTypeHeader(), "Container" /*id_type*/)
-	client := &http.Client{
-		CheckRedirect: nil,
+	if !ok{
+		log.Printf("Auth result: ok=%t\n", ok)
+		return false, "", "", "", false
 	}
-	log.Println("Auth: will invoke CCSAPI to authenticate...")
-	resp, err := client.Do(req)
-	if (err != nil) {
-		log.Printf("Auth: Error in auth request... %v\n", err)
-
-		log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
-		return ok, node, docker_id, container
+	node = host.Host
+	node = node + ":" + conf.GetDockerPort()
+	container = host.Container_id
+	//container id needs nova- prefix
+	//exec id does not need a prefix
+	if id_type == "Container" {
+		docker_id = "nova-"+container   //append nova to the id returned from getHost
 	}
-
-	//get auth response status, and X-Compute-Node header
-	if resp.StatusCode == 200 {
-		ok = true
-
-		//first check in header
-		//node = httphelper.GetHeader(resp.Header, conf.GetCcsapiComputeNodeHeader())
-		//second check for json response in body
-		defer resp.Body.Close()
-		body, e := ioutil.ReadAll(resp.Body)            //Default_redirect_host   //testing default
-		if e != nil {
-			log.Printf("error reading ccsapi response\n")
-			log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
-			return ok, node, docker_id, container
-		}
-		log.Printf("Auth: ccsapi raw response=%s\n", body)
-		var resp GetHostResp
-		err := parse_getHost_Response(body, &resp)
-		if err != nil {
-			log.Printf("error parsing ccsapi response\n")
-			log.Printf("Auth result: ok=%t, node='%s'\n", ok, node)
-			return ok, node, docker_id, container
-		}
-		node = resp.Host
-		node = node + ":" + conf.GetDockerPort()
-		container = resp.Container_id
-		//container id needs nova- prefix
-		//exec id does not need a prefix
+	if id_type == "Exec" {
+		docker_id = id  //use the exec id that came in the original req
+	}
+	if id_type == "None" {
+		docker_id = ""
+	}
+	tls_override = false
+	if host.Swarm {
+		node = host.Mgr_host    //Mgr_host = host:port
+		//insert space_id in the header to be forwarded
+		r.Header.Set("X-Auth-Token", host.Space_id)
 		if id_type == "Container" {
-			docker_id = "nova-"+container   //append nova to the id returned from getHost
+			docker_id = container
 		}
 		if id_type == "Exec" {
 			docker_id = id  //use the exec id that came in the original req
@@ -103,60 +61,12 @@ func Auth(r *http.Request) (ok bool, node string, docker_id string, container st
 		if id_type == "None" {
 			docker_id = ""
 		}
-
-		if resp.Swarm {
-			node = resp.Mgr_host    //Mgr_host = host:port
-			//insert space_id in the header to be forwarded
-			r.Header.Set("X-Auth-Token", resp.Space_id)
-			if id_type == "Container" {
-				docker_id = container
-			}
-			if id_type == "Exec" {
-				docker_id = id  //use the exec id that came in the original req
-			}
-			if id_type == "None" {
-				docker_id = ""
-			}
-			if !resp.Swarm_tls{
-				conf.SetTlsOutboundOverride(true)
-			}
-		}
-	}else {
-		//status!=200
-	}
-
-	log.Printf("Auth result: ok=%t, node=%s, docker_id=%s, container=%s\n", ok, node, docker_id, container)
-	return ok, node, docker_id, container
-}
-
-//Convert /v*/containers/id/*  to  /<docker_api_ver>/containers/<redirect_resource_id>/*
-//Convert /v*/exec/id/*  to  /<docker_api_ver>/exec/<redirect_resource_id>/*
-func RewriteURI(reqURI string, redirect_resource_id string) string{
-	var redirectURI string
-	sl := strings.Split(reqURI, "/")
-	if redirect_resource_id == "" {
-		//supports /v../containers/json  /v../build  /v../build?foo=bar
-		//redirectURI = conf.GetDockerApiVer()+"/"+sl[2]+"/"+sl[3]
-		redirectURI = conf.GetDockerApiVer()
-		for i:=2; i < len(sl); i++ {
-			redirectURI += "/" + sl[i]
-		}
-	}else {
-		//redirectURI = conf.GetDockerApiVer()+"/"+sl[2]+"/"+redirect_resource_id+"/"+sl[4]
-		redirectURI = conf.GetDockerApiVer()+"/"+sl[2]+"/"+redirect_resource_id
-		for i:=4; i < len(sl); i++ {
-			redirectURI += "/" + sl[i]
-		}
-		//what if there is ?foo=bar in last slice and last slice is resource_id e.g., DELETE /v/containers/123?foo=bar
-		if len(sl) <= 4 {
-			sl2 := strings.Split(sl[len(sl)-1], "?")
-			if len(sl2) > 1{
-				redirectURI += "?" + sl2[1]
-			}
+		if !host.Swarm_tls{
+			tls_override = true  // no tls for this req regardless of proxy conf
 		}
 	}
-	log.Printf("RewriteURI: '%s' --> '%s'\n", reqURI, redirectURI)
-	return redirectURI
+	log.Printf("Auth result: ok=%t, node=%s, docker_id=%s, container=%s, tls_override=%t\n", ok, node, docker_id, container, tls_override)
+	return ok, node, docker_id, container, tls_override
 }
 
 func get_id_from_uri(uri string, pattern string) string{

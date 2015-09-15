@@ -1,3 +1,5 @@
+//docker and swarm handler
+//
 package handler
 
 import (
@@ -8,9 +10,6 @@ import (
 	"io/ioutil"
 	"time"
 	"strings"
-	"net"
-	"bytes"
-	"crypto/tls"
 	"encoding/json"
 
 	"limit"  //my limits package
@@ -25,8 +24,12 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	req_id := conf.GetReqId()
 	log.Printf("------> DockerEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
 
-	//Call Auth interceptor
-	ok, node, docker_id, container := auth.Auth(r)  // ok=true/false, node=host:port, docker_id=url resource id understood by docker
+	// Call Auth interceptor
+	// ok=true/false, node=host:port,
+	// docker_id=resource id from url mapped to id understood by docker
+	// container != docker_id in exec case
+	// tls_override is true when swarm master does not support tls
+	ok, node, docker_id, container, tls_override := auth.Auth(r)
 	if !ok {
 		log.Printf("Authentication failed for req_id=%s", req_id)
 		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
@@ -46,7 +49,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Handle request
-	dockerHandler(w, r, node, docker_id, req_id)
+	dockerHandler(w, r, node, docker_id, req_id, tls_override)
 
 	//Call conn limiting interceptor(s) post-processing, to decrement conn count(s)
 	limit.CloseConn(container, conf.GetMaxContainerConn())
@@ -57,7 +60,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 
 // private handler processing
 func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
-	redirect_resource_id string, req_id string) {
+	redirect_resource_id string, req_id string, tls_override bool) {
 
 	req_UPGRADE := false
 	resp_UPGRADE := false
@@ -97,7 +100,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	)
 	for i:=0; i<maxRetries; i++ {
 		resp, err, cc = redirect(r, body, redirect_host, redirect_resource_id,
-			dockerRewriteUri, true /* override tls setting*/)
+			dockerRewriteUri, tls_override)
 		if err == nil {
 			break
 		}
@@ -193,6 +196,8 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	return
 }
 
+//Convert /v*/containers/id/*  to  /<docker_api_ver>/containers/<redirect_resource_id>/*
+//Convert /v*/exec/id/*  to  /<docker_api_ver>/exec/<redirect_resource_id>/*
 func dockerRewriteUri(reqUri string, redirect_resource_id string)(redirectUri string){
 	sl := strings.Split(reqUri, "/")
 	if redirect_resource_id == "" {
@@ -218,47 +223,6 @@ func dockerRewriteUri(reqUri string, redirect_resource_id string)(redirectUri st
 	}
 	log.Printf("dockerRewriteURI: '%s' --> '%s'\n", reqUri, redirectUri)
 	return redirectUri
-}
-
-
-func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redirect_resource_id string) (*http.Response, error, *httputil.ClientConn){
-	//forward request to server
-	var cc *httputil.ClientConn
-
-	c , err := net.Dial("tcp", redirect_host)
-	if err != nil {
-		// handle error
-		log.Printf("Error connecting to server %s, %v\n", redirect_host, err)
-		return nil,err,nil
-	}
-
-	if conf.IsTlsOutbound() && !conf.GetTlsOutboundOverride(){
-		cert, er := tls.LoadX509KeyPair(conf.GetClientCertFile(), conf.GetClientKeyFile())
-		if er != nil {
-			log.Printf("Error loading client key pair, %v\n", er)
-			return nil,err,nil
-		}
-		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{cert}})
-		cc = httputil.NewClientConn(c_tls, nil)
-	}else{
-		cc = httputil.NewClientConn(c, nil)
-
-		//The override is for the current request being processed only
-		//The override is a directive received from ccsapi getHost, for a swarm request when swarm master does not support tls
-		conf.SetTlsOutboundOverride(false)
-	}
-
-	req, _ := http.NewRequest(r.Method, "http://"+redirect_host+auth.RewriteURI(r.RequestURI, redirect_resource_id),
-				bytes.NewReader(body))
-	req.Header = r.Header
-	//req.Host = redirect_host
-	req.URL.Host = redirect_host
-
-	log.Println("will forward request to server...")
-	resp, err := cc.Do(req)
-
-	//defer resp.Body.Close()
-	return resp, err, cc
 }
 
 //return true if it is /<v>/containers/<id>/exec api call
@@ -307,3 +271,44 @@ func get_exec_id_from_response(body []byte) string{
 	return resp.Id
 }
 
+/*
+func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redirect_resource_id string) (*http.Response, error, *httputil.ClientConn){
+	//forward request to server
+	var cc *httputil.ClientConn
+
+	c , err := net.Dial("tcp", redirect_host)
+	if err != nil {
+		// handle error
+		log.Printf("Error connecting to server %s, %v\n", redirect_host, err)
+		return nil,err,nil
+	}
+
+	if conf.IsTlsOutbound() && !conf.GetTlsOutboundOverride(){
+		cert, er := tls.LoadX509KeyPair(conf.GetClientCertFile(), conf.GetClientKeyFile())
+		if er != nil {
+			log.Printf("Error loading client key pair, %v\n", er)
+			return nil,err,nil
+		}
+		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{cert}})
+		cc = httputil.NewClientConn(c_tls, nil)
+	}else{
+		cc = httputil.NewClientConn(c, nil)
+
+		//The override is for the current request being processed only
+		//The override is a directive received from ccsapi getHost, for a swarm request when swarm master does not support tls
+		conf.SetTlsOutboundOverride(false)
+	}
+
+	req, _ := http.NewRequest(r.Method, "http://"+redirect_host+auth.RewriteURI(r.RequestURI, redirect_resource_id),
+				bytes.NewReader(body))
+	req.Header = r.Header
+	//req.Host = redirect_host
+	req.URL.Host = redirect_host
+
+	log.Println("will forward request to server...")
+	resp, err := cc.Do(req)
+
+	//defer resp.Body.Close()
+	return resp, err, cc
+}
+*/
