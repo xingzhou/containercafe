@@ -46,7 +46,7 @@ func main() {
 	http.HandleFunc("/hjproxy/", handler.HealthEndpointHandler)
 
 	// set prefix pattern for Kubernetes handler
-	http.HandleFunc("/api/v1/", handler.KubeEndpointHandler)
+	http.HandleFunc("/api", handler.KubeEndpointHandler)
 
 	//Rely on NGINX to route accepted docker url paths only to hijackproxy
 	http.HandleFunc("/", handler.DockerEndpointHandler)

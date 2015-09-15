@@ -21,6 +21,7 @@ var kubePatterns = []string {
 	"/api/v1/namespaces/",
 	"/api/v1/watch/namespaces/",
 	"/api/v1/proxy/namespaces/",
+	"/api",
 }
 
 // public handler for Kubernetes
@@ -32,6 +33,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	if ! IsSupportedPattern(r.RequestURI, kubePatterns){
 		log.Printf("Kube pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
 		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		NoEndpointHandler(w, r)
 		return
 	}
 
