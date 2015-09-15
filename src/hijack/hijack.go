@@ -48,6 +48,7 @@ func main() {
 	// set prefix pattern for Kubernetes handler
 	http.HandleFunc("/api/", handler.KubeEndpointHandler)
 	http.HandleFunc("/api", handler.KubeEndpointHandler)
+	http.HandleFunc("/swaggerapi/", handler.KubeEndpointHandler)
 
 	//Rely on NGINX to route accepted docker url paths only to hijackproxy
 	http.HandleFunc("/", handler.DockerEndpointHandler)

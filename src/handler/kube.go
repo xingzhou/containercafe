@@ -22,6 +22,7 @@ var kubePatterns = []string {
 	"/api/v1/watch/namespaces/",
 	"/api/v1/proxy/namespaces/",
 	"/api",
+	"/swaggerapi/",
 }
 
 // public handler for Kubernetes
