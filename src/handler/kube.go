@@ -48,7 +48,9 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // private handler processing
-func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string, redirect_resource_id string, req_id string) {
+func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
+	redirect_resource_id string, req_id string) {
+
 	req_UPGRADE := false
 	resp_UPGRADE := false
 	resp_STREAM := false
@@ -74,7 +76,7 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string, r
 		cc *httputil.ClientConn
 	)
 	for i:=0; i<maxRetries; i++ {
-		resp, err, cc = redirect(r, body, redirect_host, redirect_resource_id, kubeRewriteUri)
+		resp, err, cc = redirect (r, body, redirect_host, redirect_resource_id, kubeRewriteUri, true /* override tls setting*/)
 		if err == nil {
 			break
 		}
