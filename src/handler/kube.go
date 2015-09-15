@@ -76,7 +76,8 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		cc *httputil.ClientConn
 	)
 	for i:=0; i<maxRetries; i++ {
-		resp, err, cc = redirect (r, body, redirect_host, redirect_resource_id, kubeRewriteUri, true /* override tls setting*/)
+		resp, err, cc = redirect (r, body, redirect_host, redirect_resource_id,
+			kubeRewriteUri, true /* override tls setting*/)
 		if err == nil {
 			break
 		}
@@ -148,7 +149,6 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
 		httphelper.PrintJson(resp_body)
 	}else{
-		//fmt.Printf("Received %d bytes\n", len(resp_body))
 		log.Printf("\n%s\n", string(resp_body))
 	}
 
@@ -159,7 +159,6 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 
 func kubeRewriteUri(reqUri string, namespace string) (redirectUri string){
 	sl := strings.Split(reqUri, "/")
-
 	next := false
 	for i:=0; i < len(sl); i++{
 		if next{
@@ -176,6 +175,6 @@ func kubeRewriteUri(reqUri string, namespace string) (redirectUri string){
 			redirectUri += "/"
 		}
 	}
-
+	log.Printf("kubeRewriteURI: '%s' --> '%s'\n", reqUri, redirectUri)
 	return redirectUri
 }

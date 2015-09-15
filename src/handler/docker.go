@@ -55,8 +55,10 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 }
 
+// private handler processing
+func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
+	redirect_resource_id string, req_id string) {
 
-func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string, redirect_resource_id string, req_id string) {
 	req_UPGRADE := false
 	resp_UPGRADE := false
 	resp_STREAM := false
@@ -94,7 +96,8 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		cc *httputil.ClientConn
 	)
 	for i:=0; i<maxRetries; i++ {
-		resp, err, cc = redirect_lowlevel(r, body, redirect_host, redirect_resource_id)
+		resp, err, cc = redirect(r, body, redirect_host, redirect_resource_id,
+			dockerRewriteUri, true /* override tls setting*/)
 		if err == nil {
 			break
 		}
@@ -119,8 +122,6 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	log.Printf("Resp Status: %s\n", resp.Status)
 	log.Print( httphelper.DumpHeader(resp.Header) )
 
-	//echo r.Header in resp_header
-	//w.Header().Add("foo", "bar")   //ok
 	httphelper.CopyHeader(w.Header(), resp.Header)
 
 	if (httphelper.IsUpgradeHeader(resp.Header)) {
@@ -137,10 +138,6 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	}
 
 	//TODO ***** Filter framework for Interception of commands before forwarding resp to client (1) *****
-	//if req_LOGS {
-		//insert streaming header in response to client
-	//	w.Header().Set("Content-Type", "application/octet-stream")
-	//}
 
 	proto := strings.ToUpper(httphelper.GetHeader(resp.Header, "Upgrade"))
 	if (req_UPGRADE || resp_UPGRADE) && (proto != "TCP") {
@@ -188,7 +185,6 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
 		httphelper.PrintJson(resp_body)
 	}else{
-		//fmt.Printf("Received %d bytes\n", len(resp_body))
 		log.Printf("\n%s\n", string(resp_body))
 	}
 
@@ -196,6 +192,34 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	fmt.Fprintf(w, "%s", resp_body)
 	return
 }
+
+func dockerRewriteUri(reqUri string, redirect_resource_id string)(redirectUri string){
+	sl := strings.Split(reqUri, "/")
+	if redirect_resource_id == "" {
+		//supports /v../containers/json  /v../build  /v../build?foo=bar
+		//redirectURI = conf.GetDockerApiVer()+"/"+sl[2]+"/"+sl[3]
+		redirectUri = conf.GetDockerApiVer()
+		for i:=2; i < len(sl); i++ {
+			redirectUri += "/" + sl[i]
+		}
+	}else {
+		//redirectURI = conf.GetDockerApiVer()+"/"+sl[2]+"/"+redirect_resource_id+"/"+sl[4]
+		redirectUri = conf.GetDockerApiVer()+"/"+sl[2]+"/"+redirect_resource_id
+		for i:=4; i < len(sl); i++ {
+			redirectUri += "/" + sl[i]
+		}
+		//what if there is ?foo=bar in last slice and last slice is resource_id e.g., DELETE /v/containers/123?foo=bar
+		if len(sl) <= 4 {
+			sl2 := strings.Split(sl[len(sl)-1], "?")
+			if len(sl2) > 1{
+				redirectUri += "?" + sl2[1]
+			}
+		}
+	}
+	log.Printf("dockerRewriteURI: '%s' --> '%s'\n", reqUri, redirectUri)
+	return redirectUri
+}
+
 
 func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redirect_resource_id string) (*http.Response, error, *httputil.ClientConn){
 	//forward request to server
