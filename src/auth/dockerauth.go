@@ -8,8 +8,9 @@ import (
 	"conf"  		// my conf package
 )
 
-//returns auth=true/false, compute node name, container/exec id, container id
-func Auth(r *http.Request) (ok bool, node string, docker_id string,
+// returns auth=true/false, compute node name, container/exec id, container id,
+// override tls flag is used in swarm case only
+func DockerAuth(r *http.Request) (ok bool, node string, docker_id string,
 	container string, tls_override bool) {
 
 	//parse r.RequestURI for container id or exec id
