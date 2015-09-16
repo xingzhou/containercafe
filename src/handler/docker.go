@@ -32,6 +32,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	ok, node, docker_id, container, tls_override := auth.DockerAuth(r)
 	if !ok {
 		log.Printf("Authentication failed for req_id=%s", req_id)
+		NotAuthorizedHandler(w,r)
 		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}

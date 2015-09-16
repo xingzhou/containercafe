@@ -42,6 +42,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	ok, node, namespace := auth.KubeAuth(r)
 	if !ok {
 		log.Printf("Authentication failed for req_id=%s", req_id)
+		NotAuthorizedHandler(w,r)
 		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
