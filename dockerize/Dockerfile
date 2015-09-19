@@ -24,14 +24,13 @@ ENV max_container_conn="4"
 ENV max_node_conn="0"
 ENV kube_port="8080"
 
-#Copy the self-signed server cert and key
-#ADD cert.pem /hijack/cert.pem
-#ADD key.pem  /hijack/key.pem
+#Copy the self-signed certs and keys
 ADD hjserver.pem /hijack/hjserver.pem
 ADD hjserver.key  /hijack/hjserver.key
 ADD hjclient.pem /hijack/hjclient.pem
 ADD hjclient.key  /hijack/hjclient.key
 
+ADD build.info /hijack/build.info
 
 EXPOSE 8087
 CMD ["/hijack/bin/hijack", "8087"]

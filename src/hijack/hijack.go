@@ -16,6 +16,7 @@ func main() {
 	log.SetPrefix("hijackproxy: ")
 
 	log.Printf("Hijack proxy microservice started...\n")
+	log.Println(conf.GetVerStr())
 	conf.LoadEnv()
 	listen_port := conf.GetDefaultListenPort()
 	//parse args
