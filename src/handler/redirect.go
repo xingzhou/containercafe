@@ -44,7 +44,7 @@ func redirect(r *http.Request, body []byte, redirect_host string, redirect_resou
 	//req.Host = redirect_host
 	req.URL.Host = redirect_host
 
-	log.Println("will forward request to server...")
+	log.Printf("will forward request to server %s ...", redirect_host)
 	resp, err := cc.Do(req)
 
 	return resp, err, cc

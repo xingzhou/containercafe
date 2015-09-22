@@ -43,6 +43,7 @@ func getHost(r *http.Request, id string) (ok bool, host GetHostResp){
 		return false, host
 	}
 
+	log.Printf("resp StatusCode=%d", resp.StatusCode)
 	if resp.StatusCode == 200 {
 		ok = true
 		//first check in header
