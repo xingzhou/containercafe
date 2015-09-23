@@ -29,8 +29,8 @@ func getHost(r *http.Request, id string) (ok bool, host GetHostResp){
 	req, _ := http.NewRequest("GET", new_uri, nil)
 	httphelper.CopyHeader(req.Header, r.Header)  //req.Header = r.Header
 	req.URL.Host = conf.GetCcsapiHost()
-	req.Header.Add(conf.GetCcsapiIdHeader(), id)
-	req.Header.Add(conf.GetCcsapiIdTypeHeader(), "Kubernetes")
+	//req.Header.Add(conf.GetCcsapiIdHeader(), id)
+	//req.Header.Add(conf.GetCcsapiIdTypeHeader(), "Kubernetes")
 
 	client := &http.Client{
 		CheckRedirect: nil,
