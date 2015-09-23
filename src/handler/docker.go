@@ -29,13 +29,18 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	// docker_id=resource id from url mapped to id understood by docker
 	// container != docker_id in exec case
 	// tls_override is true when swarm master does not support tls
-	ok, node, docker_id, container, tls_override := auth.DockerAuth(r)
-	if !ok {
-		log.Printf("Authentication failed for req_id=%s", req_id)
-		NotAuthorizedHandler(w,r)
+	status, node, docker_id, container, tls_override := auth.DockerAuth(r)
+	if status != 200 {
+		log.Printf("Authentication failed for req_id=%s status=%d", req_id, status)
+		if status == 401 {
+			NotAuthorizedHandler(w,r)
+		}else{
+			ErrorHandler(w,r,status)
+		}
 		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
+    log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, status)
 
 	//Call conn limiting interceptor(s) pre-processing
 	if !limit.OpenConn(container, conf.GetMaxContainerConn()) {

@@ -39,13 +39,18 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Call Auth interceptor to authenticate with ccsapi
-	ok, node, namespace := auth.KubeAuth(r)
-	if !ok {
-		log.Printf("Authentication failed for req_id=%s", req_id)
-		NotAuthorizedHandler(w,r)
+	status, node, namespace := auth.KubeAuth(r)
+	if status != 200 {
+		log.Printf("Authentication failed for req_id=%s status=%d", req_id, status)
+		if status == 401 {
+			NotAuthorizedHandler(w,r)
+		}else{
+			ErrorHandler(w,r,status)
+		}
 		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
+    log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, status)
 
 	//Handle request
 	kubeHandler(w, r, node, namespace, req_id)

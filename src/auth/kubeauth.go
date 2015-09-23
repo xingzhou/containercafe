@@ -11,15 +11,15 @@ import (
 	"conf"
 )
 
-func KubeAuth(r *http.Request) (ok bool, node string, namespace string) {
-	ok, host := getHost(r, "NoneContainer")
-	if ok {
+func KubeAuth(r *http.Request) (status int, node string, namespace string) {
+	status, host := getHost(r, "NoneContainer")
+	if status == 200 {
 		kubeMgr := injectKubePort( host.Mgr_host, conf.GetKubePort() ) 	// Kube master port is 6443
-		log.Printf("ok=true, Mgr_host=%s, namespace=%s", kubeMgr, host.Space_id)
-		return ok, kubeMgr, host.Space_id
+		log.Printf("status=%d Mgr_host=%s namespace=%s", status, kubeMgr, host.Space_id)
+		return status, kubeMgr, host.Space_id
 	}
-	log.Println("ok=false, Mgr_host=\"\", namespace=\"\" ")
-	return false, "", ""
+	log.Printf("status=%d Mgr_host=\"\" namespace=\"\" ", status)
+	return status, "", ""
 }
 
 func injectKubePort(host string, port int) string{

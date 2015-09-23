@@ -10,7 +10,7 @@ import (
 
 // returns auth=true/false, compute node name, container/exec id, container id,
 // override tls flag is used in swarm case only
-func DockerAuth(r *http.Request) (ok bool, node string, docker_id string,
+func DockerAuth(r *http.Request) (status int, node string, docker_id string,
 	container string, tls_override bool) {
 
 	//parse r.RequestURI for container id or exec id
@@ -26,13 +26,13 @@ func DockerAuth(r *http.Request) (ok bool, node string, docker_id string,
 
 	var host GetHostResp
 	if id_type == "None" {
-		ok, host = getHost(r, "NoneContainer")
+		status, host = getHost(r, "NoneContainer")
 	}else{
-		ok, host = getHost(r, container_id)
+		status, host = getHost(r, container_id)
 	}
-	if !ok{
-		log.Printf("Auth result: ok=%t\n", ok)
-		return false, "", "", "", false
+	if status != 200 {
+		log.Printf("Auth result: status=%d\n", status)
+		return status, "", "", "", false
 	}
 	node = host.Host
 	node = node + ":" + conf.GetDockerPort()
@@ -66,8 +66,8 @@ func DockerAuth(r *http.Request) (ok bool, node string, docker_id string,
 			tls_override = true  // no tls for this outbound req regardless of proxy conf
 		}
 	}
-	log.Printf("Auth result: ok=%t, node=%s, docker_id=%s, container=%s, tls_override=%t\n", ok, node, docker_id, container, tls_override)
-	return ok, node, docker_id, container, tls_override
+	log.Printf("Auth result: status=%d node=%s docker_id=%s container=%s tls_override=%t\n", status, node, docker_id, container, tls_override)
+	return status, node, docker_id, container, tls_override
 }
 
 func get_id_from_uri(uri string, pattern string) string{

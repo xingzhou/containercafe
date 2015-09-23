@@ -23,7 +23,7 @@ type GetHostResp struct {
 
 //forward r header only without body to ccsapi auth endpoint
 // return ok=true if resp status is 200, otherwise ok=false
-func getHost(r *http.Request, id string) (ok bool, host GetHostResp){
+func getHost(r *http.Request, id string) (status int, host GetHostResp){
 	new_uri := "http://"+conf.GetCcsapiHost()+conf.GetCcsapiUri()+"getHost/"+id
 
 	req, _ := http.NewRequest("GET", new_uri, nil)
@@ -40,12 +40,12 @@ func getHost(r *http.Request, id string) (ok bool, host GetHostResp){
 	resp, err := client.Do(req)
 	if (err != nil) {
 		log.Printf("GetHost: Error... %v\n", err)
-		return false, host
+		return 500, host
 	}
 
 	log.Printf("resp StatusCode=%d", resp.StatusCode)
+	status = resp.StatusCode
 	if resp.StatusCode == 200 {
-		ok = true
 		//first check in header
 		//node = httphelper.GetHeader(resp.Header, conf.GetCcsapiComputeNodeHeader())
 		//second check for json response in body
@@ -53,17 +53,17 @@ func getHost(r *http.Request, id string) (ok bool, host GetHostResp){
 		body, e := ioutil.ReadAll(resp.Body)
 		if e != nil {
 			log.Printf("error reading ccsapi response\n")
-			return false, host
+			return 500, host
 		}
 		log.Printf("ccsapi raw response=%s\n", body)
 		err := parse_getHost_Response(body, &host)
 		if err != nil {
 			log.Printf("error parsing ccsapi response\n")
-			return false, host
+			return 500, host
 		}
-		return true, host
+		return status, host   //status == 200
 	}
-	return false, host
+	return status, host  // status != 200
 }
 
 func parse_getHost_Response(body []byte, resp *GetHostResp) error{
