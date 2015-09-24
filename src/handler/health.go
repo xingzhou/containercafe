@@ -13,7 +13,8 @@ import (
 var healthPatterns = []string {
 	"/hjproxy/health",
 	"/hjproxy/stats",
-	"/hjproxy/_ping",  /*  /hjproxy/_ping/host   or   /hjproxy/_ping/host/port */
+	"/hjproxy/_ping_notls", // _ping with no tls override regardless of hjproxy configuration
+	"/hjproxy/_ping",  		//  /hjproxy/_ping/host   or   /hjproxy/_ping/host/port
 }
 
 func HealthEndpointHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +35,10 @@ func HealthEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("This instance served %d requests\n", n)
 		break
 	case healthPatterns[2]:
-		ping(w, r)
+		ping(w, r, true)
+		break
+	case healthPatterns[3]:
+		ping(w, r, false)
 		break
 	default:
 		log.Printf("Health pattern not accepted, URI=%s", r.RequestURI)
@@ -42,7 +46,7 @@ func HealthEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ping(w http.ResponseWriter, r *http.Request) {
+func ping(w http.ResponseWriter, r *http.Request, tls_override bool) {
 	var status int
 
 	sl := strings.Split(r.RequestURI, "/")
@@ -53,7 +57,7 @@ func ping(w http.ResponseWriter, r *http.Request) {
 	}
 	redirect_host := server + ":" + port
 
-	resp, err, _ := redirect (r, nil /*body*/, redirect_host, "" /*resource_id*/, pingRewriteUri, false)
+	resp, err, _ := redirect (r, nil /*body*/, redirect_host, "" /*resource_id*/, pingRewriteUri, tls_override)
 	if (err != nil) {
 		log.Printf("Error in redirection of _ping to %s ... err=%v\n", redirect_host, err)
 		status = 500
