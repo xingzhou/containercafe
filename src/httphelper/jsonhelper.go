@@ -24,10 +24,10 @@ func PrettyJson(b []byte) string{
 	var s string
 	err := json.Indent(&out, b, "", "\t")
 	if err != nil {
-		s = fmt.Sprintf("\n%s\n", b)
+		s = fmt.Sprintf("%s\n", b)
 	}else {
 		//out.WriteTo(os.Stdout)
-		s = fmt.Sprintf("\n%s\n", out.Bytes())
+		s = fmt.Sprintf("%s\n", out.Bytes())
 	}
 	return s
 }
