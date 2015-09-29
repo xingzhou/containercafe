@@ -11,7 +11,7 @@ import (
 	"conf"  // my conf package
 )
 
-var _LOG_TO_FILE_ = false   //feature flag
+var _LOG_TO_FILE_ = true   //feature flag
 
 func initLogger(){
 	log.SetFlags(log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
