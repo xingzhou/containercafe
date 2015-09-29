@@ -4,6 +4,7 @@ ADD src/ /hijack/src/
 WORKDIR /hijack
 RUN export GOPATH=/hijack && go build -o bin/hijack src/hijack/hijack.go
 
+ENV log_file_path="/tmp/feeds/logstash_hijack_proxy"
 ENV ccsapi_host="127.0.0.1:8081"
 ENV ccsapi_uri="/v3/admin/"
 ENV ccsapi_compute_node_header="X-Compute-Node"

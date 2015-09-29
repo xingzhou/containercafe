@@ -11,11 +11,25 @@ import (
 	"conf"  // my conf package
 )
 
-func main() {
+var _LOG_TO_FILE_ = false   //feature flag
+
+func initLogger(){
 	log.SetFlags(log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
 	log.SetPrefix("hijackproxy: ")
+	if _LOG_TO_FILE_ {
+		fname := conf.GetLogFilePath()
+		fp, err := os.Create(fname)
+		if err != nil{
+			log.Println("Could not create log file ",fname, " will use stderr")
+			return
+		}
+		log.SetOutput(fp)
+		log.Println("Set ELK logging output to ", fname)
+	}
+}
 
-	log.Printf("Hijack proxy microservice started...\n")
+func main() {
+	initLogger()
 	log.Println(conf.GetVerStr())
 	conf.LoadEnv()
 	listen_port := conf.GetDefaultListenPort()
