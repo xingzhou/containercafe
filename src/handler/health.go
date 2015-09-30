@@ -69,7 +69,9 @@ func ping(w http.ResponseWriter, r *http.Request, tls_override bool) {
 		log.Printf("_ping success to host=%s\n", redirect_host)
 		fmt.Fprintf(w,"_ping success to host=%s\n", redirect_host)  //returns status 200
 	}else{
-		ErrorHandler(w, r, status)
+		//ErrorHandler(w, r, status)
+		msg := fmt.Sprintf("_ping failed to host=%s", redirect_host)
+		ErrorHandlerWithMsg(w, r, status, msg)
 	}
 }
 
