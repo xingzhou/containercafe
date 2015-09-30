@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"log"
 	"strings"
+	"strconv"
 
 	"conf"  		// my conf package
 )
@@ -34,8 +35,7 @@ func DockerAuth(r *http.Request) (status int, node string, docker_id string,
 		log.Printf("Auth result: status=%d\n", status)
 		return status, "", "", "", false
 	}
-	node = host.Host
-	node = node + ":" + conf.GetDockerPort()
+	node = host.Host + ":" + conf.GetDockerPort()
 	container = host.Container_id
 	//container id needs nova- prefix
 	//exec id does not need a prefix
@@ -64,6 +64,10 @@ func DockerAuth(r *http.Request) (status int, node string, docker_id string,
 		}
 		if !host.Swarm_tls{
 			tls_override = true  // no tls for this outbound req regardless of proxy conf
+		}
+		if host.Host != ""{
+			// node swarm node directly if known
+			node = host.Host + ":" + strconv.Itoa(conf.GetSwarmNodePort())
 		}
 	}
 	log.Printf("Auth result: status=%d node=%s docker_id=%s container=%s tls_override=%t\n", status, node, docker_id, container, tls_override)

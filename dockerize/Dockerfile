@@ -24,6 +24,7 @@ ENV surrogate_ids="false"
 ENV max_container_conn="4"
 ENV max_node_conn="0"
 ENV kube_port="8080"
+ENV swarm_node_port="2375"
 
 #Copy the self-signed certs and keys
 ADD hjserver.pem /hijack/hjserver.pem
