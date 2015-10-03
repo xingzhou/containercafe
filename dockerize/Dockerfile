@@ -1,5 +1,12 @@
 FROM ubuntu
-RUN apt-get update && apt-get install -y golang
+
+#install docker
+#RUN apt-get update && apt-get install -y golang
+RUN wget https://storage.googleapis.com/golang/go1.5.1.linux-amd64.tar.gz
+RUN tar -C /usr/local -xzf go1.5.1.linux-amd64.tar.gz
+RUN export PATH=$PATH:/usr/local/go/bin
+RUN rm -f go1.5.1.linux-amd64.tar.gz
+
 ADD src/ /hijack/src/
 WORKDIR /hijack
 RUN export GOPATH=/hijack && go build -o bin/hijack src/hijack/hijack.go
