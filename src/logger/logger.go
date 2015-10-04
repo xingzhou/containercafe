@@ -37,7 +37,7 @@ func NewLogger(logstash_filepath string) (lg * Log){
 	fname := logstash_filepath
 	fp, err := os.Create(fname)
 	if err != nil{
-		fmt.Println("Could not create log file ",fname, " will log to stderr only!")
+		fmt.Println("Could not create log file ",fname, " will log to stdout only!")
 		lg.logger = nil  //redundant
 		return
 	}
