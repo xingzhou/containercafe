@@ -11,10 +11,11 @@ import (
 type Log struct{
 	logger 	* log.Logger
 	buf 	bytes.Buffer
+	file	* os.File
 	mutex	sync.Mutex
 }
 
-var _initialized_ false
+var _initialized_ = false
 
 //create a Log object that logs to both simultaneously:
 //1- stdout - in text lines
@@ -28,12 +29,10 @@ func NewLogger(logstash_filepath string) (lg * Log){
 
 	lg = new (Log)
 
-	//init standard logger
-	log.SetFlags(log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
-	log.SetPrefix("hijack_proxy: ")
-	log.SetOutput(& lg.buf)
+	//create log.Logger to write to buf
+	lg.logger = log.New(& lg.buf, "", log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
 
-	//open log file fp
+	//open log file
 	fname := logstash_filepath
 	fp, err := os.Create(fname)
 	if err != nil{
@@ -41,10 +40,8 @@ func NewLogger(logstash_filepath string) (lg * Log){
 		lg.logger = nil  //redundant
 		return
 	}
-	fmt.Println("Set ELK logging output to ", fname)
-
-	//create log.Logger to write to file fp
-	lg.logger = log.New(fp, "", 0)
+	lg.file = fp
+	lg.Print("Set ELK logging output to ", fname)
 
 	return
 }
@@ -76,22 +73,25 @@ func (lg * Log) Output(msg string){
 	defer lg.mutex.Unlock()
 	defer lg.buf.Reset()
 
-	// write standard log line to lg.buf
-	//log.Print(msg)  // default calldepth is 2 which is not useful here
-	err := log.Output(3, msg)   // not available in go 1.4.2, available in go 1.5.1
+	// write standard package log line to lg.buf
+	//lg.logger.Print(msg)  // default calldepth is 2 which is not useful here
+	err := lg.logger.Output(3, msg)   // not available in go 1.4.2, available in go 1.5.1
 	if err != nil {
 		fmt.Println("Error - could not write to logger buf")
 		return
 	}
 
 	// write full standard log line to stdout
-	fmt.Printf(lg.buf.String())
+	fmt.Print(lg.buf.String())
 
-	if lg.logger == nil {
+	if lg.file == nil {
 		return
 	}
 	json_msg := lg.format(msg)  // parse buf, msg is passed for convenience but it is part of buf
-	lg.logger.Print(json_msg)
+	_, err = lg.file.WriteString(json_msg)
+	if err !=nil {
+		fmt.Print("Error - could not write to logger file")
+	}
 }
 
 // Transform std logger line to json
