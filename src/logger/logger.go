@@ -56,6 +56,12 @@ func (lg * Log) Print(v ...interface{}) {
 	lg.Output(msg)
 }
 
+func (lg * Log) Fatal(v ...interface{}) {
+	msg := fmt.Sprint(v...)
+	lg.Output(msg)
+	os.Exit(1)
+}
+
 func (lg * Log) Output(msg string){
 	// safeguard critical section for accessing lg.buf
 	lg.mutex.Lock()
