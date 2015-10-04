@@ -14,10 +14,18 @@ type Log struct{
 	mutex	sync.Mutex
 }
 
+var _initialized_ false
+
 //create a Log object that logs to both simultaneously:
 //1- stdout - in text lines
 //2- file - in logstash understood json format
 func NewLogger(logstash_filepath string) (lg * Log){
+	// TODO: This implementation supports ONE Log only. Make it support multiple
+	if _initialized_{
+		return
+	}
+	_initialized_ = true
+
 	lg = new (Log)
 
 	//init standard logger

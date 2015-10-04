@@ -9,8 +9,8 @@ import (
 	"handler" 	// my handlers
 	"conf"   	// my conf package
 	"logger"	// my logger package
-	"auth"
-	"httphelper"
+	"auth"		// my auth package
+	"httphelper"// my helper
 )
 
 var _LOG_TO_FILE_ = true   //feature flag
