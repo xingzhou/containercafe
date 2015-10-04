@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"net/http/httputil"
 	"net/http"
 	"net"
@@ -9,7 +8,14 @@ import (
 	"crypto/tls"
 
 	"conf"
+	"logger"
 )
+
+var Log * logger.Log
+
+func SetLogger(lg * logger.Log){
+	Log = lg
+}
 
 //Forward req to server
 //when tls_override=true tls is disabled for the current request being processed only
@@ -22,14 +28,14 @@ func redirect(r *http.Request, body []byte, redirect_host string, redirect_resou
 	c , err := net.Dial("tcp", redirect_host)
 	if err != nil {
 		// handle error
-		log.Printf("Error connecting to server %s, %v\n", redirect_host, err)
+		Log.Printf("Error connecting to server=%s, %v", redirect_host, err)
 		return nil,err,nil
 	}
 
 	if conf.IsTlsOutbound() && !tls_override{
 		cert, er := tls.LoadX509KeyPair(conf.GetClientCertFile(), conf.GetClientKeyFile())
 		if er != nil {
-			log.Printf("Error loading client key pair, %v\n", er)
+			Log.Printf("Error loading client key pair, %v", er)
 			return nil,err,nil
 		}
 		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{cert}})
@@ -44,7 +50,7 @@ func redirect(r *http.Request, body []byte, redirect_host string, redirect_resou
 	//req.Host = redirect_host
 	req.URL.Host = redirect_host
 
-	log.Printf("will forward request to server %s ...", redirect_host)
+	Log.Printf("will forward request to server=%s ...", redirect_host)
 	resp, err := cc.Do(req)
 
 	return resp, err, cc

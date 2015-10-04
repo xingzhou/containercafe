@@ -5,10 +5,17 @@ import(
 	"net/http"
 	"net/http/httputil"
 	"bufio"
-	"log"
 	"sync"
 	"time"
+
+	"logger"
 )
+
+var Log * logger.Log
+
+func SetLogger(lg * logger.Log){
+	Log = lg
+}
 
 func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id string, proto string){
 	var cli_conn, srv_conn  net.Conn
@@ -19,13 +26,13 @@ func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id stri
 	//hijack client conn (act as server on this conn)
 	hj, ok := w.(http.Hijacker)
 	if !ok {
-		log.Printf("httproxy doesn't support hijacking\n")
+		Log.Printf("httproxy doesn't support hijacking\n")
 		http.Error(w, "httproxy doesn't support hijacking", http.StatusInternalServerError)
 		return
 	}
 	cli_conn, cli_bufrw, err = hj.Hijack()
 	if err != nil {
-		log.Printf("httproxy hijacking error\n")
+		Log.Printf("httproxy hijacking error\n")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -41,7 +48,7 @@ func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id stri
 		tcpHijack(cli_conn, cli_bufrw, srv_conn, srv_bufrw, req_id)
 		time.Sleep(100*time.Millisecond) //allow time for go routines to shutdown after hijack completion
 	}else{
-		log.Printf("hijack protocol %s not supported\n", proto)
+		Log.Printf("hijack protocol %s not supported\n", proto)
 	}
 }
 
@@ -67,7 +74,7 @@ func tcpHijack (cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Con
 	wg.Wait()
 	wg.Add(1)
 	prefix = "(req id: " + req_id + ")"
-	log.Printf("%s Hijack exit and connections close\n", prefix)
+	Log.Printf("%s Hijack exit and connections close\n", prefix)
 }
 
 func rwloop (src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
@@ -75,7 +82,7 @@ func rwloop (src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
 
 	defer wg.Done()
 
-	log.Printf("%s rwloop started\n", print_prefix)
+	Log.Printf("%s rwloop started\n", print_prefix)
 	//s, err := src_buf.ReadString('\n')
 	b, err := src_buf.ReadByte()
 	for (err == nil) {
@@ -83,7 +90,7 @@ func rwloop (src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
 		werr := dest_buf.WriteByte(b)
 		dest_buf.Flush()
 		if werr != nil {
-			log.Printf("%s Error writing data: %v\n", print_prefix, werr)
+			Log.Printf("%s Error writing data: %v\n", print_prefix, werr)
 			//raise flag for other loop to exit
 			//dest_conn.Close()   // reader on this conn will get error and exit his loop as well
 			return
@@ -92,7 +99,7 @@ func rwloop (src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
 		b, err = src_buf.ReadByte()
 	}
 	if err != nil {
-		log.Printf("%s Error reading data: %v\n", print_prefix, err)
+		Log.Printf("%s Error reading data: %v\n", print_prefix, err)
 		return
 	}
 }

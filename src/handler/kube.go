@@ -4,7 +4,6 @@ package handler
 
 import (
 	"net/http"
-	"log"
 	"fmt"
 	"net/http/httputil"
 	"io/ioutil"
@@ -28,12 +27,12 @@ var kubePatterns = []string {
 // public handler for Kubernetes
 func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	req_id := conf.GetReqId()
-	log.Printf("------> KubeEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
+	Log.Printf("------> KubeEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
 
 	// check if uri pattern is accepted
 	if ! IsSupportedPattern(r.RequestURI, kubePatterns){
-		log.Printf("Kube pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
-		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		Log.Printf("Kube pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		NoEndpointHandler(w, r)
 		return
 	}
@@ -41,21 +40,21 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	//Call Auth interceptor to authenticate with ccsapi
 	status, node, namespace := auth.KubeAuth(r)
 	if status != 200 {
-		log.Printf("Authentication failed for req_id=%s status=%d", req_id, status)
+		Log.Printf("Authentication failed for req_id=%s status=%d", req_id, status)
 		if status == 401 {
 			NotAuthorizedHandler(w,r)
 		}else{
 			ErrorHandler(w,r,status)
 		}
-		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
-    log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, status)
+    Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, status)
 
 	//Handle request
 	kubeHandler(w, r, node, namespace, req_id)
 
-	log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+	Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 }
 
 // private handler processing
@@ -69,14 +68,14 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	var err error = nil
 
 	data, _ := httputil.DumpRequest(r, true)
-	log.Printf("Request dump of %d bytes:\n%s", len(data), string(data))
+	Log.Printf("Request dump of %d bytes:\n%s", len(data), string(data))
 
 	body, _ := ioutil.ReadAll(r.Body)
 
 	//***** Filter req/headers here before forwarding request to server *****
 
 	if (httphelper.IsUpgradeHeader(r.Header)) {
-		log.Printf("@ Upgrade request detected\n")
+		Log.Printf("@ Upgrade request detected\n")
 		req_UPGRADE = true
 	}
 
@@ -92,34 +91,34 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		if err == nil {
 			break
 		}
-		log.Printf("redirect retry=%d failed", i)
+		Log.Printf("redirect retry=%d failed", i)
 		if (i+1) < maxRetries {
-			log.Printf("will sleep secs=%d before retry", backOffTimeout)
+			Log.Printf("will sleep secs=%d before retry", backOffTimeout)
 			time.Sleep( time.Duration(backOffTimeout) * time.Second)
 		}
 	}
 	if (err != nil) {
-		log.Printf("Error in redirection, will abort req_id=%s ... err=%v\n", req_id, err)
+		Log.Printf("Error in redirection, will abort req_id=%s ... err=%v\n", req_id, err)
 		return
 	}
 
 	//write out resp
-	log.Printf("<------ req_id=%s\n", req_id)
+	Log.Printf("<------ req_id=%s\n", req_id)
 	//data2, _ := httputil.DumpResponse(resp, true)
 	//fmt.Printf("Response dump of %d bytes:\n", len(data2))
 	//fmt.Printf("%s\n", string(data2))
 
-	log.Printf("Resp Status: %s\n", resp.Status)
-	log.Print( httphelper.DumpHeader(resp.Header) )
+	Log.Printf("Resp Status: %s\n", resp.Status)
+	Log.Print( httphelper.DumpHeader(resp.Header) )
 
 	httphelper.CopyHeader(w.Header(), resp.Header)
 
 	if (httphelper.IsUpgradeHeader(resp.Header)) {
-		log.Printf("@ Upgrade response detected\n")
+		Log.Printf("@ Upgrade response detected\n")
 		resp_UPGRADE = true
 	}
 	if httphelper.IsStreamHeader(resp.Header) {
-		log.Printf("@ application/octet-stream detected\n")
+		Log.Printf("@ application/octet-stream detected\n")
 		resp_STREAM = true
 	}
 
@@ -127,14 +126,14 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 
 	proto := strings.ToUpper(httphelper.GetHeader(resp.Header, "Upgrade"))
 	if (req_UPGRADE || resp_UPGRADE) && (proto != "TCP") {
-		log.Printf("Warning: will start hijack proxy loop although Upgrade proto %s is not TCP\n", proto)
+		Log.Printf("Warning: will start hijack proxy loop although Upgrade proto %s is not TCP\n", proto)
 	}
 
 	if req_UPGRADE || resp_UPGRADE || resp_STREAM {
 		//resp header is sent first thing on hijacked conn
 		w.WriteHeader(resp.StatusCode)
 
-		log.Printf("starting tcp hijack proxy loop\n")
+		Log.Printf("starting tcp hijack proxy loop\n")
 		httphelper.InitProxyHijack(w, cc, req_id, "TCP") // TCP is the only supported proto now
 		return
 	}
@@ -142,7 +141,7 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	w.WriteHeader(resp.StatusCode)
 
 	if resp.Body == nil {
-		log.Printf("\n")
+		Log.Printf("\n")
 		fmt.Fprintf(w, "\n")
 		return
 	}
@@ -150,7 +149,7 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
-		log.Printf("Error: error in reading server response body\n")
+		Log.Printf("Error: error in reading server response body\n")
 		return
 	}
 
@@ -160,7 +159,7 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
 		httphelper.PrintJson(resp_body)
 	}else{
-		log.Printf("\n%s\n", string(resp_body))
+		Log.Printf("\n%s\n", string(resp_body))
 	}
 
 	//forward server response to calling client
@@ -186,6 +185,6 @@ func kubeRewriteUri(reqUri string, namespace string) (redirectUri string){
 			redirectUri += "/"
 		}
 	}
-	log.Printf("kubeRewriteURI: '%s' --> '%s'\n", reqUri, redirectUri)
+	Log.Printf("kubeRewriteURI: '%s' --> '%s'\n", reqUri, redirectUri)
 	return redirectUri
 }

@@ -1,7 +1,6 @@
 package conf
 
 import(
-	"log"
 	"fmt"
 	"io/ioutil"
 	"encoding/json"
@@ -19,7 +18,7 @@ func GetBuildInfo(fname string) (buildId string, buildDate string){
 
 	b, err := ioutil.ReadFile(fname)
 	if err != nil {
-		log.Printf("error reading build info file %s", fname)
+		Log.Printf("error reading build info file %s", fname)
 		return
 	}
 
@@ -27,7 +26,7 @@ func GetBuildInfo(fname string) (buildId string, buildDate string){
 	var f interface{}
 	err = json.Unmarshal(b, &f)
 	if err != nil{
-		log.Printf("error in json unmarshalling, err=%v", err)
+		Log.Printf("error in json unmarshalling, err=%v", err)
 		return
 	}
 

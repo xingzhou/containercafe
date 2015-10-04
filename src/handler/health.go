@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"log"
 	"fmt"
 	"strings"
 
@@ -18,21 +17,21 @@ var healthPatterns = []string {
 }
 
 func HealthEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("HealthEndpointHandler triggered, URI=%s\n", r.RequestURI)
+	Log.Printf("HealthEndpointHandler triggered, URI=%s", r.RequestURI)
 	p := GetUriPattern(r.RequestURI, healthPatterns)
 	switch p{
 	case healthPatterns[0]:
 		v := conf.GetVerStr()
 		fmt.Fprintf(w,"hjproxy up\n%s\n", v)
-		log.Println("hjproxy up", v)
+		Log.Print("hjproxy up ", v)
 		break
 	case healthPatterns[1]:
 		v := conf.GetVerStr()
 		n := conf.GetNumServedRequests()
 		fmt.Fprintf(w,"hjproxy %s\n", v)
 		fmt.Fprintf(w,"This instance served %d requests\n", n)
-		log.Println("hjproxy", v)
-		log.Printf("This instance served %d requests\n", n)
+		Log.Print("hjproxy ", v)
+		Log.Printf("This instance served %d requests", n)
 		break
 	case healthPatterns[2]:
 		ping(w, r, true)
@@ -41,7 +40,7 @@ func HealthEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		ping(w, r, false)
 		break
 	default:
-		log.Printf("Health pattern not accepted, URI=%s", r.RequestURI)
+		Log.Printf("Health pattern not accepted, URI=%s", r.RequestURI)
 		NoEndpointHandler(w, r)
 	}
 }
@@ -59,14 +58,14 @@ func ping(w http.ResponseWriter, r *http.Request, tls_override bool) {
 
 	resp, err, _ := redirect (r, nil /*body*/, redirect_host, "" /*resource_id*/, pingRewriteUri, tls_override)
 	if (err != nil) {
-		log.Printf("Error in redirection of _ping to %s ... err=%v\n", redirect_host, err)
+		Log.Printf("Error in redirection of _ping to %s ... err=%v", redirect_host, err)
 		status = 500
 	}else {
 		status = resp.StatusCode
 	}
 
 	if status == 200 {
-		log.Printf("_ping success to host=%s\n", redirect_host)
+		Log.Printf("_ping success to host=%s", redirect_host)
 		fmt.Fprintf(w,"_ping success to host=%s\n", redirect_host)  //returns status 200
 	}else{
 		//ErrorHandler(w, r, status)
@@ -77,6 +76,6 @@ func ping(w http.ResponseWriter, r *http.Request, tls_override bool) {
 
 func pingRewriteUri(reqUri string, resource_id string) (newReqUri string){
 	newReqUri = conf.GetDockerApiVer()+"/_ping"
-	log.Printf("pingRewriteURI: '%s' --> '%s'\n", reqUri, newReqUri)
+	Log.Printf("pingRewriteURI: '%s' --> '%s'", reqUri, newReqUri)
 	return newReqUri
 }

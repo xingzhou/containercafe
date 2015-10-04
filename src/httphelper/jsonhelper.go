@@ -5,17 +5,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 )
 
 func PrintJson(b []byte) {
 	var out bytes.Buffer
 	err := json.Indent(&out, b, "", "\t")
 	if err != nil {
-		log.Printf("\nError parsing JSON\n%s\n", b)
+		fmt.Printf("\nError parsing JSON\n%s\n", b)
 	}else {
 		//out.WriteTo(os.Stdout)
-		log.Printf("\n%s\n", out.Bytes())
+		fmt.Printf("\n%s\n", out.Bytes())
 	}
 }
 

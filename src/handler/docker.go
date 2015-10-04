@@ -6,7 +6,6 @@ import (
     "fmt"
     "net/http"
 	"net/http/httputil"
-	"log"
 	"io/ioutil"
 	"time"
 	"strings"
@@ -22,7 +21,7 @@ import (
 // handler for docker/swarm
 func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	req_id := conf.GetReqId()
-	log.Printf("------> DockerEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
+	Log.Printf("------> DockerEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
 
 	// Call Auth interceptor
 	// ok=true/false, node=host:port,
@@ -31,26 +30,26 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	// tls_override is true when swarm master does not support tls
 	status, node, docker_id, container, tls_override := auth.DockerAuth(r)
 	if status != 200 {
-		log.Printf("Authentication failed for req_id=%s status=%d", req_id, status)
+		Log.Printf("Authentication failed for req_id=%s status=%d", req_id, status)
 		if status == 401 {
 			NotAuthorizedHandler(w,r)
 		}else{
 			ErrorHandler(w,r,status)
 		}
-		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
-    log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, status)
+    Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, status)
 
 	//Call conn limiting interceptor(s) pre-processing
 	if !limit.OpenConn(container, conf.GetMaxContainerConn()) {
-		log.Printf("Max conn limit reached for container...aborting request")
-		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		Log.Printf("Max conn limit reached for container...aborting request")
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 	if !limit.OpenConn(node, conf.GetMaxNodeConn()) {
-		log.Printf("Max conn limit reached for host node...aborting request")
-		log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		Log.Printf("Max conn limit reached for host node...aborting request")
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 
@@ -61,7 +60,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	limit.CloseConn(container, conf.GetMaxContainerConn())
 	limit.CloseConn(node, conf.GetMaxNodeConn())
 
-	log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+	Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 }
 
 // private handler processing
@@ -77,18 +76,18 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	var err error = nil
 
 	data, _ := httputil.DumpRequest(r, true)
-	log.Printf("Request dump of %d bytes:\n%s", len(data), string(data))
+	Log.Printf("Request dump of %d bytes:\n%s", len(data), string(data))
 
 	body, _ := ioutil.ReadAll(r.Body)
 
 	//***** Filter req/headers here before forwarding request to server *****
 
 	if (httphelper.IsUpgradeHeader(r.Header)) {
-		log.Printf("@ Upgrade request detected\n")
+		Log.Printf("@ Upgrade request detected\n")
 		req_UPGRADE = true
 	}
 	if is_container_logs_call(r.RequestURI) {
-		log.Printf("@ Logs request detected\n")
+		Log.Printf("@ Logs request detected\n")
 		req_LOGS = true
 	}
 
@@ -110,39 +109,39 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		if err == nil {
 			break
 		}
-		log.Printf("redirect retry=%d failed", i)
+		Log.Printf("redirect retry=%d failed", i)
 		if (i+1) < maxRetries {
-			log.Printf("will sleep secs=%d before retry", backOffTimeout)
+			Log.Printf("will sleep secs=%d before retry", backOffTimeout)
 			time.Sleep( time.Duration(backOffTimeout) * time.Second)
 		}
 	}
 	if (err != nil) {
-		log.Printf("Error in redirection, will abort req_id=%s ... err=%v\n", req_id, err)
+		Log.Printf("Error in redirection, will abort req_id=%s ... err=%v\n", req_id, err)
 		return
 	}
 
 	//write out resp
 	//now = time.Now()
-	log.Printf("<------ req_id=%s\n", req_id)
+	Log.Printf("<------ req_id=%s\n", req_id)
 	//data2, _ := httputil.DumpResponse(resp, true)
 	//fmt.Printf("Response dump of %d bytes:\n", len(data2))
 	//fmt.Printf("%s\n", string(data2))
 
-	log.Printf("Resp Status: %s\n", resp.Status)
-	log.Print( httphelper.DumpHeader(resp.Header) )
+	Log.Printf("Resp Status: %s\n", resp.Status)
+	Log.Print( httphelper.DumpHeader(resp.Header) )
 
 	httphelper.CopyHeader(w.Header(), resp.Header)
 
 	if (httphelper.IsUpgradeHeader(resp.Header)) {
-		log.Printf("@ Upgrade response detected\n")
+		Log.Printf("@ Upgrade response detected\n")
 		resp_UPGRADE = true
 	}
 	if httphelper.IsStreamHeader(resp.Header) {
-		log.Printf("@ application/octet-stream detected\n")
+		Log.Printf("@ application/octet-stream detected\n")
 		resp_STREAM = true
 	}
 	if httphelper.IsDockerHeader(resp.Header) {
-		log.Printf("@ application/vnd.docker.raw-stream detected\n")
+		Log.Printf("@ application/vnd.docker.raw-stream detected\n")
 		resp_DOCKER = true
 	}
 
@@ -150,14 +149,14 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 
 	proto := strings.ToUpper(httphelper.GetHeader(resp.Header, "Upgrade"))
 	if (req_UPGRADE || resp_UPGRADE) && (proto != "TCP") {
-		log.Printf("Warning: will start hijack proxy loop although Upgrade proto %s is not TCP\n", proto)
+		Log.Printf("Warning: will start hijack proxy loop although Upgrade proto %s is not TCP\n", proto)
 	}
 
 	if req_UPGRADE || resp_UPGRADE || resp_STREAM || resp_DOCKER || req_LOGS{
 		//resp header is sent first thing on hijacked conn
 		w.WriteHeader(resp.StatusCode)
 
-		log.Printf("starting tcp hijack proxy loop\n")
+		Log.Printf("starting tcp hijack proxy loop\n")
 		httphelper.InitProxyHijack(w, cc, req_id, "TCP") // TCP is the only supported proto now
 		return
 	}
@@ -165,7 +164,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	w.WriteHeader(resp.StatusCode)
 
 	if resp.Body == nil {
-		log.Printf("\n")
+		Log.Printf("\n")
 		fmt.Fprintf(w, "\n")
 		return
 	}
@@ -173,7 +172,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
-		log.Printf("Error: error in reading server response body\n")
+		Log.Printf("Error: error in reading server response body\n")
 		return
 	}
 
@@ -184,7 +183,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		container_id := strip_nova_prefix(redirect_resource_id)
 		exec_id := get_exec_id_from_response(resp_body)
 		if exec_id == ""{
-			log.Printf("Error: error in retrieving exec id from response body\n")
+			Log.Printf("Error: error in retrieving exec id from response body\n")
 		}else {
 			conf.RedisSetExpire(exec_id, container_id, 60*60)
 		}
@@ -197,7 +196,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	}else{
 		bodystr += string(resp_body) + "\n"
 	}
-	log.Println(bodystr)
+	Log.Println(bodystr)
 
 	//forward server response to calling client
 	fmt.Fprintf(w, "%s", resp_body)
@@ -229,7 +228,7 @@ func dockerRewriteUri(reqUri string, redirect_resource_id string)(redirectUri st
 			}
 		}
 	}
-	log.Printf("dockerRewriteURI: '%s' --> '%s'\n", reqUri, redirectUri)
+	Log.Printf("dockerRewriteURI: '%s' --> '%s'\n", reqUri, redirectUri)
 	return redirectUri
 }
 
@@ -269,54 +268,13 @@ func get_exec_id_from_response(body []byte) string{
 	}
 	var resp Resp
 
-	log.Printf("get_exec_id_from_response: json=%s\n", body)
+	Log.Printf("get_exec_id_from_response: json=%s\n", body)
 	err := json.Unmarshal(body, &resp)
 	if err != nil {
-		log.Printf("get_exec_id_from_response: error=%v", err)
+		Log.Printf("get_exec_id_from_response: error=%v", err)
 		return ""
 	}
-	log.Printf("get_exec_id_from_response: Id=%s\n", resp.Id)
+	Log.Printf("get_exec_id_from_response: Id=%s\n", resp.Id)
 	return resp.Id
 }
 
-/*
-func redirect_lowlevel(r *http.Request, body []byte, redirect_host string, redirect_resource_id string) (*http.Response, error, *httputil.ClientConn){
-	//forward request to server
-	var cc *httputil.ClientConn
-
-	c , err := net.Dial("tcp", redirect_host)
-	if err != nil {
-		// handle error
-		log.Printf("Error connecting to server %s, %v\n", redirect_host, err)
-		return nil,err,nil
-	}
-
-	if conf.IsTlsOutbound() && !conf.GetTlsOutboundOverride(){
-		cert, er := tls.LoadX509KeyPair(conf.GetClientCertFile(), conf.GetClientKeyFile())
-		if er != nil {
-			log.Printf("Error loading client key pair, %v\n", er)
-			return nil,err,nil
-		}
-		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{cert}})
-		cc = httputil.NewClientConn(c_tls, nil)
-	}else{
-		cc = httputil.NewClientConn(c, nil)
-
-		//The override is for the current request being processed only
-		//The override is a directive received from ccsapi getHost, for a swarm request when swarm master does not support tls
-		conf.SetTlsOutboundOverride(false)
-	}
-
-	req, _ := http.NewRequest(r.Method, "http://"+redirect_host+auth.RewriteURI(r.RequestURI, redirect_resource_id),
-				bytes.NewReader(body))
-	req.Header = r.Header
-	//req.Host = redirect_host
-	req.URL.Host = redirect_host
-
-	log.Println("will forward request to server...")
-	resp, err := cc.Do(req)
-
-	//defer resp.Body.Close()
-	return resp, err, cc
-}
-*/

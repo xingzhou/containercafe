@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"strconv"
-	"log"
 )
 
 var glob_req_id = 0
@@ -24,7 +23,7 @@ func GetReqId() string{
 	b := make([]byte, 10)
 	_, err := rand.Read(b)
 	if err != nil {
-		log.Println("error in rand num generator:", err)
+		Log.Print("error in rand num generator:", err)
 		return "0"
 	}
 	// The slice should now contain random bytes instead of only zeroes.

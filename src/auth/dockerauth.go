@@ -2,7 +2,6 @@ package auth
 
 import (
 	"net/http"
-	"log"
 	"strings"
 	"strconv"
 
@@ -32,7 +31,7 @@ func DockerAuth(r *http.Request) (status int, node string, docker_id string,
 		status, host = getHost(r, container_id)
 	}
 	if status != 200 {
-		log.Printf("Auth result: status=%d\n", status)
+		Log.Printf("Auth result: status=%d\n", status)
 		return status, "", "", "", false
 	}
 	node = host.Host + ":" + conf.GetDockerPort()
@@ -70,14 +69,14 @@ func DockerAuth(r *http.Request) (status int, node string, docker_id string,
 			node = host.Host + ":" + strconv.Itoa(conf.GetSwarmNodePort())
 		}
 	}
-	log.Printf("Auth result: status=%d node=%s docker_id=%s container=%s tls_override=%t\n", status, node, docker_id, container, tls_override)
+	Log.Printf("Auth result: status=%d node=%s docker_id=%s container=%s tls_override=%t\n", status, node, docker_id, container, tls_override)
 	return status, node, docker_id, container, tls_override
 }
 
 func get_id_from_uri(uri string, pattern string) string{
 	var id string
 	slice1 := strings.Split(uri, pattern)
-	//log.Printf("get_id_from_uri: pattern=%s, slice1=%v\n", pattern, slice1)
+	//Log.Printf("get_id_from_uri: pattern=%s, slice1=%v\n", pattern, slice1)
 	if len(slice1) > 1 {
 		slice2 := strings.Split(slice1[1], "/")
 		id = slice2[0]
@@ -86,7 +85,7 @@ func get_id_from_uri(uri string, pattern string) string{
 	}else{
 		id=""
 	}
-	//log.Printf("get_id_from_uri: id=%s\n", id)
+	//Log.Printf("get_id_from_uri: id=%s\n", id)
 	return id
 }
 
@@ -110,7 +109,7 @@ func get_id_and_type(uri string) (id string, id_type string){
 	if found {
 		id=""
 		id_type = "None"
-		log.Printf("id=%s, id_type=%s\n", id, id_type)
+		Log.Printf("id=%s, id_type=%s\n", id, id_type)
 		return id, id_type
 	}
 
@@ -127,7 +126,7 @@ func get_id_and_type(uri string) (id string, id_type string){
 			id_type = "Exec"
 		}
 	}
-	log.Printf("id=%s, id_type=%s\n", id, id_type)
+	Log.Printf("id=%s, id_type=%s\n", id, id_type)
 	return id, id_type
 }
 
