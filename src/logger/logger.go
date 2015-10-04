@@ -15,9 +15,9 @@ type Log struct{
 }
 
 //create a Log object that logs to both simultaneously:
-//1- stderr - in text lines
+//1- stdout - in text lines
 //2- file - in logstash understood json format
-func NewLogger() (lg * Log){
+func NewLogger(logstash_filepath string) (lg * Log){
 	lg = new (Log)
 
 	//init standard logger
@@ -26,14 +26,14 @@ func NewLogger() (lg * Log){
 	log.SetOutput(& lg.buf)
 
 	//open log file fp
-	fname := "mylog.txt" //conf.GetLogFilePath()
+	fname := logstash_filepath
 	fp, err := os.Create(fname)
 	if err != nil{
-		log.Println("Could not create log file ",fname, " will log to stderr only!")
+		fmt.Println("Could not create log file ",fname, " will log to stderr only!")
 		lg.logger = nil  //redundant
 		return
 	}
-	log.Println("Set ELK logging output to ", fname)
+	fmt.Println("Set ELK logging output to ", fname)
 
 	//create log.Logger to write to file fp
 	lg.logger = log.New(fp, "", 0)
@@ -60,6 +60,7 @@ func (lg * Log) Output(msg string){
 	// safeguard critical section for accessing lg.buf
 	lg.mutex.Lock()
 	defer lg.mutex.Unlock()
+	defer lg.buf.Reset()
 
 	// write standard log line to lg.buf
 	//log.Print(msg)  // default calldepth is 2 which is not useful here
@@ -72,9 +73,11 @@ func (lg * Log) Output(msg string){
 	// write full standard log line to stdout
 	fmt.Printf(lg.buf.String())
 
+	if lg.logger == nil {
+		return
+	}
 	json_msg := lg.format(msg)  // parse buf, msg is passed for convenience but it is part of buf
 	lg.logger.Print(json_msg)
-	lg.buf.Reset()
 }
 
 // Transform std logger line to json
