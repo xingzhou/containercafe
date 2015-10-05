@@ -114,13 +114,14 @@ func (lg * Log) format(msg string) (json_msg string){
 
 	// Create json object to be written to logstash log file
 	//json_msg = "{ \"@fields\": {\"msg\" : \"" + msg + "\"}}"
-	json_msg = "{ " +
-		"\"@message\": \"" + msg + "\"," +
-		"\"@timestamp\": \"" + string(date)+"T"+string(time) + "\"," +
+	json_msg = "{" +
 		"\"@fields\": {" +
+			"\"asctime\": \"" + string(date)+" "+string(time) + "\"," +
+			"\"message\": \"" + msg + "\"," +
 			"\"filename\": \"" + string(file) + "\"," +
 			"\"lineno\": " + string(line) +
-			"}" +
+			"}," +
+		"\"@message\": \"" + msg + "\"" +
 		"}"
 
 	//TODO: (enhancement) parse original user msg for potential k=v or k:v pairs and extract them as json fields
