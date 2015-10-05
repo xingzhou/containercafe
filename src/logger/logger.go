@@ -36,12 +36,12 @@ func NewLogger(logstash_filepath string) (lg * Log){
 	fname := logstash_filepath
 	fp, err := os.Create(fname)
 	if err != nil{
-		fmt.Println("Could not create log file ",fname, " will log to stdout only!")
-		lg.logger = nil  //redundant
+		fmt.Println("Could not create logstash file ",fname, " will log to stdout only!")
+		lg.file = nil
 		return
 	}
 	lg.file = fp
-	lg.Print("Set ELK logging output to ", fname)
+	lg.Print("Set logstash logging output to ", fname)
 
 	return
 }
@@ -97,12 +97,41 @@ func (lg * Log) Output(msg string){
 // Transform std logger line to json
 // log line includes: prefix, date, time, file, line, msg
 // Example -
-// httproxy: 2015/10/01 20:33:59.510644 httproxy.go:155: Resp Status: 200 OK
+// 2015/10/01 20:33:59.510644 httproxy.go:155: Resp Status: 200 OK
 func (lg * Log) format(msg string) (json_msg string){
-	//TODO: parse system log message in lg.buf and create json_msg
-	json_msg = "{ \"@fields\": {\"msg\" : \"" + msg + "\"}}"
+	// parse lg.buf
+	sl := bytes.Split(lg.buf.Bytes(), []byte(" "))
+	var date = []byte("")
+	var time = []byte("")
+	var file = []byte("")
+	var line = []byte("")
+	if len(sl) >= 3 {
+		// looks like a formatted log line
+		date = sl[0]
+		time = sl[1]
+		file_and_line := sl[2]
+		// msg is equal to the rest of lg.buf
+
+		sl2 := bytes.Split(file_and_line, []byte(":"))
+		if len(sl2) >= 2 {
+			file  = sl2[0]
+			line = sl2[1]
+		}
+	}
+
+	// Create json object to be written to logstash log file
+	//json_msg = "{ \"@fields\": {\"msg\" : \"" + msg + "\"}}"
+	json_msg = "{ " +
+		"\"@message\": \"" + msg + "\"," +
+		"\"@timestamp\": \"" + string(date)+"T"+string(time) + "\"," +
+		"\"@fields\": {" +
+			"\"filename\": \"" + string(file) + "\"," +
+			"\"lineno\": " + string(line) +
+			"}" +
+		"}"
 
 	//TODO: (enhancement) parse original user msg for potential k=v or k:v pairs and extract them as json fields
+
 	return
 }
 
