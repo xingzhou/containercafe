@@ -49,6 +49,11 @@ func ping(w http.ResponseWriter, r *http.Request, tls_override bool) {
 	var status int
 
 	sl := strings.Split(r.RequestURI, "/")
+	if len(sl)<=3 {
+		Log.Print("Error in _ping ... no host specified")
+		NoEndpointHandler(w, r)
+		return
+	}
 	server := sl[3]
 	port := conf.GetDockerPort()
 	if len(sl)>4 {
