@@ -20,6 +20,7 @@ type GetHostResp struct {
 	Mgr_host		string  // swarm manager host:port
 	Swarm_tls		bool	// use tls if true in case of swarm, TODO: respect this flag
 	Space_id		string  // for Authorization (tenant isolation) in case of swarm
+	Namespace		string	// registry namespace for this tenant's org, used for validating images the user can access
 }
 
 var Log * logger.Log
@@ -82,7 +83,8 @@ func parse_getHost_Response(body []byte, resp *GetHostResp) error{
 	}
 	s := fmt.Sprintf("parse_getHost_Response: host=%s container_id=%s ", resp.Host, resp.Container_id)
 	if resp.Swarm {
-		s = s + fmt.Sprintf("Mgr_host=%s Space_id=%s Swarm_tls=%t", resp.Mgr_host, resp.Space_id, resp.Swarm_tls)
+		s = s + fmt.Sprintf("Mgr_host=%s Space_id=%s Swarm_tls=%t Namespace=%s",
+			resp.Mgr_host, resp.Space_id, resp.Swarm_tls, resp.Namespace)
 	}
 	Log.Printf("%s\n", s)
 	return nil

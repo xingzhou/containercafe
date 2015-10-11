@@ -10,6 +10,7 @@ import (
 	"time"
 	"strings"
 	"encoding/json"
+	"net/url"
 
 	"limit"  //my limits package
 	"httphelper"  //my httphelper package
@@ -28,7 +29,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	// docker_id=resource id from url mapped to id understood by docker
 	// container != docker_id in exec case
 	// tls_override is true when swarm master does not support tls
-	status, node, docker_id, container, tls_override := auth.DockerAuth(r)
+	status, node, docker_id, container, tls_override, reg_namespace := auth.DockerAuth(r)
 	if status != 200 {
 		Log.Printf("Authentication failed for req_id=%s status=%d", req_id, status)
 		if status == 401 {
@@ -40,6 +41,31 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
     Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, status)
+
+
+	data, _ := httputil.DumpRequest(r, true)
+	Log.Printf("Request dump req_id=%s req_length=%d:\n%s", req_id, len(data), string(data))
+	body, _ := ioutil.ReadAll(r.Body)
+
+	// Check for attempt to access not-allowed image
+	img := ""
+	// First check - run call
+	if is_container_create_call(r.RequestURI){
+		// extract image
+		img = get_image_from_container_create(body)
+	}
+	// Second check - pull call
+	if is_image_create_call(r.RequestURI) {
+		// extract image
+		img = get_image_from_image_create(r.RequestURI)
+	}
+	// check that image name is valid for this user
+	if ! is_img_valid(img, reg_namespace){
+		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, reg_namespace, req_id)
+		NotAuthorizedHandler(w, r)
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
+	}
 
 	//Call conn limiting interceptor(s) pre-processing
 	if !limit.OpenConn(container, conf.GetMaxContainerConn()) {
@@ -54,7 +80,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Handle request
-	dockerHandler(w, r, node, docker_id, req_id, tls_override)
+	dockerHandler(w, r, body, node, docker_id, req_id, tls_override)
 
 	//Call conn limiting interceptor(s) post-processing, to decrement conn count(s)
 	limit.CloseConn(container, conf.GetMaxContainerConn())
@@ -64,7 +90,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // private handler processing
-func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
+func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect_host string,
 	redirect_resource_id string, req_id string, tls_override bool) {
 
 	req_UPGRADE := false
@@ -74,11 +100,6 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	req_LOGS := false
 
 	var err error = nil
-
-	data, _ := httputil.DumpRequest(r, true)
-	Log.Printf("Request dump of %d bytes:\n%s", len(data), string(data))
-
-	body, _ := ioutil.ReadAll(r.Body)
 
 	//***** Filter req/headers here before forwarding request to server *****
 
@@ -257,6 +278,22 @@ func is_container_logs_call(uri string) bool {
 	}
 }
 
+func is_container_create_call(uri string) bool {
+	if strings.Contains(uri, "/containers/create") {
+		return true
+	}else{
+		return false
+	}
+}
+
+func is_image_create_call(uri string) bool {
+	if strings.Contains(uri, "/images/create") {
+		return true
+	}else{
+		return false
+	}
+}
+
 func strip_nova_prefix(id string) string{
 	return strings.TrimPrefix(id, "nova-")
 }
@@ -278,3 +315,69 @@ func get_exec_id_from_response(body []byte) string{
 	return resp.Id
 }
 
+func get_image_from_container_create(body []byte) (img string){
+	// look for "Image":"..."
+	var f interface{}
+	err := json.Unmarshal(body, &f)
+	if err != nil{
+		Log.Printf("get_image_from_container_create: error in json unmarshalling, err=%v", err)
+		return
+	}
+	m := f.(map[string]interface{})
+	for k, v := range m {
+		if (k == "Image") {
+			img = v.(string)
+			Log.Printf("get_image_from_container_create: found img=%s", img)
+			return
+		}
+	}
+	Log.Print("get_image_from_container_create: did not find Image in json body")
+	return
+}
+
+func get_image_from_image_create(reqUri string) (img string){
+	//look for ?fromImage=...&registry=...
+	u, err := url.Parse(reqUri)
+	if err != nil {
+		Log.Print(err)
+		return
+	}
+	q := u.Query()  // q is map[string][]string
+	fromImage := q.Get("fromImage")
+	registry := q.Get("registry)")
+	if (registry == ""){
+		img = fromImage
+		return
+	}
+	if strings.Contains(fromImage, registry){
+		img = fromImage
+		return
+	}
+	img = registry+"/"+fromImage
+	return
+}
+
+func is_img_valid(img string, namespace string) bool{
+	if img == "" {
+		return false
+	}
+
+	// img general format is reg_host/namesapce/imgname:tag or reg_host/imgname:tag
+	sl := strings.Split(img, "/")
+	if len(sl) <= 2 {
+		// public/lib image
+		return true
+	}
+
+	// we have an img with a namespace
+	if !strings.Contains(sl[0], "bluemix.net") {
+		//Dckerhub or other reg image --> OK
+		return true
+	}
+
+	// we have a Containers reg img with namespace
+	if namespace == sl[1] {
+		return true
+	}
+	return false
+}

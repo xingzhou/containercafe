@@ -11,7 +11,7 @@ import (
 // returns auth=true/false, compute node name, container/exec id, container id,
 // override tls flag is used in swarm case only
 func DockerAuth(r *http.Request) (status int, node string, docker_id string,
-	container string, tls_override bool) {
+	container string, tls_override bool, reg_namespace string) {
 
 	//parse r.RequestURI for container id or exec id
 	uri := r.RequestURI
@@ -32,10 +32,11 @@ func DockerAuth(r *http.Request) (status int, node string, docker_id string,
 	}
 	if status != 200 {
 		Log.Printf("Auth result: status=%d\n", status)
-		return status, "", "", "", false
+		return
 	}
 	node = host.Host + ":" + conf.GetDockerPort()
 	container = host.Container_id
+	reg_namespace = host.Namespace
 	//container id needs nova- prefix
 	//exec id does not need a prefix
 	if id_type == "Container" {
@@ -69,8 +70,9 @@ func DockerAuth(r *http.Request) (status int, node string, docker_id string,
 			node = host.Host + ":" + strconv.Itoa(conf.GetSwarmNodePort())
 		}
 	}
-	Log.Printf("Auth result: status=%d node=%s docker_id=%s container=%s tls_override=%t\n", status, node, docker_id, container, tls_override)
-	return status, node, docker_id, container, tls_override
+	Log.Printf("Auth result: status=%d node=%s docker_id=%s container=%s tls_override=%t reg_namespace=%s\n",
+		status, node, docker_id, container, tls_override, reg_namespace)
+	return
 }
 
 func get_id_from_uri(uri string, pattern string) string{
