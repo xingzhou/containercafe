@@ -34,6 +34,12 @@ func SetLogger(lg * logger.Log){
 func getHost(r *http.Request, id string) (status int, host GetHostResp){
 	new_uri := "http://"+conf.GetCcsapiHost()+conf.GetCcsapiUri()+"getHost/"+id
 
+	if ! AuthHeadersExist(r.Header){
+		Log.Println("Auth headers missing. Will NOT invoke CCSAPI to authenticate.")
+		status = 500
+		return
+	}
+
 	req, _ := http.NewRequest("GET", new_uri, nil)
 	httphelper.CopyHeader(req.Header, r.Header)  //req.Header = r.Header
 	req.URL.Host = conf.GetCcsapiHost()
@@ -88,5 +94,15 @@ func parse_getHost_Response(body []byte, resp *GetHostResp) error{
 	}
 	Log.Printf("%s\n", s)
 	return nil
+}
+
+func AuthHeadersExist(h http.Header) bool {
+	if httphelper.GetHeader (h, "X-Auth-Token") != ""{
+		return true
+	}
+	if httphelper.GetHeader (h, "X-Tls-Client-Dn") != ""{
+		return true
+	}
+	return false
 }
 
