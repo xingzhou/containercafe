@@ -17,6 +17,6 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request, status int){
 func ErrorHandlerWithMsg(w http.ResponseWriter, r *http.Request, status int, msg string){
 	Log.Printf("ErrorHandler triggered, URI=%s, error=%d, msg=%s", r.RequestURI, status, msg)
 	w.WriteHeader(status)
-	s := fmt.Sprintf("%d %s!\n", status, msg)
+	s := fmt.Sprintf("%d %s !\n", status, msg)
 	io.WriteString(w, s)
 }
