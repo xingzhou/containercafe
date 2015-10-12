@@ -71,22 +71,27 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check for attempt to access not-allowed image
 	img := ""
+	check_img := false
 	// First check - run call
 	if is_container_create_call(r.RequestURI){
 		// extract image
 		img = get_image_from_container_create(body)
+		check_img = true
 	}
 	// Second check - pull call
 	if is_image_create_call(r.RequestURI) {
 		// extract image
 		img = get_image_from_image_create(r.RequestURI)
+		check_img = true
 	}
-	// check that image name is valid for this user
-	if ! is_img_valid(img, reg_namespace){
-		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, reg_namespace, req_id)
-		NotAuthorizedHandler(w, r)
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-		return
+	if check_img {
+		// check that image name is valid for this user
+		if !is_img_valid(img, reg_namespace) {
+			Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, reg_namespace, req_id)
+			NotAuthorizedHandler(w, r)
+			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+			return
+		}
 	}
 
 	//Call conn limiting interceptor(s) pre-processing
@@ -381,7 +386,7 @@ func get_image_from_image_create(reqUri string) (img string){
 
 func is_img_valid(img string, namespace string) bool{
 	if img == "" {
-		return false
+		return true
 	}
 
 	// img general format is reg_host/namesapce/imgname:tag or reg_host/imgname:tag
