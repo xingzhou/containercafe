@@ -88,7 +88,8 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		// check that image name is valid for this user
 		if !is_img_valid(img, reg_namespace) {
 			Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, reg_namespace, req_id)
-			NotAuthorizedHandler(w, r)
+			//NotAuthorizedHandler(w, r)
+			ErrorHandlerWithMsg(w, r, 500, "Not allowed to access image")
 			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 			return
 		}
