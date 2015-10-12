@@ -32,8 +32,8 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	// check if uri pattern is accepted
 	if ! IsSupportedPattern(r.RequestURI, kubePatterns){
 		Log.Printf("Kube pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		NoEndpointHandler(w, r)
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 

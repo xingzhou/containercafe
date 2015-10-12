@@ -18,11 +18,33 @@ import (
 	"conf"  // my conf package
 )
 
+// supported docker api uri patterns
+var dockerPatterns = []string {
+	"/containers/",
+	"/images/",
+	"/exec/",
+	"/version",
+	"/auth",
+	"/_ping",
+	"/build", 	// ?? buildsrvc??
+	"/commit", 	// ?? create img from  container content
+	"/info", 	// ??  system wide info
+	"/events",	// ??
+}
+
 // http proxy forwarding with hijack support
 // handler for docker/swarm
 func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	req_id := conf.GetReqId()
 	Log.Printf("------> DockerEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
+
+	// check if uri pattern is accepted
+	if ! IsSupportedPattern(r.RequestURI, dockerPatterns){
+		Log.Printf("Docker pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
+		NoEndpointHandler(w, r)
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
+	}
 
 	// Call Auth interceptor
 	// ok=true/false, node=host:port,
