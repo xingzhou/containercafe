@@ -26,7 +26,7 @@ func PrettyJson(b []byte) string{
 		s = fmt.Sprintf("%s\n", b)
 	}else {
 		//out.WriteTo(os.Stdout)
-		s = fmt.Sprintf("%s\n", out.Bytes())
+		s = fmt.Sprintf("%s", out.Bytes())
 	}
 	return s
 }
