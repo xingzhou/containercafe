@@ -145,25 +145,34 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		fmt.Fprintf(w, "\n")
 		return
 	}
-	//TODO chunked reads
-	resp_body, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		Log.Printf("Error: error in reading server response body\n")
-		return
+
+	_KUBE_CHUNKED_READ_ := true   // new feature flag
+
+	if _KUBE_CHUNKED_READ_ {
+		//new code to test
+		//defer resp.Body.Close()   // causes this method to not return to caller IF closing while there is still data in Body!
+		chunkedRWLoop(resp, w, req_id)
+	}else {
+		resp_body, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			Log.Printf("Error: error in reading server response body\n")
+			fmt.Fprint(w, "error in reading server response body\n")
+			return
+		}
+
+		//TODO ***** Filter framework for Interception of commands before returning result to client (2) *****
+
+		//Printout the response body
+		if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
+			httphelper.PrintJson(resp_body)
+		}else {
+			Log.Printf("\n%s\n", string(resp_body))
+		}
+
+		//forward server response to calling client
+		fmt.Fprintf(w, "%s", resp_body)
 	}
-
-	//TODO ***** Filter framework for Interception of commands before returning result to client (2) *****
-
-	//Printout the response body
-	if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
-		httphelper.PrintJson(resp_body)
-	}else{
-		Log.Printf("\n%s\n", string(resp_body))
-	}
-
-	//forward server response to calling client
-	fmt.Fprintf(w, "%s", resp_body)
 	return
 }
 

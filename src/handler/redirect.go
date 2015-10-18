@@ -11,6 +11,7 @@ import (
 	"logger"
 )
 
+//used by all src files in the handler package
 var Log * logger.Log
 
 func SetLogger(lg * logger.Log){

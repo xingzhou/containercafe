@@ -217,38 +217,50 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect
 		fmt.Fprintf(w, "\n")
 		return
 	}
-	//TODO chunked reads
-	resp_body, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		Log.Printf("Error: error in reading server response body\n")
-		return
-	}
 
-	//TODO ***** Filter framework for Interception of commands before returning result to client (2) *****
-	//Check if Redis caching is required
-	//if request uri contains "/container/" and "/exec" then store in Redis the returned exec id (in resp body) and container id (in uri)
-	if is_container_exec_call(r.RequestURI){
-		container_id := strip_nova_prefix(redirect_resource_id)
-		exec_id := get_exec_id_from_response(resp_body)
-		if exec_id == ""{
-			Log.Printf("Error: error in retrieving exec id from response body\n")
-		}else {
-			conf.RedisSetExpire(exec_id, container_id, 60*60)
+	_CHUNKED_READ_ := false   // new feature flag
+
+	if _CHUNKED_READ_ {
+		//new code to test
+		//defer resp.Body.Close()   // causes this method to not return to caller IF closing while there is still data in Body!
+		chunkedRWLoop(resp, w, req_id)
+
+		// TODO: extract exec id from resp
+
+	}else {
+		resp_body, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			Log.Printf("Error: error in reading server response body\n")
+			fmt.Fprint(w, "error in reading server response body\n")
+			return
 		}
-	}
 
-	//Printout the response body
-	bodystr := "Dump Body:\n"
-	if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
-		bodystr += httphelper.PrettyJson(resp_body)
-	}else{
-		bodystr += string(resp_body) + "\n"
-	}
-	Log.Println(bodystr)
+		//TODO ***** Filter framework for Interception of commands before returning result to client (2) *****
+		//Check if Redis caching is required
+		//if request uri contains "/container/" and "/exec" then store in Redis the returned exec id (in resp body) and container id (in uri)
+		if is_container_exec_call(r.RequestURI) {
+			container_id := strip_nova_prefix(redirect_resource_id)
+			exec_id := get_exec_id_from_response(resp_body)
+			if exec_id == "" {
+				Log.Printf("Error: error in retrieving exec id from response body\n")
+			}else {
+				conf.RedisSetExpire(exec_id, container_id, 60*60)
+			}
+		}
 
-	//forward server response to calling client
-	fmt.Fprintf(w, "%s", resp_body)
+		//Printout the response body
+		bodystr := "Dump Body:\n"
+		if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
+			bodystr += httphelper.PrettyJson(resp_body)
+		}else {
+			bodystr += string(resp_body)+"\n"
+		}
+		Log.Println(bodystr)
+
+		//forward server response to calling client
+		fmt.Fprintf(w, "%s", resp_body)
+	}
 	return
 }
 
