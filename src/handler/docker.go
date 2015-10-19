@@ -84,15 +84,19 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		img = get_image_from_image_create(r.RequestURI)
 		check_img = true
 	}
-	if check_img {
+	// Third check - push call
+	if is_image_push_call(r.RequestURI) {
+		// extract image
+		img = get_image_from_image_push(r.RequestURI)
+		check_img = true
+	}
+	if check_img && !is_img_valid(img, reg_namespace){
 		// check that image name is valid for this user
-		if !is_img_valid(img, reg_namespace) {
-			Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, reg_namespace, req_id)
-			//NotAuthorizedHandler(w, r)
-			ErrorHandlerWithMsg(w, r, 500, "Not allowed to access image")
-			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-			return
-		}
+		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, reg_namespace, req_id)
+		//NotAuthorizedHandler(w, r)
+		ErrorHandlerWithMsg(w, r, 500, "Not allowed to access image")
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
 	}
 
 	//Call conn limiting interceptor(s) pre-processing
@@ -158,14 +162,14 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect
 		if err == nil {
 			break
 		}
-		Log.Printf("redirect retry=%d failed", i)
+		Log.Printf("redirect failed retry=%d req_id=%s", i, req_id)
 		if (i+1) < maxRetries {
-			Log.Printf("will sleep secs=%d before retry", backOffTimeout)
+			Log.Printf("will sleep before retry secs=%d req_id=%s", backOffTimeout, req_id)
 			time.Sleep( time.Duration(backOffTimeout) * time.Second)
 		}
 	}
 	if (err != nil) {
-		Log.Printf("Error in redirection, will abort req_id=%s ... err=%v\n", req_id, err)
+		Log.Printf("Error in redirection, will abort req_id=%s err=%v\n", req_id, err)
 		return
 	}
 
@@ -205,7 +209,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect
 		//resp header is sent first thing on hijacked conn
 		w.WriteHeader(resp.StatusCode)
 
-		Log.Printf("starting tcp hijack proxy loop\n")
+		Log.Printf("starting tcp hijack proxy loop req_id=%s", req_id)
 		httphelper.InitProxyHijack(w, cc, req_id, "TCP") // TCP is the only supported proto now
 		return
 	}
@@ -218,9 +222,9 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect
 		return
 	}
 
-	_CHUNKED_READ_ := false   // new feature flag
+	_DOCKER_CHUNKED_READ_ := false   // new feature flag
 
-	if _CHUNKED_READ_ {
+	if _DOCKER_CHUNKED_READ_ {
 		//new code to test
 		//defer resp.Body.Close()   // causes this method to not return to caller IF closing while there is still data in Body!
 		chunkedRWLoop(resp, w, req_id)
@@ -231,7 +235,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect
 		resp_body, err := ioutil.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
-			Log.Printf("Error: error in reading server response body\n")
+			Log.Printf("Error: error in reading server response body")
 			fmt.Fprint(w, "error in reading server response body\n")
 			return
 		}
@@ -243,7 +247,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect
 			container_id := strip_nova_prefix(redirect_resource_id)
 			exec_id := get_exec_id_from_response(resp_body)
 			if exec_id == "" {
-				Log.Printf("Error: error in retrieving exec id from response body\n")
+				Log.Printf("Error: error in retrieving exec id from response body")
 			}else {
 				conf.RedisSetExpire(exec_id, container_id, 60*60)
 			}
@@ -334,6 +338,14 @@ func is_image_create_call(uri string) bool {
 	}
 }
 
+func is_image_push_call(uri string) bool {
+	if strings.Contains(uri, "/images/") && strings.Contains(uri, "/push"){
+		return true
+	}else{
+		return false
+	}
+}
+
 func strip_nova_prefix(id string) string{
 	return strings.TrimPrefix(id, "nova-")
 }
@@ -394,6 +406,21 @@ func get_image_from_image_create(reqUri string) (img string){
 		return
 	}
 	img = registry+"/"+fromImage
+	return
+}
+
+func get_image_from_image_push(reqUri string) (img string){
+	// Ex: POST /images/registry.acme.com:5000/test/push HTTP/1.1
+	sl := strings.Split(reqUri, "/")
+	if len(sl) < 4 {
+		// err
+		img=""
+		return
+	}
+	img = sl[2]
+	for i:=3; i< len(sl)-1; i++ {
+		img += "/" + sl[i]
+	}
 	return
 }
 
