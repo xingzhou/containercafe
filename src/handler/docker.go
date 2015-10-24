@@ -474,7 +474,7 @@ func is_image_push_call(uri string) bool {
 	}
 }
 
-func is_image_list_call(r.RequestURI) bool{
+func is_image_list_call(uri string) bool{
 	if strings.Contains(uri, "/images/json"){
 		return true
 	}else{
