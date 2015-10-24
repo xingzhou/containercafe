@@ -400,15 +400,14 @@ func is_img_valid(img string, namespace string) bool{
 	}
 
 	// we have an img with a namespace
-	// NOTE: all Containers registries are accessible to the user by the following test
-	// TODO limit access only to this environment's registry
+	// limit access only to this environment's registry
 	if !strings.Contains(sl[0], ".bluemix.net") {
 		//Dckerhub or other reg image --> OK
 		return true
 	}
 
 	// we have a Containers reg img with namespace
-	if namespace == sl[1] {
+	if namespace == sl[1] && conf.GetRegLocation() == sl[0]{
 		return true
 	}
 	return false
