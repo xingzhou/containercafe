@@ -77,6 +77,9 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		// extract image
 		img = get_image_from_container_create(body)
 		check_img = true
+
+		// inject X-Registry-Auth header
+		InjectRegAuthHeader(r)
 	}
 	// Second check - pull call
 	if is_image_create_call(r.RequestURI) {
@@ -95,6 +98,13 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, reg_namespace, req_id)
 		//NotAuthorizedHandler(w, r)
 		ErrorHandlerWithMsg(w, r, 500, "Not allowed to access image")
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
+	}
+
+	// intercept image list call and direct to registry
+	if is_image_list_call(r.RequestURI){
+		invoke_reg_search()
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
@@ -198,7 +208,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect
 		resp_DOCKER = true
 	}
 
-	//TODO ***** Filter framework for Interception of commands before forwarding resp to client (1) *****
+	//***** Filter framework for Interception of commands before forwarding resp to client (1) *****
 
 	proto := strings.ToUpper(httphelper.GetHeader(resp.Header, "Upgrade"))
 	if (req_UPGRADE || resp_UPGRADE) && (proto != "TCP") {
@@ -229,7 +239,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect
 		//defer resp.Body.Close()   // causes this method to not return to caller IF closing while there is still data in Body!
 		chunkedRWLoop(resp, w, req_id)
 
-		// TODO: extract exec id from resp
+		// TODO extract exec id from resp
 
 	}else {
 		resp_body, err := ioutil.ReadAll(resp.Body)
@@ -240,7 +250,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect
 			return
 		}
 
-		//TODO ***** Filter framework for Interception of commands before returning result to client (2) *****
+		//***** Filter framework for Interception of commands before returning result to client (2) *****
 		//Check if Redis caching is required
 		//if request uri contains "/container/" and "/exec" then store in Redis the returned exec id (in resp body) and container id (in uri)
 		if is_container_exec_call(r.RequestURI) {
@@ -297,54 +307,7 @@ func dockerRewriteUri(reqUri string, redirect_resource_id string)(redirectUri st
 	return redirectUri
 }
 
-//return true if it is /<v>/containers/<id>/exec api call
-func is_container_exec_call(uri string) bool {
-	if strings.Contains(uri, "/containers/") && strings.Contains(uri, "/exec") {
-		return true
-	}else{
-		return false
-	}
-}
 
-func is_container_attach_call(uri string) bool {
-	if strings.Contains(uri, "/containers/") && strings.Contains(uri, "/attach") {
-		return true
-	}else{
-		return false
-	}
-}
-
-func is_container_logs_call(uri string) bool {
-	if strings.Contains(uri, "/containers/") && strings.Contains(uri, "/logs") {
-		return true
-	}else{
-		return false
-	}
-}
-
-func is_container_create_call(uri string) bool {
-	if strings.Contains(uri, "/containers/create") {
-		return true
-	}else{
-		return false
-	}
-}
-
-func is_image_create_call(uri string) bool {
-	if strings.Contains(uri, "/images/create") {
-		return true
-	}else{
-		return false
-	}
-}
-
-func is_image_push_call(uri string) bool {
-	if strings.Contains(uri, "/images/") && strings.Contains(uri, "/push"){
-		return true
-	}else{
-		return false
-	}
-}
 
 func strip_nova_prefix(id string) string{
 	return strings.TrimPrefix(id, "nova-")
@@ -437,7 +400,9 @@ func is_img_valid(img string, namespace string) bool{
 	}
 
 	// we have an img with a namespace
-	if !strings.Contains(sl[0], "bluemix.net") {
+	// NOTE: all Containers registries are accessible to the user by the following test
+	// TODO limit access only to this environment's registry
+	if !strings.Contains(sl[0], ".bluemix.net") {
 		//Dckerhub or other reg image --> OK
 		return true
 	}
@@ -447,4 +412,72 @@ func is_img_valid(img string, namespace string) bool{
 		return true
 	}
 	return false
+}
+
+func InjectRegAuthHeader(r *http.Request) {
+	tok := conf.GetRegAuthToken()
+	r.Header.Set("X-Registry-Auth", tok)
+}
+
+//implement image list by invoking search api of Containers registry
+func invoke_reg_search(){
+	return
+}
+
+//return true if it is /<v>/containers/<id>/exec api call
+func is_container_exec_call(uri string) bool {
+	if strings.Contains(uri, "/containers/") && strings.Contains(uri, "/exec") {
+		return true
+	}else{
+		return false
+	}
+}
+
+func is_container_attach_call(uri string) bool {
+	if strings.Contains(uri, "/containers/") && strings.Contains(uri, "/attach") {
+		return true
+	}else{
+		return false
+	}
+}
+
+func is_container_logs_call(uri string) bool {
+	if strings.Contains(uri, "/containers/") && strings.Contains(uri, "/logs") {
+		return true
+	}else{
+		return false
+	}
+}
+
+func is_container_create_call(uri string) bool {
+	if strings.Contains(uri, "/containers/create") {
+		return true
+	}else{
+		return false
+	}
+}
+
+//image pull call
+func is_image_create_call(uri string) bool {
+	if strings.Contains(uri, "/images/create") {
+		return true
+	}else{
+		return false
+	}
+}
+
+func is_image_push_call(uri string) bool {
+	if strings.Contains(uri, "/images/") && strings.Contains(uri, "/push"){
+		return true
+	}else{
+		return false
+	}
+}
+
+func is_image_list_call(r.RequestURI) bool{
+	if strings.Contains(uri, "/images/json"){
+		return true
+	}else{
+		return false
+	}
 }
