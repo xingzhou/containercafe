@@ -93,6 +93,11 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		img = get_image_from_image_push(r.RequestURI)
 		check_img = true
 	}
+	if is_image_inspect_call(r.RequestURI){
+		// extract image
+		img = get_image_from_image_inspect(r.RequestURI)
+		check_img = true
+	}
 	if check_img && !is_img_valid(img, reg_namespace){
 		// check that image name is valid for this user
 		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, reg_namespace, req_id)
@@ -102,9 +107,19 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// intercept image list call and direct to registry
+	// intercept image calls and direct to registry
 	if is_image_list_call(r.RequestURI){
-		invoke_reg_search()
+		invoke_reg_list(w, r, reg_namespace, req_id)
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
+	}
+	if is_image_inspect_call(r.RequestURI){
+		invoke_reg_inspect(w, r, img, reg_namespace, req_id)
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
+	}
+	if is_image_rmi_call(r.RequestURI, r.Method){
+		invoke_reg_rmi(w, r, reg_namespace, req_id)
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
@@ -330,6 +345,8 @@ func get_exec_id_from_response(body []byte) string{
 	return resp.Id
 }
 
+//////////////////////////// image names extraction and validation ops
+
 func get_image_from_container_create(body []byte) (img string){
 	// look for "Image":"..."
 	var f interface{}
@@ -387,6 +404,21 @@ func get_image_from_image_push(reqUri string) (img string){
 	return
 }
 
+func get_image_from_image_inspect(reqUri string) (img string){
+	// Ex: POST /images/registry.acme.com:5000/test/json HTTP/1.1
+	sl := strings.Split(reqUri, "/")
+	if len(sl) < 4 {
+		// err
+		img=""
+		return
+	}
+	img = sl[2]
+	for i:=3; i< len(sl)-1; i++ {
+		img += "/" + sl[i]
+	}
+	return
+}
+
 func is_img_valid(img string, namespace string) bool{
 	if img == "" {
 		return true
@@ -400,28 +432,20 @@ func is_img_valid(img string, namespace string) bool{
 	}
 
 	// we have an img with a namespace
-	// limit access only to this environment's registry
 	if !strings.Contains(sl[0], ".bluemix.net") {
 		//Dckerhub or other reg image --> OK
 		return true
 	}
 
 	// we have a Containers reg img with namespace
+	// limit access only to this environment's registry
 	if namespace == sl[1] && conf.GetRegLocation() == sl[0]{
 		return true
 	}
 	return false
 }
 
-func InjectRegAuthHeader(r *http.Request) {
-	tok := conf.GetRegAuthToken()
-	r.Header.Set("X-Registry-Auth", tok)
-}
-
-//implement image list by invoking search api of Containers registry
-func invoke_reg_search(){
-	return
-}
+//////////////////////////// Check request URI for a certain call pattern
 
 //return true if it is /<v>/containers/<id>/exec api call
 func is_container_exec_call(uri string) bool {
@@ -475,6 +499,22 @@ func is_image_push_call(uri string) bool {
 
 func is_image_list_call(uri string) bool{
 	if strings.Contains(uri, "/images/json"){
+		return true
+	}else{
+		return false
+	}
+}
+
+func is_image_inspect_call(uri string) bool{
+	if strings.Contains(uri, "/images/") && strings.Contains(uri, "/json") && !strings.Contains(uri, "/images/json"){
+		return true
+	}else{
+		return false
+	}
+}
+
+func is_image_rmi_call(uri, method string) bool{
+	if strings.Contains(uri, "/images/") && method == "DELETE" {
 		return true
 	}else{
 		return false
