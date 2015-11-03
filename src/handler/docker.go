@@ -398,7 +398,7 @@ func get_image_from_image_push(reqUri string) (img string){
 		return
 	}
 	img = sl[3]
-	for i:=3; i< len(sl)-1; i++ {
+	for i:=4; i< len(sl)-1; i++ {
 		img += "/" + sl[i]
 	}
 	return
@@ -413,7 +413,7 @@ func get_image_from_image_inspect(reqUri string) (img string){
 		return
 	}
 	img = sl[3]
-	for i:=3; i< len(sl)-1; i++ {
+	for i:=4; i< len(sl)-1; i++ {
 		img += "/" + sl[i]
 	}
 	return
