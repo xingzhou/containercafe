@@ -47,15 +47,35 @@ func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, name
 //return json to docker cli
 //DockerHandler will print req processing completion message and exit right after this method
 func invoke_reg_list(w http.ResponseWriter, r *http.Request, namespace string, req_id string){
-	//TODO
-	//1- call internal registry api server to get namespace images
+	//Not recommended approach. These urls go to registry.ng.bluemix.net
 	//ns_url := "http://" + conf.GetRegLocation() + "/v1/namespaces/" + namespace
-
-	//2- call to get library images
 	//lib_url := "http://" + conf.GetRegLocation() + "/v1/namespaces/library"
 
-	//3- TODO get images metadata (id, size, creation date, tags?)
-	ErrorHandlerWithMsg(w, r, 404, "Registry list API not supported yet... Stay tuned")
+	// Recommended approach using internal api exposed by registry microservice
+	// get service host from Consul
+	service := "registry-api-external"
+	host := conf.GetServiceHost(service)
+	if (host == ""){
+		Log.Printf("Failed to get host  service=%s  req_id=%s", service, req_id)
+		ErrorHandlerWithMsg(w, r, 500, "Failed to get Registry API host")
+		return
+	}
+
+	//Call service endpoint
+	url := "http://" + host + "/v1/imageList/" + namespace
+	Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET",url, nil)
+	req.Header.Add("Accept", "application/json")
+	resp, _ := client.Do(req)
+	defer resp.Body.Close()
+	body,_:=ioutil.ReadAll(resp.Body)
+	Log.Printf("Registry status code: %d", resp.StatusCode)
+	Log.Printf("Registry response: %s", string(body))
+
+	//send response back to client
+	w.WriteHeader(resp.StatusCode)
+	io.WriteString(w, string(body))
 	return
 }
 
