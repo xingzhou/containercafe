@@ -390,14 +390,14 @@ func get_image_from_image_create(reqUri string) (img string){
 }
 
 func get_image_from_image_push(reqUri string) (img string){
-	// Ex: POST /images/registry.acme.com:5000/test/push HTTP/1.1
+	// Ex: POST /v1.20/images/registry.acme.com:5000/test/push HTTP/1.1
 	sl := strings.Split(reqUri, "/")
-	if len(sl) < 4 {
+	if len(sl) < 5 {
 		// err
 		img=""
 		return
 	}
-	img = sl[2]
+	img = sl[3]
 	for i:=3; i< len(sl)-1; i++ {
 		img += "/" + sl[i]
 	}
@@ -405,14 +405,14 @@ func get_image_from_image_push(reqUri string) (img string){
 }
 
 func get_image_from_image_inspect(reqUri string) (img string){
-	// Ex: POST /images/registry.acme.com:5000/test/json HTTP/1.1
+	// Ex: POST /v1.20/images/registry.acme.com:5000/test/json HTTP/1.1
 	sl := strings.Split(reqUri, "/")
-	if len(sl) < 4 {
+	if len(sl) < 5 {
 		// err
 		img=""
 		return
 	}
-	img = sl[2]
+	img = sl[3]
 	for i:=3; i< len(sl)-1; i++ {
 		img += "/" + sl[i]
 	}
