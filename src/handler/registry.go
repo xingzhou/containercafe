@@ -26,6 +26,7 @@ func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, name
 
 	//Call service endpoint
 	url := "http://"+host+"/v1/imageJson?imageName="+img
+	Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET",url, nil)
 	req.Header.Add("Accept", "application/json")
@@ -54,7 +55,7 @@ func invoke_reg_list(w http.ResponseWriter, r *http.Request, namespace string, r
 	//lib_url := "http://" + conf.GetRegLocation() + "/v1/namespaces/library"
 
 	//3- TODO get images metadata (id, size, creation date, tags?)
-
+	ErrorHandlerWithMsg(w, r, 404, "Registry list API not supported yet... Stay tuned")
 	return
 }
 
