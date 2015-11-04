@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 
 	"conf"
+	"httphelper"
 )
 
 func InjectRegAuthHeader(r *http.Request) {
@@ -41,7 +42,7 @@ func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, name
 	defer resp.Body.Close()
 	body,_:=ioutil.ReadAll(resp.Body)
 	Log.Printf("Registry status code: %d", resp.StatusCode)
-	Log.Printf("Registry response: %s", string(body))
+	Log.Printf("Registry response: %s", httphelper.PrettyJson(body) )
 
 	//send response back to client
 	w.WriteHeader(resp.StatusCode)
@@ -76,7 +77,7 @@ func invoke_reg_list(w http.ResponseWriter, r *http.Request, namespace string, r
 	defer resp.Body.Close()
 	body,_:=ioutil.ReadAll(resp.Body)
 	Log.Printf("Registry status code: %d", resp.StatusCode)
-	Log.Printf("Registry response: %s", string(body))
+	Log.Printf("Registry response: %s", httphelper.PrettyJson(body))
 
 	//send response back to client
 	w.WriteHeader(resp.StatusCode)
