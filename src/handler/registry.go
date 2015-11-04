@@ -13,13 +13,20 @@ func InjectRegAuthHeader(r *http.Request) {
 	r.Header.Set("X-Registry-Auth", tok)
 }
 
+func GetRegistryApiHost() (host string){
+	// get service host from Consul
+	service := "registry-api"
+	host = conf.GetServiceHost(service)
+	if (host == ""){
+		Log.Printf("Failed to get Registry API host  service=%s", service)
+	}
+	return
+}
+
 // call internal registry api server to get image metadata
 func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, namespace string, req_id string){
-	// get service host from Consul
-	service := "registry-api-external"
-	host := conf.GetServiceHost(service)
+	host := GetRegistryApiHost()
 	if (host == ""){
-		Log.Printf("Failed to get host  service=%s  req_id=%s", service, req_id)
 		ErrorHandlerWithMsg(w, r, 500, "Failed to get Registry API host")
 		return
 	}
@@ -53,10 +60,8 @@ func invoke_reg_list(w http.ResponseWriter, r *http.Request, namespace string, r
 
 	// Recommended approach using internal api exposed by registry microservice
 	// get service host from Consul
-	service := "registry-api-external"
-	host := conf.GetServiceHost(service)
+	host := GetRegistryApiHost()
 	if (host == ""){
-		Log.Printf("Failed to get host  service=%s  req_id=%s", service, req_id)
 		ErrorHandlerWithMsg(w, r, 500, "Failed to get Registry API host")
 		return
 	}
