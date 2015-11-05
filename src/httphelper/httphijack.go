@@ -73,6 +73,9 @@ func tcpHijack (cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Con
 	//the 2 conn closures happen at exit of tcpHijack, so the other go routine will receive read error and exit
 	wg.Wait()
 	wg.Add(1)
+
+	time.Sleep(250*time.Millisecond) //allow time for other go routine to flush any data in pipe before sockets are closed
+
 	prefix = "(req id: " + req_id + ")"
 	Log.Printf("%s Hijack exit and connections close\n", prefix)
 }
