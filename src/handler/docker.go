@@ -280,13 +280,15 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect
 
 		//Printout the response body
 		bodystr := "Dump Body:\n"
+		bodystr += httphelper.PrettyJson(resp_body)
+		Log.Println(bodystr)
+		/*
 		if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
 			bodystr += httphelper.PrettyJson(resp_body)
 		}else {
 			bodystr += string(resp_body)+"\n"
 		}
-		Log.Println(bodystr)
-
+		*/
 		//forward server response to calling client
 		fmt.Fprintf(w, "%s", resp_body)
 	}

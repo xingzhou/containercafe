@@ -164,12 +164,16 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		//TODO ***** Filter framework for Interception of commands before returning result to client (2) *****
 
 		//Printout the response body
+		bodystr := "Dump Body:\n"
+		bodystr += httphelper.PrettyJson(resp_body)
+		Log.Println(bodystr)
+		/*
 		if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
 			httphelper.PrintJson(resp_body)
 		}else {
 			Log.Printf("\n%s\n", string(resp_body))
 		}
-
+		*/
 		//forward server response to calling client
 		fmt.Fprintf(w, "%s", resp_body)
 	}
