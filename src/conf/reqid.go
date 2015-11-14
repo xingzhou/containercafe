@@ -24,7 +24,7 @@ func GetReqId() string{
 	_, err := rand.Read(b)
 	if err != nil {
 		Log.Print("error in rand num generator:", err)
-		return "0"
+		return strconv.Itoa(surr) //"0"
 	}
 	// The slice should now contain random bytes instead of only zeroes.
 	req_id := base64.StdEncoding.EncodeToString( b )
