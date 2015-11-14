@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 
+	"auth"
 	"conf"
 	"httphelper"
 )
@@ -25,7 +26,7 @@ func GetRegistryApiHost() (host string){
 }
 
 // call internal registry api server to get image metadata
-func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, namespace string, req_id string){
+func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, creds auth.Creds, req_id string){
 	host := GetRegistryApiHost()
 	if (host == ""){
 		ErrorHandlerWithMsg(w, r, 500, "Failed to get Registry API host")
@@ -54,7 +55,7 @@ func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, name
 //implement image list by invoking search api of Containers registry
 //return json to docker cli
 //DockerHandler will print req processing completion message and exit right after this method
-func invoke_reg_list(w http.ResponseWriter, r *http.Request, namespace string, req_id string){
+func invoke_reg_list(w http.ResponseWriter, r *http.Request, creds auth.Creds, req_id string){
 	//Not recommended approach. These urls go to registry.ng.bluemix.net
 	//ns_url := "http://" + conf.GetRegLocation() + "/v1/namespaces/" + namespace
 	//lib_url := "http://" + conf.GetRegLocation() + "/v1/namespaces/library"
@@ -68,7 +69,7 @@ func invoke_reg_list(w http.ResponseWriter, r *http.Request, namespace string, r
 	}
 
 	//Call service endpoint
-	url := "http://" + host + "/v1/imageList/" + namespace
+	url := "http://" + host + "/v1/imageList/" + creds.Reg_namespace
 	Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET",url, nil)
@@ -85,6 +86,6 @@ func invoke_reg_list(w http.ResponseWriter, r *http.Request, namespace string, r
 	return
 }
 
-func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, namespace string, req_id string){
+func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds auth.Creds, req_id string){
 	//TODO
 }

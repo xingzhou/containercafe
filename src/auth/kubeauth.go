@@ -10,15 +10,17 @@ import (
 	"conf"
 )
 
-func KubeAuth(r *http.Request) (status int, node string, namespace string) {
-	status, host := getHost(r, "NoneContainer")
-	if status == 200 {
+//KubeAuth uses only the following fields of Creds[]: Status, Node, Space_id
+func KubeAuth(r *http.Request) (creds Creds) {
+	var host GetHostResp
+	creds.Status, host = getHost(r, "NoneContainer")
+	if creds.Status == 200 {
 		kubeMgr := injectKubePort( host.Mgr_host, conf.GetKubePort() ) 	// Kube master port is 6443
-		Log.Printf("status=%d Mgr_host=%s namespace=%s", status, kubeMgr, host.Space_id)
-		return status, kubeMgr, host.Space_id
+		creds.Space_id = host.Space_id
+		creds.Node = kubeMgr
 	}
-	Log.Printf("status=%d Mgr_host=\"\" namespace=\"\" ", status)
-	return status, "", ""
+	Log.Printf("status=%d Mgr_host=%s namespace=%s", creds.Status, creds.Node, creds.Space_id)
+	return
 }
 
 func injectKubePort(host string, port int) string{

@@ -51,18 +51,19 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	// docker_id=resource id from url mapped to id understood by docker
 	// container != docker_id in exec case
 	// tls_override is true when swarm master does not support tls
-	status, node, docker_id, container, tls_override, reg_namespace := auth.DockerAuth(r)
-	if status != 200 {
-		Log.Printf("Authentication failed for req_id=%s status=%d", req_id, status)
-		if status == 401 {
+	var creds auth.Creds
+	creds = auth.DockerAuth(r)
+	if creds.Status != 200 {
+		Log.Printf("Authentication failed for req_id=%s status=%d", req_id, creds.Status)
+		if creds.Status == 401 {
 			NotAuthorizedHandler(w,r)
 		}else{
-			ErrorHandler(w,r,status)
+			ErrorHandler(w,r,creds.Status)
 		}
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
-    Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, status)
+    Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
 
 
 	data, _ := httputil.DumpRequest(r, true)
@@ -98,9 +99,9 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		img = get_image_from_image_inspect(r.RequestURI)
 		check_img = true
 	}
-	if check_img && !is_img_valid(img, reg_namespace){
+	if check_img && !is_img_valid(img, creds.Reg_namespace){
 		// check that image name is valid for this user
-		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, reg_namespace, req_id)
+		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
 		//NotAuthorizedHandler(w, r)
 		ErrorHandlerWithMsg(w, r, 500, "Not allowed to access image")
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
@@ -109,39 +110,39 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 
 	// intercept image calls and direct to registry
 	if is_image_list_call(r.RequestURI){
-		invoke_reg_list(w, r, reg_namespace, req_id)
+		invoke_reg_list(w, r, creds, req_id)
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 	if is_image_inspect_call(r.RequestURI){
-		invoke_reg_inspect(w, r, img, reg_namespace, req_id)
+		invoke_reg_inspect(w, r, img, creds, req_id)
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 	if is_image_rmi_call(r.RequestURI, r.Method){
-		invoke_reg_rmi(w, r, reg_namespace, req_id)
+		invoke_reg_rmi(w, r, img, creds, req_id)
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 
 	//Call conn limiting interceptor(s) pre-processing
-	if !limit.OpenConn(container, conf.GetMaxContainerConn()) {
+	if !limit.OpenConn(creds.Container, conf.GetMaxContainerConn()) {
 		Log.Printf("Max conn limit reached for container...aborting request")
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
-	if !limit.OpenConn(node, conf.GetMaxNodeConn()) {
+	if !limit.OpenConn(creds.Node, conf.GetMaxNodeConn()) {
 		Log.Printf("Max conn limit reached for host node...aborting request")
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 
 	//Handle request
-	dockerHandler(w, r, body, node, docker_id, req_id, tls_override)
+	dockerHandler(w, r, body, creds.Node, creds.Docker_id, req_id, creds.Tls_override)
 
 	//Call conn limiting interceptor(s) post-processing, to decrement conn count(s)
-	limit.CloseConn(container, conf.GetMaxContainerConn())
-	limit.CloseConn(node, conf.GetMaxNodeConn())
+	limit.CloseConn(creds.Container, conf.GetMaxContainerConn())
+	limit.CloseConn(creds.Node, conf.GetMaxNodeConn())
 
 	Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 }

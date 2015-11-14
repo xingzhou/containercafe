@@ -10,8 +10,7 @@ import (
 
 // returns auth=true/false, compute node name, container/exec id, container id,
 // override tls flag is used in swarm case only
-func DockerAuth(r *http.Request) (status int, node string, docker_id string,
-	container string, tls_override bool, reg_namespace string) {
+func DockerAuth(r *http.Request) (creds Creds) {
 
 	//parse r.RequestURI for container id or exec id
 	uri := r.RequestURI
@@ -26,52 +25,54 @@ func DockerAuth(r *http.Request) (status int, node string, docker_id string,
 
 	var host GetHostResp
 	if id_type == "None" {
-		status, host = getHost(r, "NoneContainer")
+		creds.Status, host = getHost(r, "NoneContainer")
 	}else{
-		status, host = getHost(r, container_id)
+		creds.Status, host = getHost(r, container_id)
 	}
-	if status != 200 {
-		Log.Printf("Auth result: status=%d\n", status)
+	if creds.Status != 200 {
+		Log.Printf("Auth result: status=%d\n", creds.Status)
 		return
 	}
-	node = host.Host + ":" + conf.GetDockerPort()
-	container = host.Container_id
-	reg_namespace = host.Namespace
+	creds.Node = host.Host + ":" + conf.GetDockerPort()
+	creds.Container = host.Container_id
+	creds.Reg_namespace = host.Namespace
+	creds.Apikey = host.Apikey
+	creds.Space_id = host.Space_id
 	//container id needs nova- prefix
 	//exec id does not need a prefix
 	if id_type == "Container" {
-		docker_id = "nova-"+container   //append nova to the id returned from getHost
+		creds.Docker_id = "nova-"+creds.Container   //append nova to the id returned from getHost
 	}
 	if id_type == "Exec" {
-		docker_id = id  //use the exec id that came in the original req
+		creds.Docker_id = id  //use the exec id that came in the original req
 	}
 	if id_type == "None" {
-		docker_id = ""
+		creds.Docker_id = ""
 	}
-	tls_override = false
+	creds.Tls_override = false
 	if host.Swarm {
-		node = host.Mgr_host    //Mgr_host = host:port
+		creds.Node = host.Mgr_host    //Mgr_host = host:port
 		//insert space_id in the header to be forwarded
 		r.Header.Set("X-Auth-Token", host.Space_id)
 		if id_type == "Container" {
-			docker_id = container
+			creds.Docker_id = creds.Container
 		}
 		if id_type == "Exec" {
-			docker_id = id  //use the exec id that came in the original req
+			creds.Docker_id = id  //use the exec id that came in the original req
 		}
 		if id_type == "None" {
-			docker_id = ""
+			creds.Docker_id = ""
 		}
 		if !host.Swarm_tls{
-			tls_override = true  // no tls for this outbound req regardless of proxy conf
+			creds.Tls_override = true  // no tls for this outbound req regardless of proxy conf
 		}
 		if host.Host != ""{
-			// node swarm node directly if known
-			node = host.Host + ":" + strconv.Itoa(conf.GetSwarmNodePort())
+			// go to swarm node directly if known
+			creds.Node = host.Host + ":" + strconv.Itoa(conf.GetSwarmNodePort())
 		}
 	}
 	Log.Printf("Auth result: status=%d node=%s docker_id=%s container=%s tls_override=%t reg_namespace=%s\n",
-		status, node, docker_id, container, tls_override, reg_namespace)
+		creds.Status, creds.Node, creds.Docker_id, creds.Container, creds.Tls_override, creds.Reg_namespace)
 	return
 }
 

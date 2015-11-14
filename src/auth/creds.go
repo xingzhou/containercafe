@@ -1,0 +1,13 @@
+package auth
+
+//Creds struct returned to calling handler after authenticating with CCSAPI
+type Creds struct{
+	Status 			int		//200 is auth success
+	Node 			string
+	Docker_id 		string	//docker resource id (e.g., exec id)
+	Container 		string
+	Tls_override 	bool	//Don't use tls to connect to this node
+	Space_id		string  //BlueMix space
+	Reg_namespace 	string  //Reg namespace
+	Apikey 			string
+}

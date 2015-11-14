@@ -11,7 +11,7 @@ import (
 	"logger"
 )
 
-//getHost response msg
+//getHost ccsapi call response
 type GetHostResp struct {
 	Container_id  	string
 	Container_name 	string
