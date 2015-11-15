@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"io"
 	"io/ioutil"
+	"strings"
+	"fmt"
 
 	"auth"
 	"conf"
@@ -87,5 +89,39 @@ func invoke_reg_list(w http.ResponseWriter, r *http.Request, creds auth.Creds, r
 }
 
 func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds auth.Creds, req_id string){
-	//TODO
+	//img valid format:  host/namespace/name:tag
+	sl := strings.Split(img, "/")
+	if len(sl) != 3  {
+		Log.Printf("Not valid image name  img=%s req_id=%s", img, req_id)
+		ErrorHandlerWithMsg(w, r, 500, "Not valid image name")
+		return
+	}
+	reg := sl[0]
+    namespace := sl[1]
+	img_name_and_tag := strings.Split(sl[2], ":")
+	if len(img_name_and_tag) != 2 {
+		Log.Printf("Not valid image name  img=%s req_id=%s", img, req_id)
+		ErrorHandlerWithMsg(w, r, 500, "Not valid image name")
+		return
+	}
+	img_name := img_name_and_tag[0]
+	img_tag := img_name_and_tag[1]
+
+	// Construct the request to registry.
+    url := fmt.Sprintf("https://%s/v1/repositories/%s/%s/tags/%s", reg, namespace, img_name, img_tag)
+	Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
+	client := &http.Client{}
+	req, _ := http.NewRequest("DELETE",url, nil)
+	req.Header.Add("Accept", "application/json")
+	req.SetBasicAuth("apikey", creds.Apikey)
+	resp, _ := client.Do(req)
+	defer resp.Body.Close()
+	body,_:=ioutil.ReadAll(resp.Body)
+	Log.Printf("Registry status code: %d", resp.StatusCode)
+	Log.Printf("Registry response: %s", httphelper.PrettyJson(body))
+
+	//send response back to client
+	w.WriteHeader(resp.StatusCode)
+	io.WriteString(w, string(body))
+	return
 }

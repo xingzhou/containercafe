@@ -46,11 +46,6 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Call Auth interceptor
-	// ok=true/false, node=host:port,
-	// docker_id=resource id from url mapped to id understood by docker
-	// container != docker_id in exec case
-	// tls_override is true when swarm master does not support tls
 	var creds auth.Creds
 	creds = auth.DockerAuth(r)
 	if creds.Status != 200 {
