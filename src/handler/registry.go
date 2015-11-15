@@ -123,7 +123,7 @@ func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds au
 	//send response back to client
 	body_str := ""
 	if resp.StatusCode == 200{
-		body_str = "[{\"Deleted\":\"\"}]"
+		body_str = fmt.Sprintf("[{\"Deleted\":\"%s\"}]", img)
 	}else{
 		body_str = string(body)
 	}
