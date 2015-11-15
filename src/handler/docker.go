@@ -66,41 +66,42 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 
 	// Check for attempt to access not-allowed image
-	img := ""
-	check_img := false
 	// First check - run call
 	if is_container_create_call(r.RequestURI){
 		// extract image
-		img = get_image_from_container_create(body)
-		check_img = true
-
+		img := get_image_from_container_create(body)
+		if !is_img_valid(img, creds.Reg_namespace){
+			Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
+			NotAuthorizedHandler(w, r)
+			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+			return
+		}
 		// inject X-Registry-Auth header
 		InjectRegAuthHeader(r)
 	}
 	// Second check - pull call
 	if is_image_create_call(r.RequestURI) {
+		//TODO: dsisable this api
 		// extract image
-		img = get_image_from_image_create(r.RequestURI)
-		check_img = true
+		img := get_image_from_image_create(r.RequestURI)
+		if !is_img_valid(img, creds.Reg_namespace){
+			Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
+			NotAuthorizedHandler(w, r)
+			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+			return
+		}
 	}
 	// Third check - push call
 	if is_image_push_call(r.RequestURI) {
+		//TODO: dsisable this api
 		// extract image
-		img = get_image_from_image_push(r.RequestURI)
-		check_img = true
-	}
-	if is_image_inspect_call(r.RequestURI){
-		// extract image
-		img = get_image_from_image_inspect(r.RequestURI)
-		check_img = true
-	}
-	if check_img && !is_img_valid(img, creds.Reg_namespace){
-		// check that image name is valid for this user
-		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
-		//NotAuthorizedHandler(w, r)
-		ErrorHandlerWithMsg(w, r, 500, "Not allowed to access image")
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-		return
+		img := get_image_from_image_push(r.RequestURI)
+		if !is_img_valid(img, creds.Reg_namespace){
+			Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
+			NotAuthorizedHandler(w, r)
+			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+			return
+		}
 	}
 
 	// intercept image calls and direct to registry
@@ -110,12 +111,24 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if is_image_inspect_call(r.RequestURI){
-		invoke_reg_inspect(w, r, img, creds, req_id)
+		img := get_image_from_image_inspect(r.RequestURI)
+		if !is_img_valid(img, creds.Reg_namespace){
+			Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
+			NotAuthorizedHandler(w, r)
+		}else {
+			invoke_reg_inspect(w, r, img, creds, req_id)
+		}
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 	if is_image_rmi_call(r.RequestURI, r.Method){
-		invoke_reg_rmi(w, r, img, creds, req_id)
+		img := get_image_from_image_rmi(r.RequestURI)
+		if !is_img_valid(img, creds.Reg_namespace){
+			Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
+			NotAuthorizedHandler(w, r)
+		}else {
+			invoke_reg_rmi(w, r, img, creds, req_id)
+		}
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
@@ -412,6 +425,20 @@ func get_image_from_image_inspect(reqUri string) (img string){
 	}
 	img = sl[3]
 	for i:=4; i< len(sl)-1; i++ {
+		img += "/" + sl[i]
+	}
+	return
+}
+
+func get_image_from_image_rmi(reqUri string) (img string){
+	// Ex: DELETE /v1.20/images/registry.acme.com:5000/namespace/test:latest HTTP/1.1
+	sl := strings.Split(reqUri, "/")
+	if len(sl) < 6 {
+		// err return ""
+		return
+	}
+	img = sl[3]
+	for i:=4; i< len(sl); i++ {
 		img += "/" + sl[i]
 	}
 	return
