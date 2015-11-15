@@ -121,7 +121,13 @@ func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds au
 	Log.Printf("Registry response: %s", httphelper.PrettyJson(body))
 
 	//send response back to client
+	body_str := ""
+	if resp.StatusCode == 200{
+		body_str = "[{\"Deleted\":\"\"}]"
+	}else{
+		body_str = string(body)
+	}
 	w.WriteHeader(resp.StatusCode)
-	io.WriteString(w, string(body))
+	io.WriteString(w, body_str)
 	return
 }
