@@ -22,6 +22,8 @@ type GetHostResp struct {
 	Space_id		string  // for Authorization (tenant isolation) in case of swarm
 	Namespace		string	// registry namespace for this tenant's org, used for validating images the user can access
 	Apikey			string  // apikey cred of caller
+	Orguuid			string
+	Userid			string
 }
 
 var Log * logger.Log

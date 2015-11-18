@@ -10,4 +10,6 @@ type Creds struct{
 	Space_id		string  //BlueMix space
 	Reg_namespace 	string  //Reg namespace
 	Apikey 			string
+	Orguuid			string
+	Userid			string
 }

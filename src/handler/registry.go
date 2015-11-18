@@ -37,6 +37,16 @@ func GetRegistryApiHost() (host string){
 	return
 }
 
+func AddCredsHeaders(req *http.Request, creds auth.Creds){
+	req.Header.Add("namespace", creds.Reg_namespace)
+	req.Header.Add("apikey", creds.Apikey)
+	req.Header.Add("orguuid", creds.Orguuid)
+	req.Header.Add("spaceuuid", creds.Space_id)
+	req.Header.Add("userid", creds.Userid)
+
+	req.Header.Add("Accept", "application/json")
+}
+
 // call internal registry api server to get image metadata
 func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, creds auth.Creds, req_id string){
 	host := GetRegistryApiHost()
@@ -50,7 +60,7 @@ func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, cred
 	Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET",url, nil)
-	req.Header.Add("Accept", "application/json")
+	AddCredsHeaders(req, creds)
 	resp, _ := client.Do(req)
 	defer resp.Body.Close()
 	body,_:=ioutil.ReadAll(resp.Body)
@@ -85,7 +95,7 @@ func invoke_reg_list(w http.ResponseWriter, r *http.Request, creds auth.Creds, r
 	Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET",url, nil)
-	req.Header.Add("Accept", "application/json")
+	AddCredsHeaders(req, creds)
 	resp, _ := client.Do(req)
 	defer resp.Body.Close()
 	body,_:=ioutil.ReadAll(resp.Body)
@@ -122,6 +132,7 @@ func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds au
 	Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
 	client := &http.Client{}
 	req, _ := http.NewRequest("DELETE",url, nil)
+	//TODO: when rmi is implemented by reg microservice 	AddCredsHeaders(req, creds)
 	req.Header.Add("Accept", "application/json")
 	req.SetBasicAuth("apikey", creds.Apikey)
 	resp, _ := client.Do(req)
