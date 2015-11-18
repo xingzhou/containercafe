@@ -77,7 +77,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// inject X-Registry-Auth header
-		InjectRegAuthHeader(r)
+		InjectRegAuthHeader(r, creds)
 	}
 	// Second check - pull call
 	if is_image_create_call(r.RequestURI) {

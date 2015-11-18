@@ -6,14 +6,24 @@ import (
 	"io/ioutil"
 	"strings"
 	"fmt"
+	"encoding/base64"
 
 	"auth"
 	"conf"
 	"httphelper"
 )
 
-func InjectRegAuthHeader(r *http.Request) {
-	tok := conf.GetRegAuthToken()
+func InjectRegAuthHeader(r *http.Request, creds auth.Creds) {
+	//Use admin base64 encoded psswd
+	//tok := conf.GetRegAuthToken()
+
+	//create X-Registry-Auth object out of apikey in creds
+	// {"username":"admin","password":"230189","auth":"","email":"swarm@dev.test","serveraddress":"registry-ice-dev-test.stage1.ng.bluemix.net"}
+	auth_str := fmt.Sprintf("{\"username\":\"apikey\",\"password\":\"%s\",\"auth\":\"\",\"email\":\"swarm@dev.test\",\"serveraddress\":\"%s\"}", creds.Apikey, conf.GetRegLocation())
+    auth_bytes := []byte(auth_str)
+	tok := base64.StdEncoding.EncodeToString( auth_bytes )
+
+	Log.Printf("InjectRegAuthHeader:  auth_str=%s  tok=%s", auth_str, tok)
 	r.Header.Set("X-Registry-Auth", tok)
 }
 
