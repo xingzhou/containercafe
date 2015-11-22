@@ -24,6 +24,11 @@ var kubePatterns = []string {
 	"/swaggerapi/",
 }
 
+//called from init() of the package
+func InitKubeHandler(){
+
+}
+
 // public handler for Kubernetes
 func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	req_id := conf.GetReqId()

@@ -16,6 +16,9 @@ var healthPatterns = []string {
 	"/hjproxy/_ping",  		//  /hjproxy/_ping/host  or  /hjproxy/_ping/host/port  8089 is used if port not specified
 }
 
+//called from init() of the package
+func InitHealthHandler(){}
+
 func HealthEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	Log.Printf("HealthEndpointHandler triggered, URI=%s", r.RequestURI)
 	p := GetUriPattern(r.RequestURI, healthPatterns)

@@ -16,7 +16,9 @@ var Log * logger.Log  = logger.TeeLog
 
 func init() {
 	//call initializers for all handlers
-
+	InitDockerHandler()
+	InitKubeHandler()
+	InitHealthHandler()
 }
 
 //called from main package init() after the logger is created

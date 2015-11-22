@@ -32,6 +32,11 @@ var dockerPatterns = []string {
 	"/events",	// ??
 }
 
+//called from init() of the package
+func InitDockerHandler(){
+
+}
+
 // http proxy forwarding with hijack support
 // handler for docker/swarm
 func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
