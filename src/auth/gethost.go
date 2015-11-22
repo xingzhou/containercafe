@@ -26,7 +26,10 @@ type GetHostResp struct {
 	Userid			string
 }
 
-var Log * logger.Log
+var Log * logger.Log = logger.TeeLog
+
+func init() {
+}
 
 func SetLogger(lg * logger.Log){
 	Log = lg

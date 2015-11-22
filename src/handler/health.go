@@ -13,7 +13,7 @@ var healthPatterns = []string {
 	"/hjproxy/health",
 	"/hjproxy/stats",
 	"/hjproxy/_ping_notls", // _ping with no tls override regardless of hjproxy configuration
-	"/hjproxy/_ping",  		//  /hjproxy/_ping/host   or   /hjproxy/_ping/host/port
+	"/hjproxy/_ping",  		//  /hjproxy/_ping/host  or  /hjproxy/_ping/host/port  8089 is used if port not specified
 }
 
 func HealthEndpointHandler(w http.ResponseWriter, r *http.Request) {
@@ -29,9 +29,9 @@ func HealthEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		v := conf.GetVerStr()
 		n := conf.GetNumServedRequests()
 		fmt.Fprintf(w,"hjproxy %s\n", v)
-		fmt.Fprintf(w,"This instance served %d requests\n", n)
+		fmt.Fprintf(w,"This instance served %d non-admin requests\n", n)
 		Log.Print("hjproxy ", v)
-		Log.Printf("This instance served %d requests", n)
+		Log.Printf("This instance served %d non-admin requests", n)
 		break
 	case healthPatterns[2]:
 		ping(w, r, true)

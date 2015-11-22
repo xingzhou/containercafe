@@ -12,10 +12,21 @@ import (
 )
 
 //used by all src files in the handler package
-var Log * logger.Log
+var Log * logger.Log  = logger.TeeLog
 
+func init() {
+	//call initializers for all handlers
+
+}
+
+//called from main package init() after the logger is created
 func SetLogger(lg * logger.Log){
 	Log = lg
+}
+
+//called by golang before init() of main packagev
+func init(){
+
 }
 
 //Forward req to server

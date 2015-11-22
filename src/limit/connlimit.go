@@ -4,7 +4,6 @@ import(
 	"conf"
 )
 
-
 func OpenConn(resource string, max int) bool{
 	if max == 0 {
 		return true

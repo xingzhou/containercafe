@@ -15,7 +15,27 @@ type Log struct{
 	mutex	sync.Mutex
 }
 
-//create a Log object that logs to both simultaneously:
+// Singleton Log created for use by all packages.
+// Other loggers can be created using NewLogger() if needed.
+var TeeLog *Log = NewLogger( GetLogFilePath() )
+
+func GetLogFilePath() string{
+	//init var using backup name
+	log_file_path := "mylog.txt"
+	// "/tmp/feeds/logstash_hijack_proxy" should be setup by docker --env
+	s:=os.Getenv("log_file_path")
+	if s != "" {
+		log_file_path = s
+	}
+	return log_file_path
+}
+
+func init(){
+	//Nothing to do. Ensures TeeLog is initialized before this init() is called.
+	//global vars in the package are initialized before golang calls init() on the package during program loading.
+}
+
+//create a tee Log object that logs to both simultaneously:
 //1- stdout - in text lines
 //2- file - in logstash understood json format
 func NewLogger(logstash_filepath string) (lg * Log){

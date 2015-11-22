@@ -6,46 +6,20 @@ import (
 	"strings"
 	"os"
 
-	"handler" 	// my handlers
+	"logger"	// my logger package, should be the first user package to init
 	"conf"   	// my conf package
-	"logger"	// my logger package
-	"auth"		// my auth package
-	"httphelper"// my helper
+	"handler" 	// my handlers
 )
 
-var _LOG_TO_FILE_ = true   //feature flag
-var Log * logger.Log
+var Log * logger.Log = logger.TeeLog
 
-func initLogger(){
-
-	Log = logger.NewLogger( conf.GetLogFilePath() )
-	conf.SetLogger(Log)
-	handler.SetLogger(Log)
-	auth.SetLogger(Log)
-	httphelper.SetLogger(Log)
-
-	/* using go standard logger
-	log.SetFlags(log.Lshortfile|log.LstdFlags|log.Lmicroseconds)
-	log.SetPrefix("hijackproxy: ")
-	if _LOG_TO_FILE_ {
-		fname := conf.GetLogFilePath()
-		fp, err := os.Create(fname)
-		if err != nil{
-			log.Println("Could not create log file ",fname, " will use stderr")
-			return
-		}
-		log.SetOutput(fp)
-		log.Println("Set ELK logging output to ", fname)
-	}
-	*/
+func init(){
+	Log.Print(conf.GetVerStr())
+	conf.LoadEnv()  //Log is used in LoadEnv()
 }
 
 func main() {
-	initLogger()
-
-	Log.Print(conf.GetVerStr())
-
-	conf.LoadEnv()
+	//init() is auto called first before main(), and after the init() of all imported packages
 
 	listen_port := conf.GetDefaultListenPort()
 	//parse args
@@ -82,6 +56,8 @@ func main() {
 
 	//Rely on NGINX to route accepted docker url paths only to hijackproxy
 	http.HandleFunc("/", handler.DockerEndpointHandler)
+
+	//handler.TestPatt()  //TEST
 
 	// init server on any interface + listen_port
 	var err error

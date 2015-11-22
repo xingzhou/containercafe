@@ -11,7 +11,7 @@ import(
 	"logger"
 )
 
-var Log * logger.Log
+var Log * logger.Log = logger.TeeLog
 
 func SetLogger(lg * logger.Log){
 	Log = lg
