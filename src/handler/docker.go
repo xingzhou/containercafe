@@ -32,17 +32,18 @@ var dockerPatterns = []string {
 	"/events",	// ??
 }
 
-//uri patterns wih simple expressions
-var dockerRoutes []Route
+// Router based on uri patterns wih simple expressions
+var dockerRouter *Router
 
 //called from init() of the handler package, before any requests are handled
 func InitDockerHandler(){
 	//TODO: define routes for api endpoints based on Route patterns with expressions
-	dockerRoutes = []Route{
+	dockerRoutes := []Route{
 		NewRoute("GET", "/{version}/containers/{id}/json", containers_json),
 		NewRoute("DELETE", "/{version}/containers/{id}/json", containers_json),
 		NewRoute("*", "*", containers_json),  //wildcard for everything else
 	}
+	dockerRouter = NewRouter(dockerRoutes)
 }
 
 // http proxy forwarding with hijack support

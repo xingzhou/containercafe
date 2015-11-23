@@ -28,9 +28,9 @@ func GetUriPattern(uri string, patterns []string) string{
 	return ""
 }
 
-///////////////////////////////////
-// patterns with simple expressions
-///////////////////////////////////
+////////////////////////////////////////////////////
+// Routing based on patterns with simple expressions
+////////////////////////////////////////////////////
 
 type RouteHandler func(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string)
 
@@ -40,20 +40,30 @@ type Route struct{
 	handler		RouteHandler
 }
 
+type Router struct{
+	routes		[]Route
+}
+
 func NewRoute(method string, pattern string, handler RouteHandler) Route{
 	return Route{method, pattern, handler}
 }
 
+func NewRouter(routes []Route) *Router{
+	router := new (Router)
+	router.routes = routes
+	return router
+}
+
 //uses SelectRoute to determine target handler and invokes it
-func DoRoute(routes []Route, w http.ResponseWriter, req *http.Request, body []byte, creds auth.Creds, req_id string) {
-	f, vars := SelectRoute(routes, req)
+func (router *Router) DoRoute(w http.ResponseWriter, req *http.Request, body []byte, creds auth.Creds, req_id string) {
+	f, vars := router.SelectRoute(req)
 	f(w, req, body, creds, vars, req_id)
 }
 
-func SelectRoute(routes []Route, req *http.Request) (RouteHandler, map[string]string) {
-	for i:=0; i < len(routes); i++ {
-		if found,vars := matchRoute(routes[i], req); found{
-			return routes[i].handler, vars
+func (router *Router) SelectRoute(req *http.Request) (RouteHandler, map[string]string) {
+	for i:=0; i < len(router.routes); i++ {
+		if found,vars := matchRoute(router.routes[i], req); found{
+			return router.routes[i].handler, vars
 		}
 	}
 	return nil, nil
