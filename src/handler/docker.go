@@ -18,7 +18,7 @@ import (
 	"conf"  // my conf package
 )
 
-// supported docker api uri patterns
+// supported docker api uri prefixes
 var dockerPatterns = []string {
 	"/containers/",
 	"/images/",
@@ -32,9 +32,17 @@ var dockerPatterns = []string {
 	"/events",	// ??
 }
 
-//called from init() of the package
-func InitDockerHandler(){
+//uri patterns wih simple expressions
+var dockerRoutes []Route
 
+//called from init() of the handler package, before any requests are handled
+func InitDockerHandler(){
+	//TODO: define routes for api endpoints based on Route patterns with expressions
+	dockerRoutes = []Route{
+		NewRoute("GET", "/{version}/containers/{id}/json", containers_json),
+		NewRoute("DELETE", "/{version}/containers/{id}/json", containers_json),
+		NewRoute("*", "*", containers_json),  //wildcard for everything else
+	}
 }
 
 // http proxy forwarding with hijack support
