@@ -8,21 +8,21 @@ import (
 )
 
 //return true if uri prefix is supported
-func IsSupportedPattern(uri string, patterns []string) bool{
-	for i:=0; i < len(patterns); i++ {
+func IsSupportedPattern(uri string, prefixes []string) bool{
+	for i:=0; i < len(prefixes); i++ {
 		//if uri contains patterns[i]
-		if strings.Contains(uri, patterns[i]) {
+		if strings.Contains(uri, prefixes[i]) {
 			return true
 		}
 	}
 	return false
 }
 
-//return uri prefix pattern
-func GetUriPattern(uri string, patterns []string) string{
-	for i:=0; i < len(patterns); i++ {
-		if strings.Contains(uri, patterns[i]) {
-			return patterns[i]
+//return uri prefix if supported
+func GetUriPattern(uri string, prefixes []string) string{
+	for i:=0; i < len(prefixes); i++ {
+		if strings.Contains(uri, prefixes[i]) {
+			return prefixes[i]
 		}
 	}
 	return ""
@@ -54,22 +54,27 @@ func NewRouter(routes []Route) *Router{
 	return router
 }
 
-//uses SelectRoute to determine target handler and invokes it
-func (router *Router) DoRoute(w http.ResponseWriter, req *http.Request, body []byte, creds auth.Creds, req_id string) {
-	f, vars := router.SelectRoute(req)
-	f(w, req, body, creds, vars, req_id)
-}
-
-func (router *Router) SelectRoute(req *http.Request) (RouteHandler, map[string]string) {
-	for i:=0; i < len(router.routes); i++ {
-		if found,vars := matchRoute(router.routes[i], req); found{
-			return router.routes[i].handler, vars
+func (router *Router) CheckRoute(req *http.Request)(found bool, route Route){
+	for _, route = range router.routes {
+		if found, _ = route.matchRoute(req); found {
+			return
 		}
 	}
-	return nil, nil
+	return
 }
 
-func matchRoute(route Route, req *http.Request) (match bool, vars map[string]string){
+//uses SelectRoute to determine target handler and invokes it
+func (router *Router) DoRoute(w http.ResponseWriter, req *http.Request, body []byte, creds auth.Creds, req_id string) {
+	for  _, route := range router.routes {
+		if found, vars := route.matchRoute(req); found {
+			route.handler(w, req, body, creds, vars, req_id)
+			return
+		}
+	}
+	Log.Printf("No route found req_id=%s", req_id)
+}
+
+func (route *Route) matchRoute(req *http.Request) (match bool, vars map[string]string){
 	match = false
 	if (route.method != req.Method) && (route.method != "*") {
 		return
