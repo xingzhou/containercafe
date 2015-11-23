@@ -14,8 +14,9 @@ import (
 var Log * logger.Log = logger.TeeLog
 
 func init(){
+	//logger package TeeLog var initialization and init() will take place before this main package init() is executed
+	//conf.LoadEnv() is called in init() of conf package, before this main package init() is executed
 	Log.Print(conf.GetVerStr())
-	conf.LoadEnv()  //Log is used in LoadEnv()
 }
 
 func main() {
