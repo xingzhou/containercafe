@@ -26,10 +26,11 @@ var dockerPatterns = []string {
 	"/version",
 	"/auth",
 	"/_ping",
-	"/build", 	// ?? buildsrvc??
+	//"/build", 	// buildsrvc??
 	"/commit", 	// ?? create img from  container content
 	"/info", 	// ??  system wide info
 	"/events",	// ??
+	"/networks",
 }
 
 // Router based on uri patterns wih simple expressions
@@ -37,11 +38,21 @@ var dockerRouter *Router
 
 //called from init() of the handler package, before any requests are handled
 func InitDockerHandler(){
-	//TODO: define routes for api endpoints based on Route patterns with expressions
+	//define routes for api endpoints
 	dockerRoutes := []Route{
-		NewRoute("GET", "/{version}/containers/{id}/json", containers_json),
-		NewRoute("DELETE", "/{version}/containers/{id}/json", containers_json),
-		NewRoute("*", "*", containers_json),  //wildcard for everything else
+		NewRoute("DELETE", "/{version}/images/{img}", removeImage),
+		NewRoute("DELETE", "/{version}/images/{ns}/{img}", removeImage),
+		NewRoute("DELETE", "/{version}/images/{reg}/{ns}/{img}", removeImage),
+
+		NewRoute("GET", "/{version}/images/{img}/json", inspectImage),
+		NewRoute("GET", "/{version}/images/{ns}/{img}/json", inspectImage),
+		NewRoute("GET", "/{version}/images/{reg}/{ns}/{img}/json", inspectImage),
+
+		NewRoute("GET", "/{version}/images/json", listImages),
+
+		NewRoute("POST", "/{version}/containers/create", createContainer),
+
+		NewRoute("*", "*", dockerHandler),  //wildcard for everything else
 	}
 	dockerRouter = NewRouter(dockerRoutes)
 }
@@ -74,26 +85,12 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	}
     Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
 
-
 	data, _ := httputil.DumpRequest(r, true)
 	Log.Printf("Request dump req_id=%s req_length=%d:\n%s", req_id, len(data), string(data))
 	body, _ := ioutil.ReadAll(r.Body)
 
 	// Check for attempt to access not-allowed image
-	// First check - run call
-	if is_container_create_call(r.RequestURI){
-		// extract image
-		img := get_image_from_container_create(body)
-		if !is_img_valid(img, creds.Reg_namespace){
-			Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
-			NotAuthorizedHandler(w, r)
-			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-			return
-		}
-		// inject X-Registry-Auth header
-		InjectRegAuthHeader(r, creds)
-	}
-	// Second check - pull call
+	// check pull call
 	if is_image_create_call(r.RequestURI) {
 		//TODO: dsisable this api
 		// extract image
@@ -105,7 +102,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	// Third check - push call
+	// check push call
 	if is_image_push_call(r.RequestURI) {
 		//TODO: dsisable this api
 		// extract image
@@ -116,35 +113,6 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 			return
 		}
-	}
-
-	// intercept image calls and direct to registry
-	if is_image_list_call(r.RequestURI){
-		invoke_reg_list(w, r, creds, req_id)
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-		return
-	}
-	if is_image_inspect_call(r.RequestURI){
-		img := get_image_from_image_inspect(r.RequestURI)
-		if !is_img_valid(img, creds.Reg_namespace){
-			Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
-			NotAuthorizedHandler(w, r)
-		}else {
-			invoke_reg_inspect(w, r, img, creds, req_id)
-		}
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-		return
-	}
-	if is_image_rmi_call(r.RequestURI, r.Method){
-		img := get_image_from_image_rmi(r.RequestURI)
-		if !is_img_valid(img, creds.Reg_namespace){
-			Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
-			NotAuthorizedHandler(w, r)
-		}else {
-			invoke_reg_rmi(w, r, img, creds, req_id)
-		}
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-		return
 	}
 
 	//Call conn limiting interceptor(s) pre-processing
@@ -160,7 +128,8 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Handle request
-	dockerHandler(w, r, body, creds.Node, creds.Docker_id, req_id, creds.Tls_override)
+	//dockerHandler(w, r, body, creds, nil /*vars*/, req_id)
+	dockerRouter.DoRoute(w, r, body, creds, req_id)
 
 	//Call conn limiting interceptor(s) post-processing, to decrement conn count(s)
 	limit.CloseConn(creds.Container, conf.GetMaxContainerConn())
@@ -169,9 +138,56 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 }
 
-// private handler processing
-func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, redirect_host string,
-	redirect_resource_id string, req_id string, tls_override bool) {
+///////////////////
+// route handlers
+///////////////////
+
+func removeImage(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
+	//TODO use full img name from vars[]
+	img := get_image_from_image_rmi(r.RequestURI)
+	if !is_img_valid(img, creds.Reg_namespace){
+		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
+		NotAuthorizedHandler(w, r)
+	}else {
+		invoke_reg_rmi(w, r, img, creds, req_id)
+	}
+}
+
+func inspectImage(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
+	//TODO use full img name from vars[]
+	img := get_image_from_image_inspect(r.RequestURI)
+	if !is_img_valid(img, creds.Reg_namespace){
+		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
+		NotAuthorizedHandler(w, r)
+	}else {
+		invoke_reg_inspect(w, r, img, creds, req_id)
+	}
+}
+
+func listImages(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
+	invoke_reg_list(w, r, creds, req_id)
+}
+
+func createContainer(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
+	// extract image
+	img := get_image_from_container_create(body)
+	if !is_img_valid(img, creds.Reg_namespace){
+		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
+		NotAuthorizedHandler(w, r)
+		return
+	}
+	// inject X-Registry-Auth header
+	InjectRegAuthHeader(r, creds)
+	//pass through
+	dockerHandler(w, r, body, creds, vars, req_id)
+}
+
+// default route handler
+func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
+
+	redirect_host := creds.Node
+	redirect_resource_id := creds.Docker_id
+	tls_override := creds.Tls_override
 
 	req_UPGRADE := false
 	resp_UPGRADE := false
@@ -348,7 +364,6 @@ func dockerRewriteUri(reqUri string, redirect_resource_id string)(redirectUri st
 }
 
 
-
 func strip_nova_prefix(id string) string{
 	return strings.TrimPrefix(id, "nova-")
 }
@@ -511,14 +526,6 @@ func is_container_logs_call(uri string) bool {
 	}
 }
 
-func is_container_create_call(uri string) bool {
-	if strings.Contains(uri, "/containers/create") {
-		return true
-	}else{
-		return false
-	}
-}
-
 //image pull call
 func is_image_create_call(uri string) bool {
 	if strings.Contains(uri, "/images/create") {
@@ -530,30 +537,6 @@ func is_image_create_call(uri string) bool {
 
 func is_image_push_call(uri string) bool {
 	if strings.Contains(uri, "/images/") && strings.Contains(uri, "/push"){
-		return true
-	}else{
-		return false
-	}
-}
-
-func is_image_list_call(uri string) bool{
-	if strings.Contains(uri, "/images/json"){
-		return true
-	}else{
-		return false
-	}
-}
-
-func is_image_inspect_call(uri string) bool{
-	if strings.Contains(uri, "/images/") && strings.Contains(uri, "/json") && !strings.Contains(uri, "/images/json"){
-		return true
-	}else{
-		return false
-	}
-}
-
-func is_image_rmi_call(uri, method string) bool{
-	if strings.Contains(uri, "/images/") && method == "DELETE" {
 		return true
 	}else{
 		return false
