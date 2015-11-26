@@ -40,11 +40,11 @@ func InitDockerHandler(){
 	//define routes for api endpoints
 	dockerRoutes := []Route{
 		NewRoute("DELETE", "/{version}/images/{img}", removeImage),
-		NewRoute("DELETE", "/{version}/images/{ns}/{img}", removeImage),
+		NewRoute("DELETE", "/{version}/images/{reg}/{img}", removeImage),
 		NewRoute("DELETE", "/{version}/images/{reg}/{ns}/{img}", removeImage),
 
 		NewRoute("GET", "/{version}/images/{img}/json", inspectImage),
-		NewRoute("GET", "/{version}/images/{ns}/{img}/json", inspectImage),
+		NewRoute("GET", "/{version}/images/{reg}/{img}/json", inspectImage),
 		NewRoute("GET", "/{version}/images/{reg}/{ns}/{img}/json", inspectImage),
 
 		NewRoute("GET", "/{version}/images/json", listImages),
@@ -53,7 +53,7 @@ func InitDockerHandler(){
 
 		NewRoute("POST", "/{version}/images/create", notSupported), //pull
 		NewRoute("POST", "/{version}/images/{img}/push", notSupported), //push
-		NewRoute("POST", "/{version}/images/{ns}/{img}/push", notSupported), //push
+		NewRoute("POST", "/{version}/images/{reg}/{img}/push", notSupported), //push
 		NewRoute("POST", "/{version}/images/{reg}/{ns}/{img}/push", notSupported), //push
 
 		NewRoute("*", "*", dockerHandler),  //wildcard for forwarding everything else

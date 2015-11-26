@@ -203,6 +203,20 @@ func get_image_from_container_create(body []byte) (img string){
 	return
 }
 
+func getImageFullnameFromVars(vars map[string]string)(fullname string){
+	if _, ok := vars["{img}"]; !ok {
+		return
+	}
+	fullname = vars["{img}"]
+	if ns, ok := vars["{ns}"]; ok {
+		fullname = ns + "/" + fullname
+	}
+	if reg, ok := vars["{reg}"]; ok {
+		fullname = reg + "/" + fullname
+	}
+	return
+}
+
 func get_image_from_image_create(reqUri string) (img string){
 	//look for ?fromImage=...&registry=...
 	u, err := url.Parse(reqUri)
