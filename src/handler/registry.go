@@ -2,11 +2,13 @@ package handler
 
 import (
 	"net/http"
+	"net/url"
 	"io"
 	"io/ioutil"
 	"strings"
 	"fmt"
 	"encoding/base64"
+	"encoding/json"
 
 	"auth"
 	"conf"
@@ -150,5 +152,119 @@ func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds au
 	}
 	w.WriteHeader(resp.StatusCode)
 	io.WriteString(w, body_str)
+	return
+}
+
+//////////////////////////// image names extraction and validation ops
+
+func is_img_valid(img string, namespace string) bool{
+	if img == "" {
+		return true
+	}
+
+	// img general format is reg_host/namesapce/imgname:tag or reg_host/imgname:tag
+	sl := strings.Split(img, "/")
+	if len(sl) <= 2 {
+		// public/lib image
+		return true
+	}
+
+	// we have an img with a namespace
+	if !strings.Contains(sl[0], ".bluemix.net") {
+		//Dckerhub or other reg image --> OK
+		return true
+	}
+
+	// we have a Containers reg img with namespace
+	// limit access only to this environment's registry
+	if namespace == sl[1] && conf.GetRegLocation() == sl[0]{
+		return true
+	}
+	return false
+}
+
+func get_image_from_container_create(body []byte) (img string){
+	// look for "Image":"..."
+	var f interface{}
+	err := json.Unmarshal(body, &f)
+	if err != nil{
+		Log.Printf("get_image_from_container_create: error in json unmarshalling, err=%v", err)
+		return
+	}
+	m := f.(map[string]interface{})
+	for k, v := range m {
+		if (k == "Image") {
+			img = v.(string)
+			Log.Printf("get_image_from_container_create: found img=%s", img)
+			return
+		}
+	}
+	Log.Print("get_image_from_container_create: did not find Image in json body")
+	return
+}
+
+func get_image_from_image_create(reqUri string) (img string){
+	//look for ?fromImage=...&registry=...
+	u, err := url.Parse(reqUri)
+	if err != nil {
+		Log.Print(err)
+		return
+	}
+	q := u.Query()  // q is map[string][]string
+	fromImage := q.Get("fromImage")
+	registry := q.Get("registry)")
+	if (registry == ""){
+		img = fromImage
+		return
+	}
+	if strings.Contains(fromImage, registry){
+		img = fromImage
+		return
+	}
+	img = registry+"/"+fromImage
+	return
+}
+
+func get_image_from_image_push(reqUri string) (img string){
+	// Ex: POST /v1.20/images/registry.acme.com:5000/test/push HTTP/1.1
+	sl := strings.Split(reqUri, "/")
+	if len(sl) < 5 {
+		// err
+		img=""
+		return
+	}
+	img = sl[3]
+	for i:=4; i< len(sl)-1; i++ {
+		img += "/" + sl[i]
+	}
+	return
+}
+
+func get_image_from_image_inspect(reqUri string) (img string){
+	// Ex: POST /v1.20/images/registry.acme.com:5000/test/json HTTP/1.1
+	sl := strings.Split(reqUri, "/")
+	if len(sl) < 5 {
+		// err
+		img=""
+		return
+	}
+	img = sl[3]
+	for i:=4; i< len(sl)-1; i++ {
+		img += "/" + sl[i]
+	}
+	return
+}
+
+func get_image_from_image_rmi(reqUri string) (img string){
+	// Ex: DELETE /v1.20/images/registry.acme.com:5000/namespace/test:latest HTTP/1.1
+	sl := strings.Split(reqUri, "/")
+	if len(sl) < 6 {
+		// err return ""
+		return
+	}
+	img = sl[3]
+	for i:=4; i< len(sl); i++ {
+		img += "/" + sl[i]
+	}
 	return
 }
