@@ -126,8 +126,7 @@ func notSupported(w http.ResponseWriter, r *http.Request, body []byte, creds aut
 }
 
 func removeImage(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
-	//TODO use full img name from vars[]
-	img := get_image_from_image_rmi(r.RequestURI)
+	img := getImageFullnameFromVars(vars)
 	if !is_img_valid(img, creds.Reg_namespace){
 		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
 		NotAuthorizedHandler(w, r)
@@ -137,8 +136,7 @@ func removeImage(w http.ResponseWriter, r *http.Request, body []byte, creds auth
 }
 
 func inspectImage(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
-	//TODO use full img name from vars[]
-	img := get_image_from_image_inspect(r.RequestURI)
+	img := getImageFullnameFromVars(vars)
 	if !is_img_valid(img, creds.Reg_namespace){
 		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
 		NotAuthorizedHandler(w, r)
