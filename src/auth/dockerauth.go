@@ -56,6 +56,7 @@ func DockerAuth(r *http.Request) (creds Creds) {
 		creds.Node = host.Mgr_host    //Mgr_host = host:port
 		//insert space_id in the header to be forwarded
 		r.Header.Set("X-Auth-Token", host.Space_id)
+		Log.Printf("Injected Swarm X-Auth-Token=%s", host.Space_id)
 		if id_type == "Container" {
 			creds.Docker_id = creds.Container
 		}

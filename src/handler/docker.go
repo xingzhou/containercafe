@@ -75,6 +75,9 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	data, _ := httputil.DumpRequest(r, true)
+	Log.Printf("Request dump req_id=%s req_length=%d:\n%s", req_id, len(data), string(data))
+
 	var creds auth.Creds
 	creds = auth.DockerAuth(r)
 	if creds.Status != 200 {
@@ -89,8 +92,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	}
     Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
 
-	data, _ := httputil.DumpRequest(r, true)
-	Log.Printf("Request dump req_id=%s req_length=%d:\n%s", req_id, len(data), string(data))
+
 	body, _ := ioutil.ReadAll(r.Body)
 
 	//Call conn limiting interceptor(s) pre-processing
