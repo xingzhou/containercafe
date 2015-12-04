@@ -102,9 +102,10 @@ func get_id_and_type(uri string) (id string, id_type string){
 		"/images",
 		"/build",
 		"/version",
-		"/_ping",
 	}
 
+	// this check loop is important for prefixes that start with /containers or /exec and need to be excluded (return id_type="None")
+	// other prefixes will lead to id_type="None" anyway
 	found := false
 	for i:=0; i < len(patterns); i++ {
 		//if uri contains patterns[i]
