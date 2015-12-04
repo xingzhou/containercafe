@@ -79,19 +79,25 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	Log.Printf("Request dump req_id=%s req_length=%d:\n%s", req_id, len(data), string(data))
 
 	var creds auth.Creds
-	creds = auth.DockerAuth(r)
-	if creds.Status != 200 {
-		Log.Printf("Authentication failed for req_id=%s status=%d", req_id, creds.Status)
-		if creds.Status == 401 {
-			NotAuthorizedHandler(w,r)
-		}else{
-			ErrorHandler(w,r,creds.Status)
-		}
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-		return
-	}
-    Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
 
+	// workaround defective sharding in dev-mon
+	creds = auth.StubAuth(r)
+	if creds.Status == 200 {
+		Log.Printf("Stub Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
+	}else {
+		creds = auth.DockerAuth(r)
+		if creds.Status != 200 {
+			Log.Printf("Authentication failed for req_id=%s status=%d", req_id, creds.Status)
+			if creds.Status == 401 {
+				NotAuthorizedHandler(w, r)
+			}else {
+				ErrorHandler(w, r, creds.Status)
+			}
+			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+			return
+		}
+		Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
+	}
 
 	body, _ := ioutil.ReadAll(r.Body)
 
