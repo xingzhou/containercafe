@@ -29,12 +29,16 @@ func InjectRegAuthHeader(r *http.Request, creds auth.Creds) {
 	r.Header.Set("X-Registry-Auth", tok)
 }
 
-func GetRegistryApiHost() (host string){
+func GetRegistryApiHosts() (hosts []string){
 	// get service host from Consul
 	service := "registry-api"
-	host = conf.GetServiceHost(service)
-	if (host == ""){
+	hosts = conf.GetServiceHosts(service)
+	if len(hosts) == 0 {
 		Log.Printf("Failed to get Registry API host  service=%s", service)
+		return
+	}
+	for _,v := range hosts{
+		Log.Printf("Found Registry api host=%s", v)
 	}
 	return
 }
@@ -49,31 +53,44 @@ func AddCredsHeaders(req *http.Request, creds auth.Creds){
 	req.Header.Add("Accept", "application/json")
 }
 
-// call internal registry api server to get image metadata
-func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, creds auth.Creds, req_id string){
-	host := GetRegistryApiHost()
-	if (host == ""){
+// using internal api exposed by registry microservice
+func DoRegistryCall(w http.ResponseWriter, r *http.Request, uriPath string, method string, creds auth.Creds, req_id string){
+	// get service host from Consul
+	hosts := GetRegistryApiHosts()
+	if (len(hosts) == 0){
 		ErrorHandlerWithMsg(w, r, 500, "Failed to get Registry API host")
 		return
 	}
+		//Call service endpoint
+	for i:=0; i<len(hosts); i++ {
+		url := "http://" + hosts[i] + uriPath
+		Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
+		client := &http.Client{}
+		req, _ := http.NewRequest(method, url, nil)
+		AddCredsHeaders(req, creds)
+		resp, err := client.Do(req)
+		if err != nil {
+			//try next reg server
+			continue
+		}
+		defer resp.Body.Close()
+		body, _ := ioutil.ReadAll(resp.Body)
+		Log.Printf("Registry response req_id=%s statusCode=%d body=%s", req_id, resp.StatusCode, httphelper.PrettyJson(body))
 
-	//Call service endpoint
-	url := "http://"+host+"/v1/imageJson?imageName="+img
-	Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET",url, nil)
-	AddCredsHeaders(req, creds)
-	resp, _ := client.Do(req)
-	defer resp.Body.Close()
-	body,_:=ioutil.ReadAll(resp.Body)
-	Log.Printf("Registry status code: %d", resp.StatusCode)
-	Log.Printf("Registry response: %s", httphelper.PrettyJson(body) )
-
-	//send response back to client
-	w.WriteHeader(resp.StatusCode)
-	io.WriteString(w, string(body))
-
+		//send response back to client
+		w.WriteHeader(resp.StatusCode)
+		io.WriteString(w, string(body))
+		return
+	}
+	Log.Printf("None of the Registry servers responded req_id=%s", req_id)
 	return
+}
+
+// call internal registry api server to get image metadata
+func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, creds auth.Creds, req_id string){
+	uriPath := "/v1/imageJson?imageName="+img
+	method := r.Method
+	DoRegistryCall(w, r, uriPath, method, creds, req_id)
 }
 
 //implement image list by invoking search api of Containers registry
@@ -84,32 +101,12 @@ func invoke_reg_list(w http.ResponseWriter, r *http.Request, creds auth.Creds, r
 	//ns_url := "http://" + conf.GetRegLocation() + "/v1/namespaces/" + namespace
 	//lib_url := "http://" + conf.GetRegLocation() + "/v1/namespaces/library"
 
-	// Recommended approach using internal api exposed by registry microservice
-	// get service host from Consul
-	host := GetRegistryApiHost()
-	if (host == ""){
-		ErrorHandlerWithMsg(w, r, 500, "Failed to get Registry API host")
-		return
-	}
-
-	//Call service endpoint
-	url := "http://" + host + "/v1/imageList/" + creds.Reg_namespace
-	Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET",url, nil)
-	AddCredsHeaders(req, creds)
-	resp, _ := client.Do(req)
-	defer resp.Body.Close()
-	body,_:=ioutil.ReadAll(resp.Body)
-	Log.Printf("Registry status code: %d", resp.StatusCode)
-	Log.Printf("Registry response: %s", httphelper.PrettyJson(body))
-
-	//send response back to client
-	w.WriteHeader(resp.StatusCode)
-	io.WriteString(w, string(body))
-	return
+	uriPath := "/v1/imageList/" + creds.Reg_namespace
+	method := r.Method
+	DoRegistryCall(w, r, uriPath, method, creds, req_id)
 }
 
+//TODO: reimplement using micrservice when available
 func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds auth.Creds, req_id string){
 	//img valid format:  host/namespace/name:tag
 	sl := strings.Split(img, "/")

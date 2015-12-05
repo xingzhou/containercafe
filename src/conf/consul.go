@@ -16,7 +16,7 @@ type ConsulService struct{
 	ServicePort	int
 }
 
-func GetServiceHost(service string) (host string){
+func GetServiceHosts(service string) (hosts []string){
 	consul_host := GetConsulIp()+":"+strconv.Itoa(GetConsulPort())
 	consul_url := "http://"+consul_host+"/v1/catalog/service/"+service
 	Log.Printf("Will invoke Consul... url=%s", consul_url)
@@ -44,8 +44,10 @@ func GetServiceHost(service string) (host string){
 		return
 	}
 
-	//pick one of the endpoints
-	host = consulService[0].Address + ":" + strconv.Itoa(consulService[0].ServicePort)
-	Log.Printf("Consul response: host=%s", host)
+	//return all endpoints
+	hosts = make ([]string, len(consulService))
+	for k,v := range consulService {
+		hosts[k] = v.Address+":"+strconv.Itoa(v.ServicePort)
+	}
 	return
 }
