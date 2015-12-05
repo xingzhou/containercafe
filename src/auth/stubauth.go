@@ -5,7 +5,7 @@ import (
 )
 
 var validSpaces = []Creds {
-	{200, "10.140.28.132:2379", "", "", true, "85cdc7e0-32d8-4552-9bae-907c3f1d98d9", "swarmtest", "c3d87893a5b7f56991fd328f655f25cce286591c3ce4a558","9013217d-0abf-40fe-bd35-bb625066408c", "924fc412d1004528b90007e898aeb0d8"},
+	{200, "10.140.28.132:2379", "", "", true, "85cdc7e0-32d8-4552-9bae-907c3f1d98d9", "swarm", "c3d87893a5b7f56991fd328f655f25cce286591c3ce4a558","9013217d-0abf-40fe-bd35-bb625066408c", "924fc412d1004528b90007e898aeb0d8"},
 }
 
 // authentication stub for trusted SWARM tenants
