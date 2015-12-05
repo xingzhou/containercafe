@@ -67,6 +67,7 @@ func (router *Router) CheckRoute(req *http.Request)(found bool, route Route){
 func (router *Router) DoRoute(w http.ResponseWriter, req *http.Request, body []byte, creds auth.Creds, req_id string) {
 	for  _, route := range router.routes {
 		if found, vars := route.matchRoute(req); found {
+			Log.Printf("DoRoute found route pattern=%s method=%s", route.pattern, route.method)
 			route.handler(w, req, body, creds, vars, req_id)
 			return
 		}
@@ -86,8 +87,11 @@ func (route *Route) matchRoute(req *http.Request) (match bool, vars map[string]s
 		return
 	}
 
-	pattern_parts := strings.Split(route.pattern, "/")
 	uri_parts := strings.Split(req.RequestURI, "/")
+	pattern_parts := strings.Split(route.pattern, "/")
+	//get rid of any trailing args in the req uri
+	sl := strings.Split(uri_parts[len(uri_parts)-1], "?")
+	uri_parts[len(uri_parts)-1] = sl[0]
 
 	//check pattern length vs uri length
 	if len(pattern_parts) != len(uri_parts) {

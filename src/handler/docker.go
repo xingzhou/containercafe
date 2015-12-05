@@ -158,6 +158,7 @@ func listImages(w http.ResponseWriter, r *http.Request, body []byte, creds auth.
 }
 
 func createContainer(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
+	Log.Printf("createContainer invoked req_id=%s", req_id)
 	// extract image
 	img := get_image_from_container_create(body)
 	if !is_img_valid(img, creds.Reg_namespace){
@@ -206,6 +207,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 		backOffTimeout = conf.GetBackOffTimeout()
 	}
 
+	Log.Printf("Redirecting to host=%s req_id=%s", redirect_host, req_id)
 	var (resp *http.Response
 		cc *httputil.ClientConn
 	)
