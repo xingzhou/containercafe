@@ -30,8 +30,9 @@ ENV max_container_conn="4"
 ENV max_node_conn="0"
 ENV kube_port="8080"
 ENV swarm_node_port="2375"
-ENV registry_auth_tok="eyJ1c2VybmFtZSI6ImFkbWluIiwicGFzc3dvcmQiOiIyMzAxODkiLCJhdXRoIjoiIiwiZW1haWwiOiJzd2FybUBkZXYudGVzdCIsInNlcnZlcmFkZHJlc3MiOiJyZWdpc3RyeS1pY2UtZGV2LXRlc3Quc3RhZ2UxLm5nLmJsdWVtaXgubmV0In0="
+#ENV registry_auth_tok="eyJ1c2VybmFtZSI6ImFkbWluIiwicGFzc3dvcmQiOiIyMzAxODkiLCJhdXRoIjoiIiwiZW1haWwiOiJzd2FybUBkZXYudGVzdCIsInNlcnZlcmFkZHJlc3MiOiJyZWdpc3RyeS1pY2UtZGV2LXRlc3Quc3RhZ2UxLm5nLmJsdWVtaXgubmV0In0="
 ENV registry_location="registry-ice-dev-test.stage1.ng.bluemix.net"
+ENV registry_admin_password=230189
 ENV consul_ip="127.0.0.1"
 ENV consul_port="8500"
 

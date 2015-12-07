@@ -19,9 +19,20 @@ func InjectRegAuthHeader(r *http.Request, creds auth.Creds) {
 	//Use admin base64 encoded psswd
 	//tok := conf.GetRegAuthToken()
 
+	_REG_ADMIN_CREDS_ := true   //feature flag
+ 	var user, psswd string
+ 	if _REG_ADMIN_CREDS_ {
+		user = "admin"
+		psswd = conf.GetRegAdminPsswd()
+	}else{
+		user = "apikey"
+		psswd = creds.Apikey
+	}
+	reg:=conf.GetRegLocation()
+
 	//create X-Registry-Auth object out of apikey in creds
 	// {"username":"admin","password":"230189","auth":"","email":"swarm@dev.test","serveraddress":"registry-ice-dev-test.stage1.ng.bluemix.net"}
-	auth_str := fmt.Sprintf("{\"username\":\"apikey\",\"password\":\"%s\",\"auth\":\"\",\"email\":\"swarm@dev.test\",\"serveraddress\":\"%s\"}", creds.Apikey, conf.GetRegLocation())
+	auth_str := fmt.Sprintf("{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"\",\"email\":\"swarm@dev.test\",\"serveraddress\":\"%s\"}", user, psswd, reg)
     auth_bytes := []byte(auth_str)
 	tok := base64.StdEncoding.EncodeToString( auth_bytes )
 
