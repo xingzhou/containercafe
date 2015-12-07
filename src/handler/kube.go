@@ -44,24 +44,26 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 
 	//Call Auth interceptor to authenticate with ccsapi
 	var creds auth.Creds
-	creds = auth.KubeAuth(r)
-	status := creds.Status
-	node := creds.Node
-	namespace := creds.Space_id
-	if status != 200 {
-		Log.Printf("Authentication failed for req_id=%s status=%d", req_id, status)
-		if status == 401 {
-			NotAuthorizedHandler(w,r)
-		}else{
-			ErrorHandler(w,r,status)
+	creds = auth.StubAuth(r)
+	if creds.Status == 200 {
+		Log.Printf("Stub Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
+	}else {
+		creds = auth.KubeAuth(r)
+		if creds.Status != 200 {
+			Log.Printf("Authentication failed for req_id=%s status=%d", req_id, creds.Status)
+			if creds.Status == 401 {
+				NotAuthorizedHandler(w, r)
+			}else {
+				ErrorHandler(w, r, creds.Status)
+			}
+			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+			return
 		}
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-		return
+		Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
 	}
-    Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, status)
 
 	//Handle request
-	kubeHandler(w, r, node, namespace, req_id)
+	kubeHandler(w, r, creds.Node, creds.Space_id, req_id)
 
 	Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 }
