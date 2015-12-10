@@ -9,6 +9,8 @@ var validSpaces = []Creds {
 /*swarm2test*/	{200, "10.140.179.44:2379", "", "", true, "c6549f25-1003-44c3-977d-09e866c4ea08", "swarm", "df6b2bd22dc7ed47f36f6e10a9f118c10f216ab44fb2863b","9013217d-0abf-40fe-bd35-bb625066408c", "8d174ad3d3a16169-BM_c6549f25-1003-44c3-977d-09e866c4ea08_8c5fd60fc2693a96"},
 /*swarm2test1*/	{200, "10.140.179.44:2379", "", "", true, "9994cfb1-cecb-4e17-9371-0c0b4fe5377b", "swarm", "01234567890","9013217d-0abf-40fe-bd35-bb625066408c", "01234567890"},
 /*swarm3test*/	{200, "10.140.181.167:2379", "", "", true, "eb651f47-3b4b-47d5-8880-1b47b70eaabd", "swarm", "01234567890","9013217d-0abf-40fe-bd35-bb625066408c", "01234567890"},
+/*swarm3test2*/	{200, "10.140.181.167:2379", "", "", true, "308a1b2d-b95b-4a07-a447-88af222ddd4c", "swarm", "01234567890","9013217d-0abf-40fe-bd35-bb625066408c", "01234567890"},
+
 }
 
 // authentication stub for trusted SWARM tenants
