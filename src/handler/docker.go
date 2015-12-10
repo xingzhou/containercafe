@@ -56,6 +56,12 @@ func InitDockerHandler(){
 		NewRoute("POST", "/{version}/images/{reg}/{img}/push", notSupported), //push
 		NewRoute("POST", "/{version}/images/{reg}/{ns}/{img}/push", notSupported), //push
 
+		NewRoute("POST", "/{version}/networks/create", createNetwork),
+		NewRoute("GET", "/{version}/networks/{name}", inspectNetwork),
+		NewRoute("DELETE", "/{version}/networks/{name}", removeNetwork),
+		NewRoute("POST", "/{version}/networks/{name}/connect", connectToNetwork),
+		NewRoute("POST", "/{version}/networks/{name}/disconnect", disconnectFromNetwork),
+
 		NewRoute("*", "*", dockerHandler),  //wildcard for forwarding everything else
 	}
 	dockerRouter = NewRouter(dockerRoutes)
@@ -168,9 +174,51 @@ func createContainer(w http.ResponseWriter, r *http.Request, body []byte, creds 
 	}
 	// inject X-Registry-Auth header
 	InjectRegAuthHeader(r, creds)
+
+	net := getNetworkFromContainerCreate(body)
+	if net != "" && net != "default" && net != "bridge"{
+		//copy body and replace net name by space_id+name
+		body = rewriteNetworkInContainerCreate(body, creds.Space_id)
+	}
+
 	//pass through
 	dockerHandler(w, r, body, creds, vars, req_id)
 }
+
+func createNetwork(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
+	// extract net name
+	name := getNetworkFromNetworkCreate(body)
+	if name != "" && name != "default" && name != "bridge"{
+		//copy body and replace name by space_id+name
+		body = rewriteNetworkInNetworkCreate(body, creds.Space_id)
+	}
+	dockerHandler(w, r, body, creds, vars, req_id)
+}
+
+func inspectNetwork(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
+	name := vars["{name}"]
+	r.RequestURI = rewriteNetworkUri(r.RequestURI, name, creds.Space_id)
+	dockerHandler(w, r, body, creds, vars, req_id)
+}
+
+func removeNetwork(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
+	name := vars["{name}"]
+	r.RequestURI = rewriteNetworkUri(r.RequestURI, name, creds.Space_id)
+	dockerHandler(w, r, body, creds, vars, req_id)
+}
+
+func connectToNetwork(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
+	name := vars["{name}"]
+	r.RequestURI = rewriteNetworkUri(r.RequestURI, name, creds.Space_id)
+	dockerHandler(w, r, body, creds, vars, req_id)
+}
+
+func disconnectFromNetwork(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
+	name := vars["{name}"]
+	r.RequestURI = rewriteNetworkUri(r.RequestURI, name, creds.Space_id)
+	dockerHandler(w, r, body, creds, vars, req_id)
+}
+
 
 // default route handler
 func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
@@ -401,4 +449,50 @@ func is_container_logs_call(uri string) bool {
 	}else{
 		return false
 	}
+}
+
+///////////////////////
+// network api helpers
+///////////////////////
+
+func rewriteNetworkUri(uri, name, space_id string) string{
+	fullname := uniqueNetName(name, space_id)
+	sl := strings.Split(uri, "/")
+	newUri := sl[0]
+	for i:=1; i < len(sl); i++ {
+		if name == sl[i]{
+			newUri += "/" + fullname
+		}else {
+			newUri += "/" + sl[i]
+		}
+	}
+	return newUri
+}
+
+//TODO
+func getNetworkFromNetworkCreate(body []byte) (net string) {
+	return
+}
+
+//TODO
+func getNetworkFromContainerCreate(body []byte) (net string){
+	return
+}
+
+//TODO
+func rewriteNetworkInNetworkCreate(body []byte, space_id string) (b []byte){
+	b = body
+	return
+}
+
+//TODO
+func rewriteNetworkInContainerCreate(body []byte, space_id string) (b []byte){
+	b=body
+	return
+}
+
+//TODO
+func uniqueNetName(net, space string) string{
+	//return space + "--" + net
+	return net
 }
