@@ -15,11 +15,12 @@ import (
 	"httphelper"
 )
 
+var _REG_ADMIN_CREDS_  bool = true   //feature flag
+
 func InjectRegAuthHeader(r *http.Request, creds auth.Creds) {
 	//Use admin base64 encoded psswd
 	//tok := conf.GetRegAuthToken()
 
-	_REG_ADMIN_CREDS_ := true   //feature flag
  	var user, psswd string
  	if _REG_ADMIN_CREDS_ {
 		user = "admin"
@@ -144,7 +145,13 @@ func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds au
 	req, _ := http.NewRequest("DELETE",url, nil)
 	//TODO: when rmi is implemented by reg microservice 	AddCredsHeaders(req, creds)
 	req.Header.Add("Accept", "application/json")
-	req.SetBasicAuth("apikey", creds.Apikey)
+
+ 	if _REG_ADMIN_CREDS_ {
+		req.SetBasicAuth("admin", conf.GetRegAdminPsswd())
+	}else{
+		req.SetBasicAuth("apikey", creds.Apikey)
+	}
+
 	resp, _ := client.Do(req)
 	defer resp.Body.Close()
 	body,_:=ioutil.ReadAll(resp.Body)
