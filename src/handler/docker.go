@@ -546,12 +546,18 @@ func rewriteNetworkInContainerCreate(body []byte, space_id string) (b []byte){
 	j := bytes.Index(body[i:], []byte("\"") )  // j == len of name
 	j += i //position of double-quote after net name
 
-	var nameBytes []byte
-	nameBytes = make([]byte, j-i)
-	copy(nameBytes, body[i:j-i])
+	Log.Printf("i=%d j=%d", i, j)
+	//var nameBytes []byte
+	//nameBytes = make([]byte, j-i+1)
+	Log.Printf("**%s**", string(body[i:j]) )
+
+	//copy(nameBytes, body[i:j])
 	//buf := bytes.NewBuffer(nameBytes)
 	//nameString := buf.String()
-	nameString := string(nameBytes)
+	nameString := string(body[i:j])
+	//nameString = strings.TrimSpace(nameString)
+	Log.Printf("nameString=**%s**", nameString )
+
 	fullnameString := uniqueNetName(nameString, space_id)
 
 	newBodyStr := string(body[:i]) + fullnameString + string(body[j:])
@@ -559,7 +565,7 @@ func rewriteNetworkInContainerCreate(body []byte, space_id string) (b []byte){
 	//b = make([]byte, len(newBody))
 	b = []byte(newBodyStr)
 
-	Log.Printf("rewriteNetworkInContainerCreate: New Body=%s", newBodyStr)
+	Log.Printf("rewriteNetworkInContainerCreate: New Body=**%s**", newBodyStr)
 
 	return
 }
