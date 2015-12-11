@@ -543,7 +543,8 @@ func rewriteNetworkInContainerCreate(body []byte, space_id string) (b []byte){
 	var sep = []byte ("\"NetworkMode\":\"")
 	i := bytes.Index(body, sep)
 	i += 15   //position of net name
-	j := bytes.Index(body[i:], []byte("\"") )  //position of double-quote after net name
+	j := bytes.Index(body[i:], []byte("\"") )  // j == len of name
+	j += i //position of double-quote after net name
 
 	var nameBytes []byte
 	nameBytes = make([]byte, j-i)
