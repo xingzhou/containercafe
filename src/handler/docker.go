@@ -10,6 +10,7 @@ import (
 	"time"
 	"strings"
 	"encoding/json"
+	"bytes"
 
 	"limit"  //my limits package
 	"httphelper"  //my httphelper package
@@ -469,30 +470,99 @@ func rewriteNetworkUri(uri, name, space_id string) string{
 	return newUri
 }
 
-//TODO
+//look for { "name" : "xxx",.... }
 func getNetworkFromNetworkCreate(body []byte) (net string) {
+	var f interface{}
+	err := json.Unmarshal(body, &f)
+	if err != nil{
+		Log.Printf("getNetworkFromNetworkCreate: error in json unmarshalling, err=%v", err)
+		return
+	}
+	m := f.(map[string]interface{})
+	for k, v := range m {
+		if (k == "name")||(k == "Name") {
+			net = v.(string)
+			Log.Printf("getNetworkFromNetworkCreate: found net=%s", net)
+			return
+		}
+	}
+	Log.Print("getNetworkFromNetworkCreate: did not find name in json body")
 	return
 }
 
-//TODO
+// look for "{......, "HostConfig":{...., "NetworkMode": "xxxx", ....} }
 func getNetworkFromContainerCreate(body []byte) (net string){
+	var f interface{}
+	err := json.Unmarshal(body, &f)
+	if err != nil{
+		Log.Printf("getNetworkFromContainerCreate: error in json unmarshalling, err=%v", err)
+		return
+	}
+	m := f.(map[string]interface{})
+	for k, v := range m {
+		if (k == "HostConfig") {
+			hc := v.(map[string]interface{})
+			for kk, vv := range hc {
+				if (kk == "NetworkMode"){
+					net = vv.(string)
+					Log.Printf("getNetworkFromContainerCreate: found net=%s", net)
+					return
+				}
+			}
+		}
+	}
+	Log.Print("getNetworkFromContainerCreate: did not find NetworkMode in json body")
 	return
 }
 
-//TODO
 func rewriteNetworkInNetworkCreate(body []byte, space_id string) (b []byte){
-	b = body
+	type netCreate struct {
+		Name      string
+		Driver    string
+	}
+	var nc netCreate
+	err := json.Unmarshal(body, &nc)
+	if err != nil {
+		Log.Printf("rewriteNetworkInNetworkCreate: Unmarshal error=%v", err)
+		b = body
+		return
+	}
+	nc.Name = uniqueNetName(nc.Name, space_id)
+	b, err = json.Marshal(&nc)
+		if err != nil {
+		Log.Printf("rewriteNetworkInNetworkCreate: Marshal error=%v", err)
+		b = body
+		return
+	}
+	Log.Printf("rewriteNetworkInNetworkCreate: unique name=%s", nc.Name)
 	return
 }
 
-//TODO
+//TODO check if redo using json parsing is more suitable
 func rewriteNetworkInContainerCreate(body []byte, space_id string) (b []byte){
-	b=body
+	var sep = []byte ("\"NetworkMode\":\"")
+	i := bytes.Index(body, sep)
+	i += 15   //position of net name
+	j := bytes.Index(body[i:], []byte("\"") )  //position of double-quote after net name
+
+	var nameBytes []byte
+	nameBytes = make([]byte, j-i)
+	copy(nameBytes, body[i:j-i])
+	//buf := bytes.NewBuffer(nameBytes)
+	//nameString := buf.String()
+	nameString := string(nameBytes)
+	fullnameString := uniqueNetName(nameString, space_id)
+
+	newBodyStr := string(body[:i]) + fullnameString + string(body[j:])
+
+	//b = make([]byte, len(newBody))
+	b = []byte(newBodyStr)
+
+	Log.Printf("rewriteNetworkInContainerCreate: New Body=%s", newBodyStr)
+
 	return
 }
 
-//TODO
 func uniqueNetName(net, space string) string{
-	//return space + "--" + net
-	return net
+	return space + "--" + net
 }
