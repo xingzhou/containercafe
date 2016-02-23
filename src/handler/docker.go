@@ -88,9 +88,9 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	var creds auth.Creds
 
 	// workaround defective sharding in dev-mon
-	creds = auth.StubAuth(r)
+	creds = auth.FileAuth(r)
 	if creds.Status == 200 {
-		Log.Printf("Stub Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
+		Log.Printf("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
 	}else {
 		creds = auth.DockerAuth(r)
 		if creds.Status != 200 {
