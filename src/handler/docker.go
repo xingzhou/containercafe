@@ -266,7 +266,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 		if err == nil {
 			break
 		}
-		Log.Printf("redirect failed retry=%d req_id=%s", i, req_id)
+		Log.Printf("redirect failed retry=%d req_id=%s err=%s", i, req_id, err)
 		if (i+1) < maxRetries {
 			Log.Printf("will sleep before retry secs=%d req_id=%s", backOffTimeout, req_id)
 			time.Sleep( time.Duration(backOffTimeout) * time.Second)
