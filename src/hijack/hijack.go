@@ -57,7 +57,11 @@ func main() {
 	http.HandleFunc("/api", handler.KubeEndpointHandler)
 	http.HandleFunc("/swaggerapi/", handler.KubeEndpointHandler)
 
-	//Rely on NGINX to route accepted docker url paths only to hijackproxy
+	// set prefix patterns for Groups handler
+	http.HandleFunc("/groups/", handler.GroupsEndpointHandler)
+	http.HandleFunc("/groups", handler.GroupsEndpointHandler)
+
+	//Rely on NGINX to route accepted docker/swarm url paths only to hijackproxy
 	http.HandleFunc("/", handler.DockerEndpointHandler)
 
 	/*for profiling only

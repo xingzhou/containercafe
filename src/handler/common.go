@@ -19,6 +19,7 @@ func init() {
 	InitDockerHandler()
 	InitKubeHandler()
 	InitHealthHandler()
+	InitGroupsHandler()
 }
 
 //called from main package init() after the logger is created

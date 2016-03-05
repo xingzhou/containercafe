@@ -6,7 +6,7 @@ import(
 	"encoding/json"
 )
 
-const Version = 1.10
+const Version = 1.20
 var BuildId = ""
 var BuildDate = ""
 
