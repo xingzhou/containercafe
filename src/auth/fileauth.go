@@ -12,9 +12,9 @@ import (
 // Use a file as authentication credentials store (mainly for trusted test SWARM tenants)
 // BlueMix space id is passed in request header as X-Auth-Project-Id header and is used as search key into the file
 func FileAuth(r *http.Request) (creds Creds) {
+	creds.Status = 404
 	proxy_auth_header := r.Header.Get("X-Auth-Proxy")
 	if proxy_auth_header != "TOKEN" && proxy_auth_header != "Token" && proxy_auth_header != "token" {
-		creds.Status = 404
 		return
 	}
 	space_id := r.Header.Get("X-Auth-Project-Id")
@@ -39,7 +39,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 
 		if space_id == c.Space_id {
 			creds = c
-			creds.Status = 200
+			//creds.Status = 200  //return the status that is in the auth conf file
 			//Set Swarm Authorization header
 			r.Header.Set("X-Auth-Token", space_id)
 			return
