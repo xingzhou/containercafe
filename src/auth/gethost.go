@@ -16,8 +16,10 @@ type GetHostResp struct {
 	Container_id  	string
 	Container_name 	string
 	Host 			string
-	Swarm			bool    // True if swarm manager is the target
+	Swarm			bool    // True if swarm shard is the target
 	Mgr_host		string  // swarm manager host:port
+	K8s_host		string	// K8s manager host:port
+	Groups_host		string	// Groups Manager host:port
 	Swarm_tls		bool	// use tls if true in case of swarm, TODO: respect this flag
 	Space_id		string  // for Authorization (tenant isolation) in case of swarm
 	Namespace		string	// registry namespace for this tenant's org, used for validating images the user can access
