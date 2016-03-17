@@ -12,4 +12,5 @@ type Creds struct{
 	Apikey 			string
 	Orguuid			string
 	Userid			string
+	Swarm_shard		bool
 }

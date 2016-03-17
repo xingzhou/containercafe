@@ -347,13 +347,16 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 		//***** Filter framework for Interception of commands before returning result to client (2) *****
 		//Check if Redis caching is required
 		//if request uri contains "/container/" and "/exec" then store in Redis the returned exec id (in resp body) and container id (in uri)
-		if is_container_exec_call(r.RequestURI) {
-			container_id := strip_nova_prefix(redirect_resource_id)
-			exec_id := get_exec_id_from_response(resp_body)
-			if exec_id == "" {
-				Log.Printf("Error: error in retrieving exec id from response body")
-			}else {
-				conf.RedisSetExpire(exec_id, container_id, 60*60)
+		if ! creds.Swarm_shard {
+			//This is needed only in nova-docker case
+			if is_container_exec_call(r.RequestURI) {
+				container_id := strip_nova_prefix(redirect_resource_id)
+				exec_id := get_exec_id_from_response(resp_body)
+				if exec_id == "" {
+					Log.Printf("Error: error in retrieving exec id from response body")
+				}else {
+					conf.RedisSetExpire(exec_id, container_id, 60*60)
+				}
 			}
 		}
 

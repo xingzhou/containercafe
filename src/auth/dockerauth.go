@@ -3,7 +3,6 @@ package auth
 import (
 	"net/http"
 	"strings"
-	"strconv"
 
 	"conf"  		// my conf package
 )
@@ -12,13 +11,21 @@ import (
 // override tls flag is used in swarm case only
 func DockerAuth(r *http.Request) (creds Creds) {
 
+	// Make a call to get Shard and authenticate. This call is always sufficient for Swarm shard case.
+	// For nova-docker case, AND exec calls, redis must be called to get container id then a second call to getHost is needed.
+
 	//parse r.RequestURI for container id or exec id
 	uri := r.RequestURI
 	id, id_type := get_id_and_type(uri)
 	//if type is Exec then get container id from redis cache to forward to getHost api
 	var container_id string
+	second_call_needed := false
 	if id_type == "Exec" {
-		container_id = conf.RedisGet(id)
+		//"Exec" AND nova-docker (to be determined based on 1st call response) ==> a 2nd call to getHost will be needed
+		//1st call will use "NoneContainer", 2nd call will use the container_id to be retrieved from redis
+		second_call_needed = true  // assume true for now until proven not to be nova-docker shard
+		id_type = "None"
+		//container_id = conf.RedisGet(id)
 	}else{
 		container_id = id
 	}
@@ -33,6 +40,24 @@ func DockerAuth(r *http.Request) (creds Creds) {
 		Log.Printf("Auth result: status=%d\n", creds.Status)
 		return
 	}
+
+	if second_call_needed {
+		id_type = "Exec"
+		if ! host.Swarm {
+			// nova-docker case, make 2nd call
+			container_id = conf.RedisGet(id)
+			creds.Status, host = getHost(r, container_id)
+			if creds.Status != 200 {
+				Log.Printf("Auth result: status=%d\n", creds.Status)
+				return
+			}
+		}else{
+			// swarm shard case, no need for 2nd call
+			second_call_needed = false
+		}
+	}
+
+	creds.Swarm_shard = host.Swarm
 	creds.Node = host.Host + ":" + conf.GetDockerPort()
 	creds.Container = host.Container_id
 	creds.Reg_namespace = host.Namespace
@@ -58,7 +83,8 @@ func DockerAuth(r *http.Request) (creds Creds) {
 		r.Header.Set("X-Auth-Token", host.Space_id)
 		Log.Printf("Injected Swarm X-Auth-Token=%s", host.Space_id)
 		if id_type == "Container" {
-			creds.Docker_id = creds.Container
+			//@@ This fix is needed especially for after ccsapi is fixed to not invoke swarm in getHost
+			creds.Docker_id = id //creds.Container
 		}
 		if id_type == "Exec" {
 			creds.Docker_id = id  //use the exec id that came in the original req
@@ -69,10 +95,12 @@ func DockerAuth(r *http.Request) (creds Creds) {
 		if !host.Swarm_tls{
 			creds.Tls_override = true  // no tls for this outbound req regardless of proxy conf
 		}
+		/*
 		if host.Host != ""{
 			// go to swarm node directly if known
 			creds.Node = host.Host + ":" + strconv.Itoa(conf.GetSwarmNodePort())
 		}
+		*/
 	}
 	Log.Printf("Auth result: status=%d node=%s docker_id=%s container=%s tls_override=%t reg_namespace=%s\n",
 		creds.Status, creds.Node, creds.Docker_id, creds.Container, creds.Tls_override, creds.Reg_namespace)
