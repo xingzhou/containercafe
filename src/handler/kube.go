@@ -97,7 +97,7 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		cc *httputil.ClientConn
 	)
 	for i:=0; i<maxRetries; i++ {
-		resp, err, cc = redirect (r, body, redirect_host, redirect_resource_id,
+		resp, err, cc = redirect_random (r, body, redirect_host, redirect_resource_id,
 			kubeRewriteUri, true /* override tls setting*/)
 		if err == nil {
 			break

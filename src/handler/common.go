@@ -6,6 +6,9 @@ import (
 	"net"
 	"bytes"
 	"crypto/tls"
+	"strings"
+	"crypto/rand"
+	"math/big"
 
 	"conf"
 	"logger"
@@ -69,4 +72,50 @@ func redirect(r *http.Request, body []byte, redirect_host string, redirect_resou
 	resp, err := cc.Do(req)
 
 	return resp, err, cc
+}
+
+// Assumes redirect_host is a list of comma separated host:port pairs
+// selects a target node randomly and calls redirect
+// if call fails try other targets until success or exhausting targets
+func redirect_random(r *http.Request, body []byte, redirect_host string, redirect_resource_id string,
+	rewriteURI func(uri string, resource string) string, tls_override bool) (resp *http.Response, err error, cc *httputil.ClientConn){
+
+	// get list of host:port pairs
+	nodes := strings.Split(redirect_host,",")
+	num_nodes := len(nodes)
+	Log.Printf("redirect_random num_nodes=%d nodes=%s", num_nodes, nodes)
+
+	// pick random target
+	var target int
+	t , e := rand.Int( rand.Reader, big.NewInt(int64(num_nodes)) )
+	if e != nil {
+		Log.Print("error in rand num generator:", e)
+		target = 0
+		num_nodes = 1
+	}else {
+		target = int(t.Int64())
+	}
+
+	// call redirect
+	redirect_host = nodes[target]
+	Log.Printf("redirect_random: node=%s target=%d", redirect_host, target)
+	resp, err, cc = redirect (r, body, redirect_host, redirect_resource_id, rewriteURI, tls_override)
+	if err == nil {
+		return
+	}
+
+	// on failure loop through rest of targets until success
+	for i:=1; i<num_nodes; i++ {
+		target += i
+		target = target % num_nodes
+		redirect_host = nodes[target]
+		Log.Printf("redirect_random: node=%s target=%d", redirect_host, target)
+		resp, err, cc = redirect(r, body, redirect_host, redirect_resource_id, rewriteURI, tls_override)
+		if err == nil {
+			break
+		}
+		Log.Printf("redirect_random: redirect failed  node=%s err=%s", redirect_host, err)
+	}
+
+	return
 }

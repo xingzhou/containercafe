@@ -7,7 +7,7 @@ import (
 	"strings"
 	"strconv"
 
-	"conf"
+	//"conf"
 )
 
 //KubeAuth uses only the following fields of Creds[]: Status, Node, Space_id
@@ -15,9 +15,9 @@ func KubeAuth(r *http.Request) (creds Creds) {
 	var host GetHostResp
 	creds.Status, host = getHost(r, "NoneContainer")
 	if creds.Status == 200 {
-		kubeMgr := injectKubePort( host.Mgr_host, conf.GetKubePort() ) 	// Kube master port is 6443
+		//kubeMgr := injectKubePort( host.Mgr_host, conf.GetKubePort() ) 	// Kube master port is 6443
+		creds.Node = host.K8s_host //kubeMgr
 		creds.Space_id = host.Space_id
-		creds.Node = kubeMgr
 	}
 	Log.Printf("status=%d Mgr_host=%s namespace=%s", creds.Status, creds.Node, creds.Space_id)
 	return
