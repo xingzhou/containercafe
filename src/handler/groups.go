@@ -133,7 +133,7 @@ func groupsHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 		cc *httputil.ClientConn
 	)
 	for i:=0; i<maxRetries; i++ {
-		resp, err, cc = redirect(r, body, redirect_host, redirect_resource_id,
+		resp, err, cc = redirect_random(r, body, redirect_host, redirect_resource_id,
 			groupsRewriteUri, tls_override)
 		if err == nil {
 			break
