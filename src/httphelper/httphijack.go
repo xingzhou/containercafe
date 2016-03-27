@@ -63,27 +63,32 @@ func tcpHijack (cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Con
 	wg.Add(1) //add 1 only not 2, to proceed when one of the two go routines finishes
 
 	prefix := "> (req id: " + req_id + ")"
-	go rwloop(cli_bufrw, srv_bufrw, cli_conn, srv_conn, prefix, &wg)
+	go rwloop(cli_bufrw, srv_bufrw, cli_conn, srv_conn, prefix, &wg, false)
 
 	prefix = "< (req id: " + req_id + ")"
-	go rwloop(srv_bufrw, cli_bufrw, srv_conn, cli_conn, prefix, &wg)
+	go rwloop(srv_bufrw, cli_bufrw, srv_conn, cli_conn, prefix, &wg, true)
 
-	//wait until one go routines finishes...
-	//increment wg.Add() so no panic happens when the 2nd go routine calls wg.Done() at its exit
-	//the 2 conn closures happen at exit of tcpHijack, so the other go routine will receive read error and exit
+	//wait until one go routines finishes... the server read loop routine
+	//If the 2nd go routine calls wg.Done() at its exit (not our case) you need to increment wg.Add() so no panic happens
+	//the 2 conn closures happen at exit of tcpHijack, if the client routine is still running it will receive read error and exit
 	wg.Wait()
-	wg.Add(1)
+	//wg.Add(1) Do not wait for the client. Also the client routine should not call wg.Done() on exit
 
-	time.Sleep(500*time.Millisecond) //allow time for other go routine to flush any data in pipe before sockets are closed
+	//allow time for other go routine to flush any data in pipe before sockets are closed
+	//this sleep should not be needed now since we exit only when server closes its socket (i.e., server read routine exits)
+	//time.Sleep(100*time.Millisecond)
 
 	prefix = "(req id: " + req_id + ")"
 	Log.Printf("%s Hijack exit and connections close\n", prefix)
 }
 
 func rwloop (src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
-	print_prefix string, wg *sync.WaitGroup) {
+	print_prefix string, wg *sync.WaitGroup, server_read_loop bool) {
 
-	defer wg.Done()
+	if server_read_loop {
+		// the caller, tcpHijack(), should exit only if the server is done
+		defer wg.Done()
+	}
 
 	Log.Printf("%s rwloop started\n", print_prefix)
 	//s, err := src_buf.ReadString('\n')
