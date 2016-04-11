@@ -1,0 +1,4 @@
+
+.project
+bin/*
+pkg/darwin_amd64/*
