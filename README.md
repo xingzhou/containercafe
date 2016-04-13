@@ -8,7 +8,7 @@ This project contains example `creds.json` file. This supercedes the authenticat
 In other words if authentication succeeds against a record in this fie, CCSAPI will not be contacted.
 
 Each record is a json object with the following syntax:
-```
+```json
 {
   "Status":200, "Node":"10.140.28.132:2379", "Docker_id":"", "Container":"", "Swarm_shard":true,
   "Tls_override":true, "Space_id":"85cdc7e0-32d8-4552-9bae-907c3f1d98d9", "Reg_namespace":"swarm", "Apikey":"c3d87893a5b7f56991fd328f655f25cce286591c3ce4a558",
@@ -35,7 +35,7 @@ If NOT running as a docker container, then the default `creds.json` file locatio
 
 ## Step 2: Compile  and run
 Use `build.sh` script to compile, then run directly as a process on the host by invoking bin/hijack
-```
+```shell
 chmod +x build.sh
 ./build.sh
 bin/hijack
@@ -44,9 +44,9 @@ bin/hijack
 Alternatively, use `builddocker.sh` to build a docker container named hijack, and use
 `rundocker.sh` to start the container with the right -v and -p options.
 
-###NOTE: All default config options are defined in the Dockerfile, and can be overridden using the docker -e option on startup.
+**NOTE**: All default config options are defined in the Dockerfile, and can be overridden using the docker -e option on startup.
 
-###NOTE: If running standalone, i.e., using file auth, be mindful of where creds.json should be placed. See comments in Step 2 above.
+**NOTE**: If running standalone, i.e., using file auth, be mindful of where creds.json should be placed. See comments in Step 2 above.
 
 ## Step 3: Setup client headers to execute HTTP requests
 Your request must carry these the specified HTTP headers,otherwise File
@@ -64,7 +64,7 @@ custom `~/projects/radiant/proxy/config.json` to reference with explicit calls
 
 Content of the file must include the above headers.
 Example:
-```
+```json
 {
   "HttpHeaders": {
     "X-Auth-Proxy": "Token",
@@ -85,14 +85,14 @@ for Kubernetes using `kubectl`
 Setup the location of the Proxy server endpoint. When running locally, its localhost
 on port 8087
 
-```
+```shell
 export PROXY=localhost:8087
 ```
 Sample calls:
-```
-DOCKER_TLS_VERIFY="" docker -H $PROXY --config ~/projects/next-gen/proxy/ ps
-DOCKER_TLS_VERIFY="" docker -H $PROXY --config ~/projects/next-gen/proxy/ run -d --name MS-test1 -m 128m --env test=1 10.140.132.215:5001/mrsabath/web-ms 
-DOCKER_TLS_VERIFY="" docker -H $PROXY --config ~/projects/next-gen/proxy/ inspect <cont_id>
+```shell
+DOCKER_TLS_VERIFY="" docker -H $PROXY --config ~/projects/radiant/proxy/ ps
+DOCKER_TLS_VERIFY="" docker -H $PROXY --config ~/projects/radiant/proxy/ run -d --name MS-test1 -m 128m --env test=1 10.140.132.215:5001/mrsabath/web-ms
+DOCKER_TLS_VERIFY="" docker -H $PROXY --config ~/projects/radiant/proxy/ inspect <cont_id>
 ```
 
 
