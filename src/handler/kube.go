@@ -16,13 +16,27 @@ import (
 )
 
 // supported Kubernetes api uri prefix patterns
-var kubePatterns = []string {
+// these kube url patterns require namespaces:
+var kubeAuthPatterns = []string {
 	"/api/v1/namespaces/",
 	"/api/v1/watch/namespaces/",
 	"/api/v1/proxy/namespaces/",
-	"/api",
 	"/swaggerapi/",
 }
+
+// TODO 
+// There is a problem with /apis, because it's handled by docker endpoint pattern
+//2016/04/18 15:58:51.066842 docker.go:75: ------> DockerEndpointHandler triggered, req_id=2, URI=/apis
+//2016/04/18 15:58:51.066883 docker.go:79: Docker pattern not accepted, req_id=2, URI=/apis
+//2016/04/18 15:58:51.066892 noendpoint.go:10: NoEndpointHandler triggered, URI=/apis, returning error 404
+//2016/04/18 15:58:51.066903 docker.go:81: ------ Completed processing of request req_id=2
+
+// these kube url patterns don't require namespaces
+var kubeNonAuthPatterns = []string {
+	"/api",
+	"/apis",
+}
+
 
 //called from init() of the package
 func InitKubeHandler(){
@@ -34,17 +48,75 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	req_id := conf.GetReqId()
 	Log.Printf("------> KubeEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
 
-	// check if uri pattern is accepted
-	if ! IsSupportedPattern(r.RequestURI, kubePatterns){
+	// check if URI supported and requires auth.
+	if IsExactPattern(r.RequestURI, kubeNonAuthPatterns){
+		Log.Printf("Kube pattern accepted for Non-Auth, req_id=%s, URI=%s", req_id, r.RequestURI)
+		// TODO fix this, missing certicate. Needs to be re-visited
+		// hardcode for now, until we fix the onboarding process
+   		kubeHandler(w, r, "10.140.171.98:443", "default", req_id, nil, nil)
+   		// TODO we might need to mascarade the returned server IP
+   		// "serverAddress": "10.140.171.98:443"
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
+	} else {
+		Log.Printf("Non-Auth Kube pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
+	}
+
+
+	// check if uri pattern is accepted and requires auth
+	if ! IsSupportedPattern(r.RequestURI, kubeAuthPatterns){
 		Log.Printf("Kube pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
 		NoEndpointHandler(w, r)
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
-
-	//Call Auth interceptor to authenticate with ccsapi
+	Log.Printf("This is a AUTH Kube supported pattern %+v", r.RequestURI)
+	// body, _ := ioutil.ReadAll(r.Body)
+	// Log.Printf("**** %+v", r)
+	// Log.Printf("**** This is a request body: %+v", body)
+	
+	// read the credentials from the local file first
 	var creds auth.Creds
+	creds = auth.FileAuth(r)
+	if creds.Status == 200 {
+		Log.Printf("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
+		Log.Printf("Will not execute CCSAPI auth")
+		Log.Printf("**** Creds %+v", creds)
+	} else {
+		creds = auth.DockerAuth(r)
+		Log.Printf("**** Creds %+v", creds)
+		if creds.Status != 200 {
+			Log.Printf("Authentication failed for req_id=%s status=%d", req_id, creds.Status)
+			if creds.Status == 401 {
+				NotAuthorizedHandler(w, r)
+			}else {
+				ErrorHandler(w, r, creds.Status)
+			}
+			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+			return
+		}
+		Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
+		
+		// if Node is not set or host info missing, assingn hardcoded value to our Kube-Auth test server
+		// this will be fixed on CCSAPI level
+		if (creds.Node == "" || creds.Node == ":" + conf.GetDockerPort()) {
+			creds.Node = "10.140.171.98:443"
+			Log.Printf("** Node information not available, using hardcoded Kube-Auth server %v", creds.Node)
+		}
+		if creds.Space_id == "" {
+			creds.Space_id = "ms-namespace"
+			Log.Printf("** space information not available, using hardcoded space_id %v", creds.Space_id)
+		}
+
+	}
+
+	
+	
+	// TODO for now skip the StubAuth, not needed
+	if (false) {
+	//Call Auth interceptor to authenticate with ccsapi
 	creds = auth.StubAuth(r)
+	Log.Printf("*** Creds %+v", creds)
 	if creds.Status == 200 {
 		Log.Printf("Stub Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
 	}else {
@@ -61,16 +133,23 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
 	}
+    }
 
-	//Handle request
-	kubeHandler(w, r, creds.Node, creds.Space_id, req_id)
-
+	// get user certificates from the CCSAPI server
+	 status, certs := auth.GetCert(r)
+	 if status != 200 {
+	 	Log.Printf("Obtaining user certs failed for req_id=%s status=%d", req_id, status)
+			ErrorHandler(w, r, creds.Status)
+	 }
+	 Log.Printf("Obtaining user certs successful for req_id=%s status=%d", req_id, status)
+	
+	kubeHandler(w, r, creds.Node, creds.Space_id, req_id, []byte(certs.User_cert), []byte(certs.User_key))
 	Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 }
 
 // private handler processing
 func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
-	redirect_resource_id string, req_id string) {
+	redirect_resource_id string, req_id string, cert []byte, key []byte) {
 
 	req_UPGRADE := false
 	resp_UPGRADE := false
@@ -97,10 +176,22 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		cc *httputil.ClientConn
 	)
 	for i:=0; i<maxRetries; i++ {
-		resp, err, cc = redirect_random (r, body, redirect_host, redirect_resource_id,
-			kubeRewriteUri, true /* override tls setting*/)
+		// resp, err, cc = redirect_random (r, body, redirect_host, redirect_resource_id,
+		resp, err, cc = redirect_with_cert(r, body, redirect_host, redirect_resource_id,
+			kubeRewriteUri, false, cert, key /* override tls setting*/)
+			// kubeRewriteUri, true /* override tls setting*/) TODO MS
 		if err == nil {
-			break
+			
+			if strings.Contains(resp.Status, "401")   { //"401 Unauthorized
+				// TODO MS hack
+				// we need to load proper certificates on the k8s server
+				// temporarily override with local certificates files
+				Log.Println("**** RUNNING A HACK, loading local certs. \"401 Unauthorized\"")
+				resp, err, cc = redirect_with_cert(r, body, redirect_host, redirect_resource_id,
+				kubeRewriteUri, false, nil, nil /* override tls setting*/)
+				break
+				}
+			break	
 		}
 		Log.Printf("redirect retry=%d failed", i)
 		if (i+1) < maxRetries {

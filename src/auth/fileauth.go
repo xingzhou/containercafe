@@ -17,9 +17,10 @@ func FileAuth(r *http.Request) (creds Creds) {
 	if proxy_auth_header != "TOKEN" && proxy_auth_header != "Token" && proxy_auth_header != "token" {
 		return
 	}
-	space_id := r.Header.Get("X-Auth-Project-Id")
-
-	fname := conf.GetStubAuthFile()
+	//  swarm-auth now uses 'X-Auth-TenantId' instead of 'X-Auth-Project-Id'
+	// space_id := r.Header.Get("X-Auth-Project-Id")
+	space_id := r.Header.Get("X-Auth-TenantId")
+    fname := conf.GetStubAuthFile()
 	fp, err := os.Open(fname)
 	if err != nil{
 		Log.Println(err)
@@ -36,7 +37,10 @@ func FileAuth(r *http.Request) (creds Creds) {
 			Log.Println(err)
 			break
 		}
-
+		// skip if this is not swarm shard nor radiant endpoint
+		if (c.Endpoint_type != "radiant" && c.Swarm_shard != true) {
+			continue
+		}
 		if space_id == c.Space_id {
 			creds = c
 			//creds.Status = 200  //return the status that is in the auth conf file
@@ -45,7 +49,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 			return
 		}
 	}
-
+    Log.Printf("Tenant %v not found in %v file", space_id, fname)
 	//tenant not found in credentials file
 	creds.Status = 401
 	return
