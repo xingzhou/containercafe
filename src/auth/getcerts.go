@@ -16,12 +16,8 @@ import (
 type GetCertResp struct {
 	User_cert  	string
 	User_key   	string
-	Server_cert string
+	Server_cert 	string
 	Ca_cert		string
-}
-
-
-func init() {
 }
 
 
@@ -81,7 +77,7 @@ func parse_getCert_Response(body []byte, resp *GetCertResp) error{
 		return err
 	}
 	s := fmt.Sprintf("parse_getCert_Response: cert=%s key=%s ", resp.User_cert, resp.User_key)
-    Log.Printf("Retrieved certs from CCSAPI: %v", s)		
+    	Log.Printf("Retrieved certs from CCSAPI: %v", s)		
 
 	// attempt to create TLS cert based on user's cert and key	
 	// TODO this is repeated later, so probably need to be removed from here 	
