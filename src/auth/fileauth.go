@@ -20,7 +20,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 	//  swarm-auth now uses 'X-Auth-TenantId' instead of 'X-Auth-Project-Id'
 	// space_id := r.Header.Get("X-Auth-Project-Id")
 	space_id := r.Header.Get("X-Auth-TenantId")
-    fname := conf.GetStubAuthFile()
+    	fname := conf.GetStubAuthFile()
 	fp, err := os.Open(fname)
 	if err != nil{
 		Log.Println(err)
@@ -49,7 +49,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 			return
 		}
 	}
-    Log.Printf("Tenant %v not found in %v file", space_id, fname)
+    	Log.Printf("Tenant %v not found in %v file", space_id, fname)
 	//tenant not found in credentials file
 	creds.Status = 401
 	return
