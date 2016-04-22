@@ -49,7 +49,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 			return
 		}
 	}
-    	Log.Printf("Tenant %v not found in %v file", space_id, fname)
+    	Log.Printf("Tenant %s not found in %s file", space_id, fname)
 	//tenant not found in credentials file
 	creds.Status = 401
 	return
