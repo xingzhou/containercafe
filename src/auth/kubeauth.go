@@ -13,6 +13,7 @@ import (
 //KubeAuth uses only the following fields of Creds[]: Status, Node, Space_id
 func KubeAuth(r *http.Request) (creds Creds) {
 	var host GetHostResp
+	Log.Printf("Processing KubeAuth")
 	creds.Status, host = getHost(r, "NoneContainer")
 	if creds.Status == 200 {
 		//kubeMgr := injectKubePort( host.Mgr_host, conf.GetKubePort() ) 	// Kube master port is 6443

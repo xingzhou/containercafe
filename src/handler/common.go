@@ -51,6 +51,7 @@ func redirect(r *http.Request, body []byte, redirect_host string, redirect_resou
 	}
 
 	if conf.IsTlsOutbound() && !tls_override{
+		Log.Printf("Excuting TLS redirect")
 		cert, er := tls.LoadX509KeyPair(conf.GetClientCertFile(), conf.GetClientKeyFile())
 		if er != nil {
 			Log.Printf("Error loading client key pair, %v", er)
@@ -70,9 +71,62 @@ func redirect(r *http.Request, body []byte, redirect_host string, redirect_resou
 
 	Log.Printf("will forward request to server=%s ...", redirect_host)
 	resp, err := cc.Do(req)
-
+	Log.Printf("Response from redirect_host: %v", resp)
 	return resp, err, cc
 }
+
+//Forward req to server
+//when tls_override=true tls is disabled for the current request being processed only
+//The override is a directive received from ccsapi getHost, for a swarm request when swarm master does not support tls
+func redirect_with_cert(r *http.Request, body []byte, redirect_host string, redirect_resource_id string,
+	rewriteURI func(uri string, resource string) string, tls_override bool, cert []byte, 
+	key []byte) (*http.Response, error, *httputil.ClientConn){
+
+	var cc *httputil.ClientConn
+
+	c , err := net.Dial("tcp", redirect_host)
+	if err != nil {
+		// handle error
+		Log.Printf("Error connecting to server=%s, %v", redirect_host, err)
+		return nil,err,nil
+	}
+
+	if conf.IsTlsOutbound() && !tls_override{
+		var tlscert tls.Certificate
+		var er error
+	//if !tls_override{
+		Log.Printf("Excuting TLS redirect")
+		// if certs are not successfully obtained from the CCSAPI server
+		// use local cert files (MS hack)
+		if cert == nil && key == nil{
+			Log.Printf("Loading local cert files for space_id=%v", redirect_resource_id)
+			// the local cert files are constructed as <spaceid>.pem and <spaceid>.key
+			var cert_file string = redirect_resource_id + ".pem"
+			var key_file string = redirect_resource_id + ".key"
+			tlscert, er = tls.LoadX509KeyPair(cert_file, key_file) 
+		} else {
+			tlscert, er = tls.X509KeyPair([]byte(cert),[]byte(key))
+			if er != nil {
+				Log.Printf("Error loading client key pair, %v", er)
+				return nil,err,nil
+			}
+		}
+		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{tlscert}})
+		cc = httputil.NewClientConn(c_tls, nil)
+	}else{
+		cc = httputil.NewClientConn(c, nil)
+	}
+
+	req, _ := http.NewRequest(r.Method, "http://"+redirect_host+rewriteURI(r.RequestURI, redirect_resource_id),
+				bytes.NewReader(body))
+	req.Header = r.Header
+	req.URL.Host = redirect_host
+
+	Log.Printf("will forward request to server=%s ...", redirect_host)
+	resp, err := cc.Do(req)
+	return resp, err, cc
+}
+
 
 // Assumes redirect_host is a list of comma separated host:port pairs
 // selects a target node randomly and calls redirect

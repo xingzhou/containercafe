@@ -13,4 +13,5 @@ type Creds struct{
 	Orguuid			string
 	Userid			string
 	Swarm_shard		bool
+	Endpoint_type	string  // radiant, kraken, swarm etc. 
 }

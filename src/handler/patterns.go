@@ -18,6 +18,18 @@ func IsSupportedPattern(uri string, prefixes []string) bool{
 	return false
 }
 
+// return true if the URI is exactly as provider patterns
+func IsExactPattern(uri string, prefixes []string) bool{
+	for i:=0; i < len(prefixes); i++ {
+		//if uri contains patterns[i]
+		if strings.EqualFold(uri, prefixes[i]) {
+			return true
+		}
+	}
+	return false
+}
+
+
 //return uri prefix if supported
 func GetUriPattern(uri string, prefixes []string) string{
 	for i:=0; i < len(prefixes); i++ {

@@ -63,7 +63,9 @@ func main() {
 
 	//Rely on NGINX to route accepted docker/swarm url paths only to hijackproxy
 	http.HandleFunc("/", handler.DockerEndpointHandler)
-
+	Log.Printf("All handlers reqistered")
+	
+	
 	/*for profiling only
 	go func() {
 		Log.Println(http.ListenAndServe("localhost:6060", nil))
@@ -73,8 +75,10 @@ func main() {
 	// init server on any interface + listen_port
 	var err error
 	if conf.IsTlsInbound() {
+		Log.Printf("Starting TLS listener service")
 		err = http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), conf.GetServerCertFile(), conf.GetServerKeyFile(), nil)
 	} else {
+		Log.Printf("Starting non-TLS listener service")
 		err = http.ListenAndServe(":"+strconv.Itoa(listen_port), nil)
 	}
 
