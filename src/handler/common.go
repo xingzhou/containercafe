@@ -94,26 +94,15 @@ func redirect_with_cert(r *http.Request, body []byte, redirect_host string, redi
 	if conf.IsTlsOutbound() && !tls_override{
 		var tlscert tls.Certificate
 		var er error
-	//if !tls_override{
 		Log.Printf("Excuting TLS redirect")
-		// if certs are not successfully obtained from the CCSAPI server
-		// use local cert files (MS hack)
-		if cert == nil && key == nil{
-			Log.Printf("Loading local cert files for space_id=%v", redirect_resource_id)
-			// the local cert files are constructed as <spaceid>.pem and <spaceid>.key
-			var cert_file string = redirect_resource_id + ".pem"
-			var key_file string = redirect_resource_id + ".key"
-			tlscert, er = tls.LoadX509KeyPair(cert_file, key_file) 
-		} else {
-			tlscert, er = tls.X509KeyPair([]byte(cert),[]byte(key))
-			if er != nil {
-				Log.Printf("Error loading client key pair, %v", er)
-				return nil,err,nil
-			}
+		tlscert, er = tls.X509KeyPair([]byte(cert),[]byte(key))
+		if er != nil {
+			Log.Printf("Error loading client key pair, %v", er)
+			return nil,err,nil
 		}
 		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{tlscert}})
 		cc = httputil.NewClientConn(c_tls, nil)
-	}else{
+	} else{
 		cc = httputil.NewClientConn(c, nil)
 	}
 
