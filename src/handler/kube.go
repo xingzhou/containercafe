@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"time"
 	"strings"
+	"strconv"
 
 	"httphelper"
 	"conf"
@@ -81,36 +82,40 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	if creds.Status == 200 {
 		Log.Printf("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
 		Log.Printf("Will not execute CCSAPI auth")
-		Log.Printf("**** Creds %+v", creds)
+		// Log.Printf("**** Creds %+v", creds)
 	} else {
-		creds = auth.DockerAuth(r)
-		Log.Printf("**** Creds %+v", creds)
-		if creds.Status != 200 {
-			Log.Printf("Authentication failed for req_id=%s status=%d", req_id, creds.Status)
+		Log.Printf("Authentication from FILE failed for req_id=%s status=%d", req_id, creds.Status)
+		Log.Printf("Excuting CCSAPI auth")
+		
+		creds = auth.KubeAuth(r)
+		// Log.Printf("***** Creds: %+v", creds)
+	
+		if creds.Status == 200 {
+			Log.Printf("CCSAPI Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
+		} else {
+			Log.Printf("CCAPI Auth failed to process req_id=%s\n", req_id)
 			if creds.Status == 401 {
 				NotAuthorizedHandler(w, r)
-			}else {
+			} else {
 				ErrorHandler(w, r, creds.Status)
 			}
 			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 			return
-		}
-		Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
-		
-		// if Node is not set or host info missing, assingn hardcoded value to our Kube-Auth test server
-		// this will be fixed on CCSAPI level
-		if (creds.Node == "" || creds.Node == ":" + conf.GetDockerPort()) {
-			creds.Node = "10.140.171.98:443"
-			Log.Printf("** Node information not available, using hardcoded Kube-Auth server %v", creds.Node)
-		}
-		if creds.Space_id == "" {
-			creds.Space_id = "ms-namespace"
-			Log.Printf("** space information not available, using hardcoded space_id %v", creds.Space_id)
-		}
-
+		}	
+		Log.Printf("CCSAPI Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
 	}
 
+	// validate the creds
+	if creds.Node == "" || creds.Space_id == "" {
+		Log.Printf("Missing data. Host = %v, Namespace = %v", creds.Node, creds.Space_id)
+		ErrorHandlerWithMsg(w, r, 404, "Incomplete data received from CCSAPI server")
+		return
+	}
 	
+	// assigning a proper port for Kubernentes
+	sp := strings.Split(creds.Node, ":")
+	redirectTarget := sp[0] + ":" + strconv.Itoa(conf.GetKubePort())
+	Log.Printf("Assigning proper Kubernetes port. Old target: %v, New target: %v", creds.Node, redirectTarget)
 	
 	// TODO for now skip the StubAuth, not needed
 	if (false) {
@@ -143,7 +148,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	 }
 	 Log.Printf("Obtaining user certs successful for req_id=%s status=%d", req_id, status)
 	
-	kubeHandler(w, r, creds.Node, creds.Space_id, req_id, []byte(certs.User_cert), []byte(certs.User_key))
+	kubeHandler(w, r, redirectTarget, creds.Space_id, req_id, []byte(certs.User_cert), []byte(certs.User_key))
 	Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 }
 
@@ -159,7 +164,7 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 
 	data, _ := httputil.DumpRequest(r, true)
 	Log.Printf("Request dump of %d bytes:\n%s", len(data), string(data))
-
+	Log.Printf("Redirect host %v\n", redirect_host)
 	body, _ := ioutil.ReadAll(r.Body)
 
 	//***** Filter req/headers here before forwarding request to server *****
@@ -181,16 +186,6 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 			kubeRewriteUri, false, cert, key /* override tls setting*/)
 			// kubeRewriteUri, true /* override tls setting*/) TODO MS
 		if err == nil {
-			
-			if strings.Contains(resp.Status, "401")   { //"401 Unauthorized
-				// TODO MS hack
-				// we need to load proper certificates on the k8s server
-				// temporarily override with local certificates files
-				Log.Println("**** RUNNING A HACK, loading local certs. \"401 Unauthorized\"")
-				resp, err, cc = redirect_with_cert(r, body, redirect_host, redirect_resource_id,
-				kubeRewriteUri, false, nil, nil /* override tls setting*/)
-				break
-				}
 			break	
 		}
 		Log.Printf("redirect retry=%d failed", i)
@@ -201,6 +196,7 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	}
 	if (err != nil) {
 		Log.Printf("Error in redirection, will abort req_id=%s ... err=%v\n", req_id, err)
+		ErrorHandlerWithMsg(w, r, 500, "Internal communication error. Check if the redirected host is active")
 		return
 	}
 
