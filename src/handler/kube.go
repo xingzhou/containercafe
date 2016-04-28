@@ -113,8 +113,17 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	// assigning a proper port for Kubernentes
+	// the target might or might not contain 'http://', strip it
+	redirectTarget := creds.Node
 	sp := strings.Split(creds.Node, ":")
-	redirectTarget := sp[0] + ":" + strconv.Itoa(conf.GetKubePort())
+	if sp[0] == "http" || sp[0] == "https" {
+		redirectTarget = sp[1] + ":" + strconv.Itoa(conf.GetKubePort())
+		// strip out the '//' from http://
+		redirectTarget = redirectTarget[2:len(redirectTarget)]
+	} else {
+		redirectTarget = sp[0] + ":" + strconv.Itoa(conf.GetKubePort())
+	}
+	
 	Log.Printf("Assigning proper Kubernetes port. Old target: %v, New target: %v", creds.Node, redirectTarget)
 	
 	// TODO for now skip the StubAuth, not needed
