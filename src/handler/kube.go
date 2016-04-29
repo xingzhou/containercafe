@@ -18,7 +18,7 @@ import (
 
 // supported Kubernetes api uri prefix patterns
 // these kube url patterns require namespaces:
-var kubeAuthPatterns = []string {
+var kubePrefixPatterns = []string {
 	"/api/v1/namespaces/",
 	"/api/v1/watch/namespaces/",
 	"/api/v1/proxy/namespaces/",
@@ -33,7 +33,7 @@ var kubeAuthPatterns = []string {
 //2016/04/18 15:58:51.066903 docker.go:81: ------ Completed processing of request req_id=2
 
 // these kube url patterns don't require namespaces
-var kubeNonAuthPatterns = []string {
+var kubeExactPatterns = []string {
 	"/api",
 	"/apis",
 }
@@ -50,27 +50,17 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	Log.Printf("------> KubeEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
 
 	// check if URI supported and requires auth.
-	if IsExactPattern(r.RequestURI, kubeNonAuthPatterns){
-		Log.Printf("Kube pattern accepted for Non-Auth, req_id=%s, URI=%s", req_id, r.RequestURI)
-		// TODO fix this, missing certicate. Needs to be re-visited
-		// hardcode for now, until we fix the onboarding process
-   		kubeHandler(w, r, "10.140.171.98:443", "default", req_id, nil, nil)
-   		// TODO we might need to mascarade the returned server IP
-   		// "serverAddress": "10.140.171.98:443"
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-		return
+	if IsExactPattern(r.RequestURI, kubeExactPatterns){
+		Log.Printf("Kube exact pattern accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
+	} else if IsSupportedPattern(r.RequestURI, kubePrefixPatterns) {
+		Log.Printf("Kube prefix pattern accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
 	} else {
-		Log.Printf("Non-Auth Kube pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
-	}
-
-
-	// check if uri pattern is accepted and requires auth
-	if ! IsSupportedPattern(r.RequestURI, kubeAuthPatterns){
 		Log.Printf("Kube pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
 		NoEndpointHandler(w, r)
 		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
+
 	Log.Printf("This is a AUTH Kube supported pattern %+v", r.RequestURI)
 	// body, _ := ioutil.ReadAll(r.Body)
 	// Log.Printf("**** %+v", r)
