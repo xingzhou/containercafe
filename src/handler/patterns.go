@@ -77,6 +77,7 @@ func (router *Router) CheckRoute(req *http.Request)(found bool, route Route){
 
 //uses SelectRoute to determine target handler and invokes it
 func (router *Router) DoRoute(w http.ResponseWriter, req *http.Request, body []byte, creds auth.Creds, req_id string) {
+	Log.Printf("Processing request: %+v", req.RequestURI)
 	for  _, route := range router.routes {
 		if found, vars := route.matchRoute(req); found {
 			Log.Printf("DoRoute found route pattern=%s method=%s", route.pattern, route.method)
