@@ -37,9 +37,14 @@ func DockerAuth(r *http.Request) (creds Creds) {
 		creds.Status, host = getHost(r, container_id)
 	}
 	if creds.Status != 200 {
-		Log.Printf("Auth result: status=%d\n", creds.Status)
-		return
-	}
+		Log.Printf("Auth result: status=%d. Trying again without the container_id\n", creds.Status)
+		// try again without passing the container_id
+		creds.Status, host = getHost(r, "NoneContainer")
+ 		if creds.Status != 200 {
+			Log.Printf("Second Auth result: status=%d\n", creds.Status)
+			return
+		}
+ 	}
 
 	if second_call_needed {
 		id_type = "Exec"
