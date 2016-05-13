@@ -24,6 +24,8 @@ ENV client_key_file="/opt/tls_certs/hjclient.key"
 ENV server_cert_file="/opt/tls_certs/hjserver.pem"
 ENV server_key_file="/opt/tls_certs/hjserver.key"
 ENV stub_auth_file="/opt/tls_certs/creds.json"
+ENV kube_admin_key_file = "/opt/tls_certs/kadmin.key"
+ENV kube_admin_cert_file = "/opt/tls_certs/kadmin.pem"
 ENV ccsapi_admin_user=""
 ENV ccsapi_admin_psswd=""
 ENV surrogate_ids="false"
@@ -42,6 +44,8 @@ ADD hjserver.pem /hijack/hjserver.pem
 ADD hjserver.key  /hijack/hjserver.key
 ADD hjclient.pem /hijack/hjclient.pem
 ADD hjclient.key  /hijack/hjclient.key
+ADD kadmin.key /hijack/kadmin.key
+ADD kadmin.pem /hijack/kadmin.pem
 
 ADD build.info /hijack/build.info
 
