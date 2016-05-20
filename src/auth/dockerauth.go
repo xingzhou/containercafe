@@ -7,6 +7,7 @@ import (
 	"conf"  		// my conf package
 )
 
+
 // returns auth=true/false, compute node name, container/exec id, container id,
 // override tls flag is used in swarm case only
 func DockerAuth(r *http.Request) (creds Creds) {
@@ -67,7 +68,7 @@ func DockerAuth(r *http.Request) (creds Creds) {
 	creds.Container = host.Container_id
 	creds.Reg_namespace = host.Namespace
 	creds.Apikey = host.Apikey
-	creds.Space_id = host.Space_id
+	creds.Space_id = GetNamespace(host.Space_id)
 	creds.Orguuid = host.Orguuid
 	creds.Userid = host.Userid
 	//container id needs nova- prefix
@@ -85,8 +86,8 @@ func DockerAuth(r *http.Request) (creds Creds) {
 	if host.Swarm {
 		creds.Node = host.Mgr_host    //Mgr_host = host:port
 		//insert space_id in the header to be forwarded
-		r.Header.Set("X-Auth-Token", host.Space_id)
-		Log.Printf("Injected Swarm X-Auth-Token=%s", host.Space_id)
+		r.Header.Set("X-Auth-Token", GetNamespace(host.Space_id))
+		Log.Printf("Injected Swarm X-Auth-Token=%s", GetNamespace(host.Space_id))
 		if id_type == "Container" {
 			//@@ This fix is needed especially for after ccsapi is fixed to not invoke swarm in getHost
 			creds.Docker_id = id //creds.Container
@@ -171,3 +172,6 @@ func get_id_and_type(uri string) (id string, id_type string){
 }
 
 
+func GetNamespace(space_id string) (namespace string) {
+	return "s" + space_id + "-default"
+}
