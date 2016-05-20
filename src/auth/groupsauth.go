@@ -13,7 +13,7 @@ func GroupsAuth(r *http.Request) (creds Creds) {
 	creds.Node = host.Groups_host
 	creds.Reg_namespace = host.Namespace
 	creds.Apikey = host.Apikey
-	creds.Space_id = host.Space_id
+	creds.Space_id = GetNamespace(host.Space_id)
 	creds.Orguuid = host.Orguuid
 	creds.Userid = host.Userid
 	creds.Tls_override = ! host.Swarm_tls
