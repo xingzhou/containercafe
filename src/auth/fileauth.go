@@ -19,7 +19,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 	}
 	//  swarm-auth now uses 'X-Auth-TenantId' instead of 'X-Auth-Project-Id'
 	// space_id := r.Header.Get("X-Auth-Project-Id")
-	space_id := r.Header.Get("X-Auth-TenantId")
+	space_id := r.Header.Get(conf.GetSwarmAuthHeader())
     	fname := conf.GetStubAuthFile()
 	fp, err := os.Open(fname)
 	if err != nil{
