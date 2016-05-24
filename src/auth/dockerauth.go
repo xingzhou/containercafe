@@ -86,8 +86,10 @@ func DockerAuth(r *http.Request) (creds Creds) {
 	if host.Swarm {
 		creds.Node = host.Mgr_host    //Mgr_host = host:port
 		//insert space_id in the header to be forwarded
-		r.Header.Set("X-Auth-Token", GetNamespace(host.Space_id))
-		Log.Printf("Injected Swarm X-Auth-Token=%s", GetNamespace(host.Space_id))
+		// this is required by swarm-auth
+		//r.Header.Set("X-Auth-Token", GetNamespace(host.Space_id))
+		r.Header.Set(conf.GetSwarmAuthHeader(), GetNamespace(host.Space_id))
+		Log.Printf("Injected swarm-auth required header %s=%s", conf.GetSwarmAuthHeader(), GetNamespace(host.Space_id))
 		if id_type == "Container" {
 			//@@ This fix is needed especially for after ccsapi is fixed to not invoke swarm in getHost
 			creds.Docker_id = id //creds.Container
