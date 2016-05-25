@@ -97,7 +97,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 
 	// validate the creds
 	if creds.Node == "" || creds.Space_id == "" {
-		Log.Printf("Missing data. Host = %v, Namespace = %v", creds.Node, creds.Space_id)
+		Log.Printf("Missing data. Host = %v, Space_id = %v", creds.Node, creds.Space_id)
 		ErrorHandlerWithMsg(w, r, 404, "Incomplete data received from CCSAPI server")
 		return
 	}
@@ -147,7 +147,9 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	 }
 	 Log.Printf("Obtaining user certs successful for req_id=%s status=%d", req_id, status)
 	
-	kubeHandler(w, r, redirectTarget, creds.Space_id, req_id, []byte(certs.User_cert), []byte(certs.User_key))
+	// convert the Bluemix space id to namespace
+	namespace := auth.GetNamespace(creds.Space_id)
+	kubeHandler(w, r, redirectTarget, namespace, req_id, []byte(certs.User_cert), []byte(certs.User_key))
 	Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 }
 
