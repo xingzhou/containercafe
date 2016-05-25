@@ -57,11 +57,17 @@ func InitDockerHandler(){
 		NewRoute("POST", "/{version}/images/{reg}/{img}/push", notSupported), //push
 		NewRoute("POST", "/{version}/images/{reg}/{ns}/{img}/push", notSupported), //push
 
-		NewRoute("POST", "/{version}/networks/create", createNetwork),
+		// for MVP we are disabling the networ operations
+		//	NewRoute("POST", "/{version}/networks/create", createNetwork),
 		NewRoute("GET", "/{version}/networks/{name}", inspectNetwork),
-		NewRoute("DELETE", "/{version}/networks/{name}", removeNetwork),
-		NewRoute("POST", "/{version}/networks/{name}/connect", connectToNetwork),
-		NewRoute("POST", "/{version}/networks/{name}/disconnect", disconnectFromNetwork),
+		//	NewRoute("DELETE", "/{version}/networks/{name}", removeNetwork),
+		//	NewRoute("POST", "/{version}/networks/{name}/connect", connectToNetwork),
+		//	NewRoute("POST", "/{version}/networks/{name}/disconnect", disconnectFromNetwork),
+		NewRoute("POST", "/{version}/networks/create", notImplemented),
+		NewRoute("GET", "/{version}/networks/{name}", notImplemented),
+		NewRoute("DELETE", "/{version}/networks/{name}", notImplemented),
+		NewRoute("POST", "/{version}/networks/{name}/connect", notImplemented),
+		NewRoute("POST", "/{version}/networks/{name}/disconnect", notImplemented),
 
 		NewRoute("*", "*", dockerHandler),  //wildcard for forwarding everything else
 	}
@@ -140,6 +146,12 @@ func notSupported(w http.ResponseWriter, r *http.Request, body []byte, creds aut
 	NoEndpointHandler(w, r)
 }
 
+func notImplemented(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string){
+	Log.Printf("Docker pattern not implemented, URI=%s", r.RequestURI)
+	NotImplementedHandler(w, r)
+}
+
+
 func removeImage(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
 	img := getImageFullnameFromVars(vars)
 	if !is_img_valid(img, creds.Reg_namespace){
@@ -167,23 +179,32 @@ func listImages(w http.ResponseWriter, r *http.Request, body []byte, creds auth.
 func createContainer(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
 	Log.Printf("createContainer invoked req_id=%s", req_id)
 	// extract image
-	img := get_image_from_container_create(body)
-	if !is_img_valid(img, creds.Reg_namespace){
-		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
-		NotAuthorizedHandler(w, r)
-		return
-	}
+	// disable image inspection
+//	img := get_image_from_container_create(body)
+//	if !is_img_valid(img, creds.Reg_namespace){
+//		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
+//		NotAuthorizedHandler(w, r)
+//		return
+//	}
 	// inject X-Registry-Auth header
-	InjectRegAuthHeader(r, creds)
+//	InjectRegAuthHeader(r, creds)
 
 	net := getNetworkFromContainerCreate(body)
-	if net != "" && net != "default" && net != "bridge"{
-		//copy body and replace net name by space_id+name
-		body = rewriteNetworkInContainerCreate(body, creds.Space_id)
+	// if net != "" && net != "default" && net != "bridge"{
+	if net == "none" {
+		Log.Printf("executing --net=none")
+		dockerHandler(w, r, body, creds, vars, req_id)
 	}
-
-	//pass through
-	dockerHandler(w, r, body, creds, vars, req_id)
+	
+	if net != "" && net != "default"{
+		//copy body and replace net name by space_id+name
+		//body = rewriteNetworkInContainerCreate(body, creds.Space_id)
+		ForbiddenOperationHandler(w, r, "Only default network currenlty supported")
+	} else {
+		//pass through
+		body = rewriteNetworkInContainerCreate(body, creds.Space_id)
+		dockerHandler(w, r, body, creds, vars, req_id)
+	}
 }
 
 func createNetwork(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
@@ -198,8 +219,12 @@ func createNetwork(w http.ResponseWriter, r *http.Request, body []byte, creds au
 
 func inspectNetwork(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
 	name := vars["{name}"]
-	r.RequestURI = rewriteNetworkUri(r.RequestURI, name, creds.Space_id)
-	dockerHandler(w, r, body, creds, vars, req_id)
+	if name != "default" {
+		ForbiddenOperationHandler(w, r, "Only default network currently supported")
+	} else {
+		r.RequestURI = rewriteNetworkUri(r.RequestURI, name, creds.Space_id)
+		dockerHandler(w, r, body, creds, vars, req_id)
+	}
 }
 
 func removeNetwork(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
@@ -574,5 +599,5 @@ func rewriteNetworkInContainerCreate(body []byte, space_id string) (b []byte){
 }
 
 func uniqueNetName(net, space string) string{
-	return space + "--" + net
+	return "s" + space + "-" + net
 }

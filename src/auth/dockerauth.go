@@ -68,7 +68,7 @@ func DockerAuth(r *http.Request) (creds Creds) {
 	creds.Container = host.Container_id
 	creds.Reg_namespace = host.Namespace
 	creds.Apikey = host.Apikey
-	creds.Space_id = GetNamespace(host.Space_id)
+	creds.Space_id =host.Space_id
 	creds.Orguuid = host.Orguuid
 	creds.Userid = host.Userid
 	//container id needs nova- prefix
