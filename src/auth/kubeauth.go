@@ -19,6 +19,8 @@ func KubeAuth(r *http.Request) (creds Creds) {
 		//kubeMgr := injectKubePort( host.Mgr_host, conf.GetKubePort() ) 	// Kube master port is 6443
 		creds.Node = host.Mgr_host // radiant manager
 		creds.Space_id = host.Space_id
+		creds.Apikey = host.Apikey
+		creds.Orguuid = host.Orguuid
 	}
 	Log.Printf("status=%d Mgr_host=%s namespace=%s", creds.Status, creds.Node, creds.Space_id)
 	return
