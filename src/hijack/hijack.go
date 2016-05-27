@@ -61,6 +61,9 @@ func main() {
 	// set prefix patterns for Groups handler
 	http.HandleFunc("/groups/", handler.GroupsEndpointHandler)
 	http.HandleFunc("/groups", handler.GroupsEndpointHandler)
+	
+	// kubeinit to initialize kube tenant
+	http.HandleFunc("/kubeinit", handler.KubeAdminEndpointHandler)
 
 	//Rely on NGINX to route accepted docker/swarm url paths only to hijackproxy
 	http.HandleFunc("/", handler.DockerEndpointHandler)

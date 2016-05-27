@@ -162,3 +162,35 @@ func redirect_random(r *http.Request, body []byte, redirect_host string, redirec
 
 	return
 }
+	
+func getAdminConn(redirect_host string) (error, *httputil.ClientConn){
+	Log.Printf("Loading Kube Admin certifcates")
+	var cc *httputil.ClientConn
+
+	c , err := net.Dial("tcp", redirect_host)
+	if err != nil {
+		// handle error
+		Log.Printf("Error connecting to server=%s, %v", redirect_host, err)
+		return err,nil
+	}
+	admincert, err := getAdminCert()
+	if err != nil {
+		Log.Printf("Error getting admin certs for host=%s: %v", redirect_host, err)
+		return err, nil
+	}
+	c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{admincert}})
+	cc = httputil.NewClientConn(c_tls, nil)
+	return nil, cc
+}
+
+
+func getAdminCert() (tls.Certificate, error) {
+	var admincert tls.Certificate
+	var er error	
+	admincert, er = tls.LoadX509KeyPair(conf.GetKadminCertFile(), conf.GetKadminKeyFile())
+	if er != nil {
+		Log.Printf("Error loading kube admin key pair, %v", er)
+		return admincert, er
+	}
+	return admincert, nil
+}	
