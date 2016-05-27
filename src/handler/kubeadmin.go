@@ -99,7 +99,7 @@ func KubeAdminEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	// then remove the port
 	sp = strings.Split(redirectTarget, ":")
 	kubeTarget := sp[0] + ":" + strconv.Itoa(conf.GetKubePort())
-	kubeAuthzTarget := sp[0] + ":8888" 
+	kubeAuthzTarget := sp[0] + ":" + strconv.Itoa(conf.GetKubeAuthzPort())
 	
 	Log.Printf("Assigning proper Kubernetes port. Old target: %v, New target: %v", creds.Node, redirectTarget)
 	
