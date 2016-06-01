@@ -8,7 +8,9 @@ import (
 
 	"conf"  		// my conf package
 )
-// test   
+// test  
+// more test 
+// even more test
 // Use a file as authentication credentials store (mainly for trusted test SWARM tenants)
 // BlueMix space id is passed in request header as X-Auth-Project-Id header and is used as search key into the file
 func FileAuth(r *http.Request) (creds Creds) {
