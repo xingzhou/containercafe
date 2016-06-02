@@ -2,18 +2,15 @@ package auth
 
 import (
 	"net/http"
-	//"os"
-	//"bufio"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	//"bytes"
 	"io/ioutil"
 
-	/*
+	
 	"httphelper"  	// my httphelper
 	"conf"  		// my conf package 
-	*/
+	
 )
 
 
@@ -30,16 +27,15 @@ type GetCertResp struct {
 // return ok=true if resp status is 200, otherwise ok=false
 
 // Editing GetCert to retrieve from local path. 
-// CHANGING FXN SIGNATURE AS WELL.
-
 func GetCert(r *http.Request, creds Creds) (status int, certs GetCertResp) {
 	Log.Printf("Getting certs from local file")
 	TLS_path := creds.TLS_path
-	// Status = 200 if good, 500 if bad. 
-	// Okay, I don't have Server_cert or Ca_cert yet. Just ignore for now??
 	
-	// Read in cert & key. 
-	Log.Printf("Cert path = %s", TLS_path + "/cert.pem")
+	if (creds.TLS_path == "") {
+		Log.Printf("APIkey not in local creds.json, going to CCSAPI")
+		return GetCert_API(r)
+	}
+	
 	certs_bytes, cert_err := ioutil.ReadFile(TLS_path + "/cert.pem")
 	if (cert_err != nil) {
 		Log.Printf("GetCert: Error... %v\n", cert_err)
@@ -55,10 +51,6 @@ func GetCert(r *http.Request, creds Creds) (status int, certs GetCertResp) {
 	}
 	certs.User_key = string(key_bytes)
 	
-	Log.Printf("THIS IS WHAT I'M GIVING: cert = %s, key = %s", certs_bytes, key_bytes)
-	
-	
-	Log.Printf("Check if the cert is okay???")
 	// attempt to create TLS cert based on user's cert and key	
 	// TODO this is repeated later, so probably need to be removed from here 	
 	_, er := tls.X509KeyPair([]byte(certs.User_cert), []byte(certs.User_key))
@@ -68,19 +60,14 @@ func GetCert(r *http.Request, creds Creds) (status int, certs GetCertResp) {
 		Log.Println("TLS cert is valid")
 	}
 	
-	
 	return 200, certs
 	
 }
 
 
 
-/*
-func GetCert(r *http.Request) (status int, certs GetCertResp){
-	
-	Log.Printf("****** GetCert, r = %s", r)
-	
-	// The strings in certs, are the actual data (byte arrays), I think. 
+
+func GetCert_API(r *http.Request) (status int, certs GetCertResp){ 
 	
 	new_uri := "http://"+conf.GetCcsapiHost()+"/v3/tlskey"
 
@@ -125,7 +112,7 @@ func GetCert(r *http.Request) (status int, certs GetCertResp){
 	}
 	return status, certs  // status != 200
 }
-*/
+
 
 
 
@@ -149,3 +136,5 @@ func parse_getCert_Response(body []byte, resp *GetCertResp) error{
 	}
 	return nil
 }
+
+
