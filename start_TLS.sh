@@ -48,7 +48,6 @@ generate_api_key() {
 generate_api_key
 echo "Generated API key: "$API_KEY
 
-
 # Create certificate
 # WHAT ABOUT LOCATION OF CA / PASSWORD rn just my configuration
 echo "Creating certificates"
