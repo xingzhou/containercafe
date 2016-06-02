@@ -22,7 +22,6 @@ var kubePrefixPatterns = []string {
 	"/api/v1/namespaces/",
 	"/api/v1/watch/namespaces/",
 	"/api/v1/proxy/namespaces/",
-	"/apis/",
 	"/swaggerapi/",
 }
 
@@ -37,7 +36,6 @@ var kubePrefixPatterns = []string {
 var kubeExactPatterns = []string {
 	"/api",
 	"/apis",
-	"/version",
 }
 
 
@@ -49,7 +47,6 @@ func InitKubeHandler(){
 // public handler for Kubernetes
 func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	req_id := conf.GetReqId()
-	Log.Printf("****** THIS IS THE KUBE")
 	Log.Printf("------> KubeEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
 
 	// check if URI supported and requires auth.
@@ -71,7 +68,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	
 	// read the credentials from the local file first
 	var creds auth.Creds
-	creds = auth.FileAuth(r) // So creds should now hold info FOR THAT space_id. 
+	creds = auth.FileAuth(r)
 	if creds.Status == 200 {
 		Log.Printf("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
 		Log.Printf("Will not execute CCSAPI auth")
@@ -82,8 +79,6 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		
 		creds = auth.KubeAuth(r)
 		// Log.Printf("***** Creds: %+v", creds)
-		
-		Log.Printf("YOOOOOOOO r = %s", r)
 	
 		if creds.Status == 200 {
 			Log.Printf("CCSAPI Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
@@ -145,13 +140,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
     }
 
 	// get user certificates from the CCSAPI server
-	//fmt.Sprintf("r = %s", r) 
-	
-	// Okay what if I just pass in the creds, so I can go grab the certs. 
-	// Yeah, seems like the easiest way to me.
-	//Log.Printf("****** CREDS PATH BEFORE PASSING IN = %s", creds.TLS_path)
-	 status, certs := auth.GetCert(r, creds)
-	 //status, certs := auth.GetCert(r)
+	 status, certs := auth.GetCert(r)
 	 if status != 200 {
 	 	Log.Printf("Obtaining user certs failed for req_id=%s status=%d", req_id, status)
 			ErrorHandler(w, r, creds.Status)
