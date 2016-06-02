@@ -14,5 +14,4 @@ type Creds struct{
 	Userid			string
 	Swarm_shard		bool
 	Endpoint_type	string  // radiant, kraken, swarm etc. 
-	TLS_path        string
 }
