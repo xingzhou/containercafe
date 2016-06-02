@@ -50,7 +50,6 @@ func InitKubeHandler(){
 // public handler for Kubernetes
 func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	req_id := conf.GetReqId()
-	Log.Printf("Starting the Kube")
 	Log.Printf("------> KubeEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
 
 	// check if URI supported and requires auth.
@@ -83,6 +82,8 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		
 		creds = auth.KubeAuth(r)
 		// Log.Printf("***** Creds: %+v", creds)
+		
+		Log.Printf("YOOOOOOOO r = %s", r)
 	
 		if creds.Status == 200 {
 			Log.Printf("CCSAPI Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
