@@ -5,9 +5,9 @@ helpme()
 {
 	cat <<HELPMEHELPME
 
-Syntax: ${0} <Api_key_length> <Space_id> 
+Syntax: ${0} <Apikey> <Space_id> 
 Where:
-	Api_key_length = length of Api_key
+	Apikey = Apikey for this user
 	Space_id = Id of the desired space
 
 HELPMEHELPME
@@ -23,19 +23,8 @@ elif [[ "$1" == "" || "$2" == "" ]] ; then
 	exit 1
 fi
 
-
-API_KEY_LEN=$1
+API_KEY=$1
 SPACE_ID=$2
-
-
-# Generate API key
-generate_api_key() {
-	echo "Generating API key of length "$API_KEY_LEN
-	API_KEY=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w $API_KEY_LEN | head -n 1)
-
-}
-generate_api_key
-echo "Generated API key: "$API_KEY
 
 
 # Create certificate
@@ -45,7 +34,7 @@ echo "Creating certificates"
 
 # Right now, doing only 1 space per user
 if [ $? -eq 1 ]; then
-	echo "This Apikey already has credentials. Process terminating."
+	echo "This user already has credentials. Process terminating."
 	exit 1
 fi
 
