@@ -22,6 +22,7 @@ elif [[ "$1" == "" ]] ; then
 	exit 1
 fi
 
+
 # Variables
 API_KEY_LEN=48
 SPACE_ID=$1
@@ -47,6 +48,16 @@ generate_api_key() {
 }
 generate_api_key
 echo "Generated API key: "$API_KEY
+
+# Generate API key
+generate_api_key() {
+	echo "Generating API key of length "$API_KEY_LEN
+	API_KEY=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w $API_KEY_LEN | head -n 1)
+
+}
+generate_api_key
+echo "Generated API key: "$API_KEY
+
 
 # Create certificate
 # WHAT ABOUT LOCATION OF CA / PASSWORD rn just my configuration
