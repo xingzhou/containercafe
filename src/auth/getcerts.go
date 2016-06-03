@@ -31,7 +31,7 @@ func GetCert(r *http.Request, creds Creds) (status int, certs GetCertResp) {
 	Log.Printf("Getting certs from local file")
 	TLS_path := creds.TLS_path
 	
-	if (creds.TLS_path == "") {
+	if (TLS_path == "") {
 		Log.Printf("APIkey not in local creds.json, going to CCSAPI")
 		return GetCert_API(r)
 	}
