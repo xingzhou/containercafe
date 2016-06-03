@@ -5,14 +5,8 @@ helpme()
 {
 	cat <<HELPMEHELPME
 
-<<<<<<< 7d176e9d2cf10ab0225e38a5974550a586dd378c
 Syntax: ${0} <Space_id> 
 Where:
-=======
-Syntax: ${0} <Apikey> <Space_id> 
-Where:
-	Apikey = Apikey for this user
->>>>>>> Clean go code, and written TLS script
 	Space_id = Id of the desired space
 
 HELPMEHELPME

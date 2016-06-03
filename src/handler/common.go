@@ -95,7 +95,6 @@ func redirect_with_cert(r *http.Request, body []byte, redirect_host string, redi
 		var tlscert tls.Certificate
 		var er error
 		Log.Printf("Excuting TLS redirect")
-		Log.Printf("**** THIS IS WHAT CERT AND KEY SHOULD LOOK LIKE: cert = %s, key = %s", cert, key)
 		tlscert, er = tls.X509KeyPair([]byte(cert),[]byte(key))
 		if er != nil {
 			Log.Printf("Error loading client key pair, %v", er)
