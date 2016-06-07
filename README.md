@@ -55,8 +55,6 @@ authentication will fail and CCSAPI will be invoked:
 where <Space_id> is the Bluemix Space Id for that user.
 - X-Auth-TenantId: <Space_id>
 where <Space_id> is the Blumix Space Id required by Swarm cluster.
-- X-Auth-Proxy: Token
-where Token is literally the 5 character string "Token".
 
 For debugging purposes it is handy to crate docker config file to reference with
 docker calls. Use either `~/.docker/config.json` for all the docker calls or
@@ -67,7 +65,6 @@ Example:
 ```json
 {
   "HttpHeaders": {
-    "X-Auth-Proxy": "Token",
     "X-Auth-Project-Id": "abcdefg",
     "X-Auth-TenantId": "abcdefg"
   }
