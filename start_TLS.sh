@@ -51,7 +51,7 @@ echo "Generated API key: "$API_KEY
 
 # Generate API key
 generate_api_key() {
-	echo "Generating API key of length "$API_KEY_LEN
+	echo "Generating API key"
 	API_KEY=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w $API_KEY_LEN | head -n 1)
 
 }
