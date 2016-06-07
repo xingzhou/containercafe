@@ -5,9 +5,8 @@ helpme()
 {
 	cat <<HELPMEHELPME
 
-Syntax: ${0} <Api_key_length> <Space_id> 
+Syntax: ${0} <Space_id> 
 Where:
-	Api_key_length = length of Api_key
 	Space_id = Id of the desired space
 
 HELPMEHELPME
@@ -17,20 +16,20 @@ HELPMEHELPME
 if [[ "$1" == "-?" || "$1" == "-h" || "$1" == "--help" || "$1" == "help" ]] ; then
   helpme
   exit 1
-elif [[ "$1" == "" || "$2" == "" ]] ; then
+elif [[ "$1" == "" ]] ; then
 	echo "Incorrect Arguments"
 	helpme
 	exit 1
 fi
 
 
-API_KEY_LEN=$1
+API_KEY_LEN=48
 SPACE_ID=$2
 
 
 # Generate API key
 generate_api_key() {
-	echo "Generating API key of length "$API_KEY_LEN
+	echo "Generating API key"
 	API_KEY=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w $API_KEY_LEN | head -n 1)
 
 }
