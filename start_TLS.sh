@@ -49,7 +49,6 @@ generate_api_key() {
 generate_api_key
 echo "Generated API key: "$API_KEY
 
-
 # Generate API key
 generate_api_key() {
 	echo "Generating API key of length "$API_KEY_LEN
