@@ -24,7 +24,7 @@ fi
 
 
 API_KEY_LEN=48
-SPACE_ID=$2
+SPACE_ID=$1
 
 
 # Generate API key
