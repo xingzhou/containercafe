@@ -4,3 +4,11 @@ bin/*
 pkg/darwin_amd64/*
 
 mylog.txt
+
+.settings/com.googlecode.goclipse.core.prefs
+
+kadmin.02.key
+
+kadmin.02.pem
+
+*.pem
