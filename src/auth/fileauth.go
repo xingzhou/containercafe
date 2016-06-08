@@ -13,10 +13,6 @@ import (
 // BlueMix space id is passed in request header as X-Auth-Project-Id header and is used as search key into the file
 func FileAuth(r *http.Request) (creds Creds) {
 	creds.Status = 404
-	proxy_auth_header := r.Header.Get("X-Auth-Proxy")
-	if proxy_auth_header != "TOKEN" && proxy_auth_header != "Token" && proxy_auth_header != "token" {
-		return
-	}
 	//  swarm-auth now uses 'X-Auth-TenantId' instead of 'X-Auth-Project-Id'
 	// space_id := r.Header.Get("X-Auth-Project-Id")
 	space_id := r.Header.Get(conf.GetSwarmAuthHeader())

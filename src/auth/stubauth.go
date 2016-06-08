@@ -18,12 +18,6 @@ var validSpaces = []Creds {
 // authentication stub for trusted SWARM tenants
 // BlueMix space id is passed in request as X-Auth-Project-Id header
 func StubAuth(r *http.Request) (creds Creds) {
-	proxy_auth_header := r.Header.Get("X-Auth-Proxy")
-	if proxy_auth_header != "TOKEN" && proxy_auth_header != "Token" && proxy_auth_header != "token" {
-		creds.Status = 404
-		return
-	}
-
 	space_id := r.Header.Get("X-Auth-Project-Id")
 	for _, v := range validSpaces {
 		if space_id == v.Space_id {
