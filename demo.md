@@ -75,6 +75,7 @@ This should lead to the following output:
   ]
 }
 ```
+
 ### Extra:
 ### Demonstrate create, list and delete pods using replication controller:
 
@@ -90,4 +91,3 @@ curl -XDELETE -H "X-Tls-Client-Dn: /CN=$user" localhost:8087/apis/extensions/v1b
 curl -XDELETE -H "X-Tls-Client-Dn: /CN=$user"  localhost:8087/apis/extensions/v1beta1/namespaces/default/deployments/test2
 ```
 
-### End of Demo 1
