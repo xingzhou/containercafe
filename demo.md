@@ -75,4 +75,19 @@ This should lead to the following output:
   ]
 }
 ```
+### Extra:
+### Demonstrate create, list and delete pods using replication controller:
+
+```
+# create:
+curl -XPOST -H "X-Tls-Client-Dn: /CN=$user" -H "Content-Type: application/json" -H "Accept: application/json, */*" -H "User-Agent: kubectl/v1.2.0 (linux/amd64) kubernetes/d800dca" -d '{"kind":"Deployment","apiVersion":"extensions/v1beta1","metadata":{"name":"test2","creationTimestamp":null,"labels":{"run":"test2"}},"spec":{"replicas":2,"selector":{"matchLabels":{"run":"test2"}},"template":{"metadata":{"creationTimestamp":null,"labels":{"run":"test2"}},"spec":{"containers":[{"name":"test2","image":"mrsabath/web-ms","resources":{"requests":{"memory":"128Mi"}}}]}},"strategy":{}},"status":{}}' localhost:8087/apis/extensions/v1beta1/namespaces/default/deployments
+
+# list:
+curl -XGET -H "X-Tls-Client-Dn: /CN=$user" -H "Content-Type: application/json"   localhost:8087/api/v1/namespaces/default/pods
+
+# delete:
+curl -XDELETE -H "X-Tls-Client-Dn: /CN=$user" localhost:8087/apis/extensions/v1beta1/namespaces/default/replicasets/test2-xxxx
+curl -XDELETE -H "X-Tls-Client-Dn: /CN=$user"  localhost:8087/apis/extensions/v1beta1/namespaces/default/deployments/test2
+```
+
 ### End of Demo 1
