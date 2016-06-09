@@ -75,7 +75,6 @@ This should lead to the following output:
   ]
 }
 ```
-
 ### Extra:
 ### Demonstrate create, list and delete pods using replication controller:
 
