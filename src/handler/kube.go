@@ -19,6 +19,7 @@ import (
 // supported Kubernetes api uri prefix patterns
 // these kube url patterns require namespaces:
 var kubePrefixPatterns = []string {
+	"/apis/",
 	"/api/v1/namespaces/",
 	"/api/v1/watch/namespaces/",
 	"/api/v1/proxy/namespaces/",
