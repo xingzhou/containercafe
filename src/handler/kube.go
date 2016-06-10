@@ -22,6 +22,7 @@ var kubePrefixPatterns = []string {
 	"/api/v1/namespaces/",
 	"/api/v1/watch/namespaces/",
 	"/api/v1/proxy/namespaces/",
+	"/apis/",
 	"/swaggerapi/",
 }
 
@@ -36,6 +37,7 @@ var kubePrefixPatterns = []string {
 var kubeExactPatterns = []string {
 	"/api",
 	"/apis",
+	"/version",
 }
 
 
