@@ -4,3 +4,5 @@ bin/*
 pkg/darwin_amd64/*
 
 mylog.txt
+
+user_certificates/*
