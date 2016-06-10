@@ -103,12 +103,6 @@ func DockerAuth(r *http.Request) (creds Creds) {
 		if !host.Swarm_tls{
 			creds.Tls_override = true  // no tls for this outbound req regardless of proxy conf
 		}
-		/*
-		if host.Host != ""{
-			// go to swarm node directly if known
-			creds.Node = host.Host + ":" + strconv.Itoa(conf.GetSwarmNodePort())
-		}
-		*/
 	}
 	Log.Printf("Auth result: status=%d node=%s docker_id=%s container=%s tls_override=%t reg_namespace=%s\n",
 		creds.Status, creds.Node, creds.Docker_id, creds.Container, creds.Tls_override, creds.Reg_namespace)
