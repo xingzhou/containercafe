@@ -22,9 +22,21 @@ elif [[ "$1" == "" ]] ; then
 	exit 1
 fi
 
-
+# Variables
 API_KEY_LEN=48
 SPACE_ID=$1
+
+STATUS=200
+TARGET_SERVER="10.140.146.7"
+DOCKER_ID=""
+CONTAINER=""
+SWARM_SHARD=true
+TLS_OVERRIDE=true
+REG_NAMESPACE="swarm"
+ORGUUID="orgname"
+USERID="userid"
+ENDPOINT_TYPE="radiant"
+
 
 
 # Generate API key
@@ -35,6 +47,9 @@ generate_api_key() {
 }
 generate_api_key
 echo "Generated API key: "$API_KEY
+
+
+TLS_path="~/.ice/certs/OpenRadiant/"$API_KEY
 
 
 # Create certificate
@@ -57,7 +72,7 @@ if [ ! -f creds.json ]; then
 fi
 
 
-echo "{\"Status\":200, \"Node\":\"10.140.171.205:443\", \"Docker_id\":\"\", \"Container\": \"\", \"Swarm_shard\":true, \"Tls_override\":true, \"Space_id\":\"$SPACE_ID\", \"Reg_namespace\":\"swarm\", \"Apikey\":\"$API_KEY\", \"Orguuid\":\"orgname\", \"Userid\":\"userid\", \"Endpoint_type\":\"radiant\", \"TLS_path\":\"~/.ice/certs/OpenRadiant/$API_KEY\"}" >> creds.json
+echo "{\"Status\":$STATUS, \"Node\":\"$TARGET_SERVER\", \"Docker_id\":\"$DOCKER_ID\", \"Container\":\"$CONTAINER\", \"Swarm_shard\":$SWARM_SHARD, \"Tls_override\":$TLS_OVERRIDE, \"Space_id\":\"$SPACE_ID\", \"Reg_namespace\":\"$REG_NAMESPACE\", \"Apikey\":\"$API_KEY\", \"Orguuid\":\"$ORGUUID\", \"Userid\":\"$USERID\", \"Endpoint_type\":\"$ENDPOINT_TYPE\", \"TLS_path\":\"$TLS_path\"}" >> creds.json
 
 echo "Certificates created for Apikey "$API_KEY
-echo "Located at ~/.ice/certs/OpenRadiant/"$API_KEY
+echo "Located at "$TLS_path
