@@ -195,6 +195,7 @@ func createContainer(w http.ResponseWriter, r *http.Request, body []byte, creds 
 	if net == "none" {
 		Log.Printf("executing --net=none")
 		dockerHandler(w, r, body, creds, vars, req_id)
+		return
 	}
 	
 	if net != "" && net != "default"{
