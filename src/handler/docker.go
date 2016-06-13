@@ -11,6 +11,7 @@ import (
 	"strings"
 	"encoding/json"
 	"bytes"
+	"strconv"
 
 	"limit"  //my limits package
 	"httphelper"  //my httphelper package
@@ -250,6 +251,13 @@ func disconnectFromNetwork(w http.ResponseWriter, r *http.Request, body []byte, 
 func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
 
 	redirect_host := creds.Node
+	sp := strings.Split(creds.Node, ":")
+	// if port is not provided (Radiant) assign the default swarm port
+	if len(sp)<2 {
+		redirect_host = redirect_host + ":" + strconv.Itoa(conf.GetSwarmMasterPort())
+		Log.Printf("Assigning proper Swarm  port. Old target: %v, New target: %v", creds.Node, redirect_host)
+	}
+	
 	redirect_resource_id := creds.Docker_id
 	tls_override := creds.Tls_override
 
