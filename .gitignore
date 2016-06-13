@@ -12,3 +12,5 @@ kadmin.02.key
 kadmin.02.pem
 
 *.pem
+*.csr
+*.cnf
