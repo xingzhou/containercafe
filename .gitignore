@@ -16,3 +16,4 @@ kadmin.02.pem
 *.pem
 *.csr
 *.cnf
+*.key
