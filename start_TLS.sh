@@ -49,13 +49,10 @@ generate_api_key
 echo "Generated API key: "$API_KEY
 
 
-TLS_path="~/.ice/certs/OpenRadiant/"$API_KEY
-
-
 # Create certificate
 # WHAT ABOUT LOCATION OF CA / PASSWORD rn just my configuration
 echo "Creating certificates"
-./mk_user_cert.sh "$API_KEY"
+TLS_dir=$(./mk_user_cert.sh "$API_KEY")
 
 # Right now, doing only 1 space per user
 if [ $? -eq 1 ]; then
@@ -72,7 +69,7 @@ if [ ! -f creds.json ]; then
 fi
 
 
-echo "{\"Status\":$STATUS, \"Node\":\"$TARGET_SERVER\", \"Docker_id\":\"$DOCKER_ID\", \"Container\":\"$CONTAINER\", \"Swarm_shard\":$SWARM_SHARD, \"Tls_override\":$TLS_OVERRIDE, \"Space_id\":\"$SPACE_ID\", \"Reg_namespace\":\"$REG_NAMESPACE\", \"Apikey\":\"$API_KEY\", \"Orguuid\":\"$ORGUUID\", \"Userid\":\"$USERID\", \"Endpoint_type\":\"$ENDPOINT_TYPE\", \"TLS_path\":\"$TLS_path\"}" >> creds.json
+echo "{\"Status\":$STATUS, \"Node\":\"$TARGET_SERVER\", \"Docker_id\":\"$DOCKER_ID\", \"Container\":\"$CONTAINER\", \"Swarm_shard\":$SWARM_SHARD, \"Tls_override\":$TLS_OVERRIDE, \"Space_id\":\"$SPACE_ID\", \"Reg_namespace\":\"$REG_NAMESPACE\", \"Apikey\":\"$API_KEY\", \"Orguuid\":\"$ORGUUID\", \"Userid\":\"$USERID\", \"Endpoint_type\":\"$ENDPOINT_TYPE\", \"TLS_path\":\"$TLS_dir\"}" >> creds.json
 
 echo "Certificates created for Apikey "$API_KEY
-echo "Located at "$TLS_path
+echo "Located at "$TLS_dir
