@@ -46,7 +46,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 			//creds.Status = 200  //return the status that is in the auth conf file
 			//Set Swarm Authorization header
 			namespace := GetNamespace(space_id)
-			r.Header.Set("X-Auth-Token", namespace)
+			r.Header.Set(conf.GetSwarmAuthHeader(), namespace)
 			return
 		}
 	}
