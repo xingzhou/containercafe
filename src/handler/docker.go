@@ -111,6 +111,9 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
 	}
+	
+	// TODO remove later
+	creds.Node = "10.140.146.7:2375"
 
 	body, _ := ioutil.ReadAll(r.Body)
 
