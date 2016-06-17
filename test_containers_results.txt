@@ -1,0 +1,72 @@
+SUCCESS Test 1 - Docker ps in 1 seconds.
+
+Docker inspect test1 should fail
+FAIL Test 2 - Docker inspect; name = test1 in 1 seconds.
+
+SUCCESS Test 3 - Docker run; no net; name = nonet_test1 in 2 seconds.
+
+SUCCESS Test 4 - Docker ps in 1 seconds.
+
+SUCCESS Test 5 - Docker run; w/net; name = test1 in 3 seconds.
+
+SUCCESS Test 6 - Docker ps in 1 seconds.
+
+SUCCESS Test 7 - Docker inspect; name = test1 in 1 seconds.
+
+SUCCESS Test 8 - Docker stop; name = nonet_test1 in 10 seconds.
+
+SUCCESS Test 9 - Docker ps -a in 1 seconds.
+
+SUCCESS Test 10 - Docker ps in 1 seconds.
+
+SUCCESS Test 11 - Docker rm; name = nonet_test1 in 2 seconds.
+
+SUCCESS Test 12 - Docker ps -a in 1 seconds.
+
+SUCCESS Test 13 - Docker ps in 1 seconds.
+
+Docker start nonet_test1 should fail
+FAIL Test 14 - Docker start; name = nonet_test1 in 1 seconds.
+
+SUCCESS Test 15 - Docker start; name = test1 in 1 seconds.
+
+SUCCESS Test 16 - Docker ps -a in 1 seconds.
+
+SUCCESS Test 17 - Docker stop; name = test1 in 11 seconds.
+
+SUCCESS Test 18 - Docker ps -a in 1 seconds.
+
+SUCCESS Test 19 - Docker start; name = test1 in 1 seconds.
+
+SUCCESS Test 20 - Docker ps -a in 1 seconds.
+
+Docker rm test1 should fail; running container
+FAIL Test 21 - Docker rm; name = test1 in 1 seconds.
+
+SUCCESS Test 22 - Docker stop; name = test1 in 12 seconds.
+
+SUCCESS Test 23 - Docker rm; name = test1 in 1 seconds.
+
+SUCCESS Test 24 - Docker ps -a in 1 seconds.
+
+SUCCESS Test 25 - Docker run; w/net; name = test2 in 3 seconds.
+
+SUCCESS Test 26 - Docker ps -a in 1 seconds.
+
+SUCCESS Test 27 - Docker rm -f; name = test2 in 2 seconds.
+
+SUCCESS Test 28 - Docker ps -a in 1 seconds.
+
+SUCCESS Test 29 - Docker network ls in 1 seconds.
+
+FAIL Test 30 - Docker network inspect; name = da07 in 1 seconds.
+
+SUCCESS Test 31 - Docker network inspect; name = default in 1 seconds.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+Test summary:
+Total = 31 tests
+Passed = 27 tests
+Failed = 4 tests
