@@ -1,0 +1,118 @@
+---
+
+################################################################
+# Certificates
+################################################################
+
+cert_dir: "{{playbook_dir}}/certs/{{cluster_name}}"
+ca_cert: ca.pem
+ca_key: ca-key.pem
+ca_srl: ca.srl
+
+################################################################
+# VIP
+################################################################
+# cidr_prefix: /26
+
+vip_k8s_apiserver_ip: "{{floating_ip}}"
+vip_k8s_apiserver_port: 443
+
+vip_k8s_rabac_ip: "{{floating_ip}}"
+vip_k8s_rabac_port: 444
+
+vip_k8s_scheduler_ip: "{{floating_ip}}"
+vip_k8s_scheduler_port: 81
+
+vip_mesos_master_ip: "{{floating_ip}}"
+
+vip_swarm_master_ip: "{{floating_ip}}"
+vip_swarm_master_port: 2375
+###############################################################
+# HAproxy
+###############################################################
+haproxy_stats_port: 9000
+traffic_type: tcp
+lb_k8s: true
+lb_k8s_secure: false
+lb_swarm: true
+lb_mesos: false
+
+################################################################
+# Kubernetes
+################################################################
+
+k8s_etc_dir: /etc/kubernetes
+k8s_cert_dir: "{{k8s_etc_dir}}/cert"
+k8s_log_dir: /var/log/kubernetes
+k8s_kubelet_manifests_dir: /etc/kubernetes/manifests
+k8s_podmaster_manifests_dir: /srv/kubernetes/manifests
+# by default we do not set the scheduler to use the CNI plugin 
+cni_plugin:
+
+# Kubernetes components will use cert /CN to authenticate
+k8s_apiserver_cn: apiserver
+k8s_scheduler_cn: scheduler
+k8s_controller_manager_cn: controller-manager
+k8s_kubelet_cn: kubelet
+k8s_admin_cn: admin
+k8s_user_cn: haih
+
+k8s_service_ip_range: 10.10.10.0/24
+k8s_apiserver_sport: 8443
+k8s_apiserver_port: 8080
+k8s_scheduler_port: 10251
+
+################################################################
+# Etcd
+################################################################
+
+etcd_port: 4001
+etcd_advertise_peer_port: 2380
+etcd_listen_client_port: 2379
+
+################################################################
+# UCARP
+################################################################
+#the floating IP should be changed according to the one given by SL
+
+#floating_ip: 10.140.146.3
+#floating_ip_net: 10.140.146.0
+#cidr_prefix: /26
+dev: eth0
+
+################################################################
+# Remote ABAC
+################################################################
+
+rabac_port: 8888
+rabac_policy_file: abac-policy
+rabac_cn: remoteabac
+
+################################################################
+# Zookeeper
+################################################################
+
+zookeeper_port: 2181
+
+################################################################
+# Mesos
+################################################################
+
+mesos_master_port: 5050
+mesos_slave_port: 5050
+#use_mesos_roles: false
+#mesos_allocation_interval: 500ms
+#mesos_slaves_resources: "cpus(swarm):8;cpus(kube):8;mem(swarm):12288;mem(kube):12288;disk(swarm):204800;disk(kube):204800;ports(swarm):[15000-25000];ports(kube):[55000-65000]"
+
+################################################################
+# Docker
+################################################################
+docker_engine_port: 2375
+
+################################################################
+# Swarm
+################################################################
+swarm_manager_host_port: 4375
+swarm_manager_port: 4375
+swarm_manager_mesos_host_port: 3376
+swarm_manager_mesos_port: 3375

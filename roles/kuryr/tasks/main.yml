@@ -1,0 +1,148 @@
+---
+
+# Tasks for Kuryr installation as Docker container on a worker machine.
+# (Note: we assume etcd is already installed)
+
+# note - below is a workaround until we get docker to work with multiple etcd endpoints
+- set_fact: master_ip_address="{{ groups['masters-' ~ cluster_name][0] }}"
+
+- debug: msg="master_ip_address => {{master_ip_address}}"
+
+- name: Check default location for ovs-vsctl
+  stat: path=/usr/bin/ovs-vsctl
+  register: ovs
+
+- set_fact: ovs_path="/usr/bin/ovs-vsctl"
+  when: ovs.stat.exists
+
+- name: Check alternate location for ovs-vsctl
+  stat: path=/usr/local/bin/ovs-vsctl
+  register: ovs_alt
+  when: ovs.stat.exists == False
+
+- set_fact: ovs_path="/usr/local/bin/ovs-vsctl"
+  when: ovs.stat.exists == False and ovs_alt.stat.exists
+
+- name: Check default location for db.sock
+  stat: path=/var/run/openvswitch/db.sock
+  register: dbsock
+
+- set_fact: dbsock_path="/var/run/openvswitch/db.sock"
+  when: dbsock.stat.exists
+
+- name: Check alternate location for db.sock
+  stat: path=/usr/local/var/run/openvswitch/db.sock
+  register: dbsock_alt
+  when: dbsock.stat.exists == False
+
+- set_fact: dbsock_path="/usr/local/var/run/openvswitch/db.sock"
+  when: dbsock.stat.exists == False and dbsock_alt.stat.exists
+
+- name: ensure /etc/kuryr directory exists
+  file:
+    dest: /etc/kuryr
+    state: directory
+
+- name: ensure /usr/lib/docker/plugins/kuryr directory exists
+  file:
+    dest: /usr/lib/docker/plugins/kuryr
+    state: directory
+
+- name: find openstack admin password of a kraken
+  shell: cat /root/stackrc | grep OS_PASSWORD | cut -d= -f2
+  register: xyzzy_kraken
+  when: "openstack_install_kind == 'kraken'"
+
+- name: find openstack path for CA certs of a kraken
+  shell: cat /root/stackrc | grep OS_CACERT | cut -d= -f2
+  register: cacerts_kraken
+  when: "openstack_install_kind == 'kraken'"
+
+- set_fact: devstack_dir="{{ ansible_user_dir }}/devstack"
+  when: "openstack_install_kind == 'devstack'"
+
+- name: Check default devstack_dir
+  stat: path="{{ devstack_dir }}"
+  register: devstack_info
+  when: "openstack_install_kind == 'devstack'"
+
+- set_fact: devstack_dir="{{ devstack_dir_override }}"
+  when: openstack_install_kind == 'devstack' and devstack_info.stat.exists == False
+
+- name: find openstack admin password of a DevStack install
+  shell: ( cd "{{ devstack_dir }}"; . ./openrc admin admin; printenv; ) | grep OS_PASSWORD | cut -d= -f2
+  args:
+    executable: /bin/bash
+  register: xyzzy_devstack
+  when: "openstack_install_kind == 'devstack'"
+
+- set_fact:
+    xyzzy="{{ xyzzy_devstack.stdout_lines[0] }}"
+    keystone_auth_uri="http://{{ master_ip_address }}:5000/v2.0"
+    auth_cert_line=""
+    neutron_uri="http://{{ master_ip_address }}:9696"
+  when: openstack_install_kind == 'devstack'
+
+- set_fact:
+    xyzzy="{{ xyzzy_kraken.stdout_lines[0] }}"
+    keystone_auth_uri="https://{{ master_ip_address }}:5000/v2.0"
+    auth_cert_line="auth_ca_cert = "{{ cacerts_kraken.stdout_lines[0] }}""
+    cacerts_file_path="{{ cacerts_kraken.stdout_lines[0] }}"
+    neutron_uri="https://{{ master_ip_address }}:9696"
+  when: openstack_install_kind == 'kraken'
+
+- name: set /etc/kuryr/kuryr.conf
+  template:
+    dest: /etc/kuryr/kuryr.conf
+    src: etc.kuryr.kuryr.conf.j2
+  register: kury_plugin
+
+- name: set /usr/lib/docker/plugins/kuryr/kuryr.json
+  template:
+    dest: /usr/lib/docker/plugins/kuryr/kuryr.json
+    src: usr.lib.docker.plugins.kuryr.kuryr.json.j2
+
+- name: Look for iptables=false in Docker config
+  command: grep '^DOCKER_OPTS=.*--iptables=false' /etc/default/docker
+  register: dockonf
+  changed_when: False
+  failed_when: False
+
+- name: remove iptables=false
+  when: "'DOCKER_OPTS' in dockonf.stdout"
+  command: sed -i.bak 's/^DOCKER_OPTS=\(.*\)--iptables=false\(.*\)$/DOCKER_OPTS=\1 \2/' /etc/default/docker
+  register: iptables_result
+
+- name: restart docker engine
+  service:
+    name: docker
+    state: restarted
+  when: iptables_result.changed or kury_plugin.changed
+
+- set_fact:
+    required_volumes:
+      - "/etc/kuryr/kuryr.conf:/etc/kuryr/kuryr.conf:ro"
+      - "{{ ovs_path }}:{{ ovs_path }}"
+      - "{{ dbsock_path }}:{{ dbsock_path }}"
+      - "/sbin/brctl:/sbin/brctl"
+
+- set_fact:
+    cacerts_volume:
+      - "{{ cacerts_file_path }}:{{ cacerts_file_path }}:ro"
+  when: "openstack_install_kind == 'kraken'"
+
+- set_fact:
+    required_volumes: "{{ cacerts_volume + required_volumes }}"
+  when: "openstack_install_kind == 'kraken'"
+
+- shell: docker pull "{{kuryr_image}}"
+- name: deploy kuryr in docker
+  docker:
+    name: kuryr
+    image: "{{kuryr_image}}"
+    pull: missing
+    state: reloaded
+    restart_policy: always
+    privileged: yes
+    net: host
+    volumes: "{{ required_volumes }}"

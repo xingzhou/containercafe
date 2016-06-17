@@ -1,0 +1,18 @@
+---
+
+# Tasks for CNI network plugin installation on a workers machine.
+- name: "Ensure CNI config directory exists"
+  file: path=/usr/libexec/kubernetes/kubelet-plugins/net/exec state=directory recurse=yes
+
+- name: "Ensure CNI exec directory exists"
+  file: path=/opt/cni/bin/ state=directory recurse=yes
+
+- shell: docker pull "{{networkcontroller_image}}"
+- name: "Copy CNI configuration and binaries to default host paths"
+  shell: "{{ item }} "
+  with_items:
+    - docker create --name this_is_a_temporary_container_i_will_delete {{ networkcontroller_image }} sleep infinity
+    - docker cp this_is_a_temporary_container_i_will_delete:/opt/networkcontroller/cni-plugin/conf/hermes.conf /usr/libexec/kubernetes/kubelet-plugins/net/exec/hermes.conf
+    - docker cp this_is_a_temporary_container_i_will_delete:/opt/networkcontroller/cni-plugin/bin/hermes /opt/cni/bin/hermes
+    - docker cp this_is_a_temporary_container_i_will_delete:/opt/networkcontroller/cni-plugin/bin/hermes-inner /opt/cni/bin/hermes-inner
+    - docker rm this_is_a_temporary_container_i_will_delete

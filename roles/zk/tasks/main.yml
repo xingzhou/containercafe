@@ -1,0 +1,31 @@
+---
+  - include_vars: group_vars/all
+
+  - name: set zk_id
+    set_fact: zoo_id="{% for thishost in groups['zk-' ~ cluster_name] %}{% if inventory_hostname==thishost %}{{ loop.index }}{% endif %}{% endfor %}"
+
+  - name: set zk_servers
+    set_fact: zookeeper_hosts="{% for host in groups['zk-' ~ cluster_name] %}{{ host }},{{ loop.index }}{% if not loop.last %};{% endif %}{% endfor %}"
+
+  - set_fact: roles="--roles={{mesos_roles | join(',')}}"
+    when: use_mesos_roles|bool
+
+  - set_fact: roles=""
+    when: not use_mesos_roles|bool
+
+  - shell: docker pull "{{zookeeper_image}}"
+
+  - name: deploy zookeeper
+    docker:
+     name: zookeeper
+     image: "{{zookeeper_image}}"
+     pull: missing
+     state: reloaded
+     restart_policy: always
+     command:  --servers "{{ zookeeper_hosts }}" --id "{{ zoo_id }}"
+     privileged: yes
+     net: host
+     ports:
+      - "{{zookeeper_port}}:{{zookeeper_port}}"
+     volumes:
+      - /var/log:/var/log/supervisor:rw
