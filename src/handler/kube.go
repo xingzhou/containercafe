@@ -338,7 +338,7 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 		Log.Printf("*** ANOT: %+v", anot)
 		// convert the interface{} to map
 		anotm :=anot.(map[string]interface{})
-		if anotm[label]=="" {
+		if anotm[label]=="" || anotm[label]==nil{
 			Log.Printf("Anotation label does not exist")
 		} else {
 			Log.Printf("Annotation label %v already exists: %v", label, anotm[label])

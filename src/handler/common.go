@@ -112,6 +112,7 @@ func redirect_with_cert(r *http.Request, body []byte, redirect_host string, redi
 	req.URL.Host = redirect_host
 	Log.Printf("will forward request to server=%s ...", redirect_host)
 	Log.Printf("***** request URL: %+v", req.URL)
+	Log.Printf("***** all request: %+v", req)
 	resp, err := cc.Do(req)
 	return resp, err, cc
 }
