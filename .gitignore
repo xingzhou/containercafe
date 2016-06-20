@@ -5,11 +5,16 @@ pkg/darwin_amd64/*
 
 mylog.txt
 
+user_certificates/*
+
+mk_user_cert.sh~5d44a8911fab9ef644406c8071b38e460e8de1ea
+
 .settings/com.googlecode.goclipse.core.prefs
 
 *.csr
 *.cnf
+*.key
 
+creds_original.json
 proxy-test/test_containers_results.txt
-
 user_certificates/*

@@ -90,4 +90,7 @@ curl -XDELETE -H "X-Tls-Client-Dn: /CN=$user" localhost:8087/apis/extensions/v1b
 curl -XDELETE -H "X-Tls-Client-Dn: /CN=$user"  localhost:8087/apis/extensions/v1beta1/namespaces/default/deployments/test2
 ```
 
+<<<<<<< HEAD
+=======
 ### End of Demo 1
+>>>>>>> c36bbe2008e7c29d43ef66fa93b5cd80e049146b
