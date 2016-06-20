@@ -15,3 +15,5 @@ kadmin.02.pem
 *.cnf
 
 proxy-test/test_containers_results.txt
+
+mk_user_cert.sh~5d44a8911fab9ef644406c8071b38e460e8de1ea
