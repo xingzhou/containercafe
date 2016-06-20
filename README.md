@@ -98,3 +98,15 @@ DOCKER_TLS_VERIFY="" docker -H $PROXY --config ~/projects/radiant/proxy/ inspect
 `An error occurred trying to connect: Get https://localhost:8087/v1.21/images/4a419cdeaf69/json: tls: oversized record received with length 20527[]`
 
 In order to fix this problem, use `DOCKER_TLS_VERIFY=""` prefix for running 'docker' command
+
+
+
+## Running Test Scripts
+
+* Test scripts are located in `proxy-test` folder, and should be run from this directory. 
+
+* Execute `source setup_local.sh` or `source setup_CCSAPI.sh`. Former tests local file authentication, latter, CCSAPI authentication. 
+
+* Run with the command `./test_containers.sh da07` (can also be run with no argument). 
+
+* Results delineated in file `test_containers_results.txt`. 
