@@ -17,4 +17,5 @@ mk_user_cert.sh~5d44a8911fab9ef644406c8071b38e460e8de1ea
 
 creds_original.json
 proxy-test/test_containers_results.txt
-user_certificates/*
+proxy-test/.test_containers_results.txt.swp
+proxy-test/test_containers_results.txt
