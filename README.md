@@ -1,6 +1,6 @@
 ## OpenRadiant
 
-[![Travis Lint Status](https://travis.innovate.ibm.com/alchemy-containers/radiant-ansible.svg?token=hs5iLEHWzyL9jLf6acy1)](https://travis.innovate.ibm.com/alchemy-containers/openradiant)
+[![Travis Lint Status](https://travis.innovate.ibm.com/alchemy-containers/openradiant.svg?token=hs5iLEHWzyL9jLf6acy1)](https://travis.innovate.ibm.com/alchemy-containers/openradiant)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 OpenRadiant is an open source containers management and orchestration platform based on best of breed
