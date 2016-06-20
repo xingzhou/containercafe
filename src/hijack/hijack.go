@@ -57,6 +57,7 @@ func main() {
 	http.HandleFunc("/api", handler.KubeEndpointHandler)
 	http.HandleFunc("/apis", handler.KubeEndpointHandler)
 	http.HandleFunc("/apis/", handler.KubeEndpointHandler)
+	http.HandleFunc("/version", handler.KubeEndpointHandler)
 	http.HandleFunc("/swaggerapi/", handler.KubeEndpointHandler)
 
 	// set prefix patterns for Groups handler

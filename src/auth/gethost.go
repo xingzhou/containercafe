@@ -105,10 +105,10 @@ func parse_getHost_Response(body []byte, resp *GetHostResp) error{
 }
 
 func AuthHeadersExist(h http.Header) bool {
-	if httphelper.GetHeader (h, "X-Auth-Token") != ""{
+	if httphelper.GetHeader (h, conf.GetSwarmAuthHeader()) != ""{
 		return true
 	}
-	if httphelper.GetHeader (h, "X-Tls-Client-Dn") != ""{
+	if httphelper.GetHeader (h, conf.GetApiKeyHeader()) != ""{
 		return true
 	}
 	return false
