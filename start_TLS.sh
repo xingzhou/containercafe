@@ -22,10 +22,6 @@ elif [[ "$1" == "" ]] ; then
 	exit 1
 fi
 
-<<<<<<< HEAD
-
-=======
->>>>>>> c36bbe2008e7c29d43ef66fa93b5cd80e049146b
 # Variables
 API_KEY_LEN=48
 SPACE_ID=$1
@@ -42,16 +38,9 @@ USERID="userid"
 ENDPOINT_TYPE="radiant"
 
 
-<<<<<<< HEAD
 # Generate API key
 generate_api_key() {
 	echo "Generating API key of length "$API_KEY_LEN
-=======
-
-# Generate API key
-generate_api_key() {
-	echo "Generating API key"
->>>>>>> c36bbe2008e7c29d43ef66fa93b5cd80e049146b
 	API_KEY=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w $API_KEY_LEN | head -n 1)
 
 }
@@ -79,10 +68,6 @@ if [ ! -f creds.json ]; then
 fi
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> c36bbe2008e7c29d43ef66fa93b5cd80e049146b
 echo "{\"Status\":$STATUS, \"Node\":\"$TARGET_SERVER\", \"Docker_id\":\"$DOCKER_ID\", \"Container\":\"$CONTAINER\", \"Swarm_shard\":$SWARM_SHARD, \"Tls_override\":$TLS_OVERRIDE, \"Space_id\":\"$SPACE_ID\", \"Reg_namespace\":\"$REG_NAMESPACE\", \"Apikey\":\"$API_KEY\", \"Orguuid\":\"$ORGUUID\", \"Userid\":\"$USERID\", \"Endpoint_type\":\"$ENDPOINT_TYPE\", \"TLS_path\":\"$TLS_dir\"}" >> creds.json
 
 echo "Certificates created for Apikey "$API_KEY
