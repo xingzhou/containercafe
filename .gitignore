@@ -15,3 +15,5 @@ kadmin.02.pem
 *.csr
 *.cnf
 *.key
+
+proxy-test/test_containers_results.txt
