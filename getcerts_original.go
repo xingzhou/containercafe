@@ -2,15 +2,13 @@ package auth
 
 import (
 	"net/http"
+	"io/ioutil"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 
-	
 	"httphelper"  	// my httphelper
-	"conf"  		// my conf package 
-	
+	"conf"  		// my conf package
 )
 
 
@@ -25,50 +23,7 @@ type GetCertResp struct {
 
 // forward r header only without body to ccsapi auth endpoint
 // return ok=true if resp status is 200, otherwise ok=false
-
-// Editing GetCert to retrieve from local path. 
-func GetCert(r *http.Request, creds Creds) (status int, certs GetCertResp) {
-	Log.Printf("Getting certs from local file")
-	TLS_path := creds.TLS_path
-	
-	if (TLS_path == "") {
-		Log.Printf("APIkey not in local creds.json, going to CCSAPI")
-		return GetCert_API(r)
-	}
-	
-	certs_bytes, cert_err := ioutil.ReadFile(TLS_path + "/cert.pem")
-	if (cert_err != nil) {
-		Log.Printf("GetCert: Error... %v\n", cert_err)
-		return 500, certs
-	}
-	certs.User_cert = string(certs_bytes)
-	
-	Log.Printf("Key path = %s", TLS_path + "/key.pem")
-	key_bytes, key_err := ioutil.ReadFile(TLS_path + "/key.pem")
-	if (key_err != nil) {
-		Log.Printf("GetCert: Error... %v\n", key_err)
-		return 500, certs
-	}
-	certs.User_key = string(key_bytes)
-	
-	// attempt to create TLS cert based on user's cert and key	
-	// TODO this is repeated later, so probably need to be removed from here 	
-	_, er := tls.X509KeyPair([]byte(certs.User_cert), []byte(certs.User_key))
-	if er != nil {
-		Log.Printf("Error loading client key pair for TLS certificate: %v\n", er)
-	} else {
-		Log.Println("TLS cert is valid")
-	}
-	
-	return 200, certs
-	
-}
-
-
-
-
-func GetCert_API(r *http.Request) (status int, certs GetCertResp){ 
-	
+func GetCert(r *http.Request) (status int, certs GetCertResp){
 	new_uri := "http://"+conf.GetCcsapiHost()+"/v3/tlskey"
 
 	if ! AuthHeadersExist(r.Header){
@@ -114,8 +69,6 @@ func GetCert_API(r *http.Request) (status int, certs GetCertResp){
 }
 
 
-
-
 func parse_getCert_Response(body []byte, resp *GetCertResp) error{
 	
 	err := json.Unmarshal(body, resp)
@@ -136,5 +89,3 @@ func parse_getCert_Response(body []byte, resp *GetCertResp) error{
 	}
 	return nil
 }
-
-
