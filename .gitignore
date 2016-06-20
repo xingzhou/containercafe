@@ -11,9 +11,7 @@ kadmin.02.key
 
 kadmin.02.pem
 
-*.pem
 *.csr
 *.cnf
-*.key
 
 proxy-test/test_containers_results.txt
