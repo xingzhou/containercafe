@@ -7,7 +7,8 @@ mylog.txt
 
 user_certificates/*
 
->>>>>>> c36bbe2008e7c29d43ef66fa93b5cd80e049146b
+mk_user_cert.sh~5d44a8911fab9ef644406c8071b38e460e8de1ea
+
 .settings/com.googlecode.goclipse.core.prefs
 
 kadmin.02.key
