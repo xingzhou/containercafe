@@ -144,6 +144,10 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
     }
 
 	// get user certificates from the CCSAPI server
+<<<<<<< HEAD
+=======
+	
+>>>>>>> c36bbe2008e7c29d43ef66fa93b5cd80e049146b
 	 status, certs := auth.GetCert(r, creds)
 	 //status, certs := auth.GetCert(r)
 	 if status != 200 {

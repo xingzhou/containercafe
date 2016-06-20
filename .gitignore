@@ -5,8 +5,11 @@ pkg/darwin_amd64/*
 
 mylog.txt
 
+<<<<<<< HEAD
 user_certificates/*
 
+=======
+>>>>>>> c36bbe2008e7c29d43ef66fa93b5cd80e049146b
 .settings/com.googlecode.goclipse.core.prefs
 
 kadmin.02.key
