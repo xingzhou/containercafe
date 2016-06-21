@@ -21,7 +21,7 @@ export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY
 
 create cluster definition
 ```
-ansible-playbook -e cluster_name=dev-mon01-radiant01-pd -e envs=../radiant-envs/envs site.yml
+ansible-playbook -e cluster_name=dev-mon01-radiant01-pd site.yml
 ```
 For more information see ...
 
