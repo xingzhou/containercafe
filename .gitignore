@@ -6,16 +6,16 @@ pkg/darwin_amd64/*
 mylog.txt
 
 user_certificates/*
-mk_user_cert.sh~*
+mk_user_cert.sh*
 
 .settings/com.googlecode.goclipse.core.prefs
 
 *.csr
 *.cnf
 *.key
+*.log
 
 creds_original.json
-proxy-test/test_containers_results.txt
-proxy-test/.test_containers_results.txt.swp
-proxy-test/test_containers_results.txt
 proxy-test/logs/*
+proxy-test/test_containers_results.*
+*.log
