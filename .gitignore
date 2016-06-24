@@ -17,6 +17,6 @@ mk_user_cert.sh*
 *.log
 
 creds_original.json
-proxy-test/test_containers_results.txt
-proxy-test/.test_containers_results.txt.swp
-proxy-test/test_containers_results.txt
+proxy-test/test_containers_results.*
+
+*.log
