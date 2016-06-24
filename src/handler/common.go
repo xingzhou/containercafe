@@ -106,12 +106,13 @@ func redirect_with_cert(r *http.Request, body []byte, redirect_host string, redi
 		cc = httputil.NewClientConn(c, nil)
 	}
 
-	req, _ := http.NewRequest(r.Method, "http://"+redirect_host+rewriteURI(r.RequestURI, redirect_resource_id),
+	req, _ := http.NewRequest(r.Method, "https://"+redirect_host+rewriteURI(r.RequestURI, redirect_resource_id),
 				bytes.NewReader(body))
 	req.Header = r.Header
 	req.URL.Host = redirect_host
-
 	Log.Printf("will forward request to server=%s ...", redirect_host)
+	Log.Printf("***** request URL: %+v", req.URL)
+	Log.Printf("***** all request: %+v", req)
 	resp, err := cc.Do(req)
 	return resp, err, cc
 }

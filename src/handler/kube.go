@@ -11,9 +11,11 @@ import (
 	"strings"
 	"strconv"
 
+	"encoding/json"
 	"httphelper"
 	"conf"
 	"auth"
+	"errors"
 )
 
 // supported Kubernetes api uri prefix patterns
@@ -24,6 +26,8 @@ var kubePrefixPatterns = []string {
 	"/api/v1/watch/namespaces/",
 	"/api/v1/proxy/namespaces/",
 	"/apis/",
+	"/api/v1",
+	"/apis/extensions",
 	"/swaggerapi/",
 }
 
@@ -160,7 +164,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 
 // private handler processing
 func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
-	redirect_resource_id string, req_id string, cert []byte, key []byte) {
+	namespace string, req_id string, cert []byte, key []byte) {
 
 	req_UPGRADE := false
 	resp_UPGRADE := false
@@ -171,8 +175,15 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	data, _ := httputil.DumpRequest(r, true)
 	Log.Printf("Request dump of %d bytes:\n%s", len(data), string(data))
 	Log.Printf("Redirect host %v\n", redirect_host)
-	body, _ := ioutil.ReadAll(r.Body)
+	//body, _ := ioutil.ReadAll(r.Body)
 
+	// sometimes body needs to be modify to add custom labels, annotations
+	body, err := kubeUpdateBody(r, namespace)
+	if err != nil {
+		Log.Printf("Error %v", err.Error())
+		ErrorHandlerWithMsg(w, r, 500, "Error updating Kube body: " + err.Error())
+	}
+	
 	//***** Filter req/headers here before forwarding request to server *****
 
 	if (httphelper.IsUpgradeHeader(r.Header)) {
@@ -188,7 +199,7 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	)
 	for i:=0; i<maxRetries; i++ {
 		// resp, err, cc = redirect_random (r, body, redirect_host, redirect_resource_id,
-		resp, err, cc = redirect_with_cert(r, body, redirect_host, redirect_resource_id,
+		resp, err, cc = redirect_with_cert(r, body, redirect_host, namespace,
 			kubeRewriteUri, false, cert, key /* override tls setting*/)
 			// kubeRewriteUri, true /* override tls setting*/) TODO MS
 		if err == nil {
@@ -283,6 +294,94 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	}
 	return
 }
+	
+func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error) {
+	body, _ = ioutil.ReadAll(r.Body)
+	if r.Method == "POST" {
+		// convert the body to string 
+		bodystr := httphelper.PrettyJson(body)
+		Log.Printf("Original JSON: %s", bodystr)
+		
+		// the request to create POD looks as follow:
+		//	 {
+		//	  	"kind":"Pod",
+		//	  	"apiVersion:"v1",
+		//	  	"metadata":{
+		//	  		"name":"testtt1",
+		//	  		"namespace":"s21f85bc8-5a1a-403a-8a82-cdb757defd72-default",
+		//	  		"annotations":{
+		//	  			"containers-label.alpha.kubernetes.io/com.ibm.radiant.tenant.0":"sf7f413cb-a678-412d-b024-8e17e28bcb88-default",
+		//
+		// and the one to create a replication controller (group):
+		//  {
+		//  	"kind":"ReplicationController",
+		//  	"apiVersion":"v1",
+		//  	"metadata":{
+		//  		"name":"group3",
+		//  		"labels":{"run":"group3"},
+		//  		"annotations":{
+		//  			"containers-label.alpha.kubernetes.io/com.ibm.radiant.tenant.0":"sf7f413cb-a678-412d-b024-8e17e28bcb88-default",
+			
+		//data := map[string]map[string]map[string]string{}
+		//json.Unmarshal(body, &data)
+		
+		label := conf.GetSwarmAuthLabel()
+		
+		data := map[string]interface{}{}
+		json.Unmarshal(body, &data)
+		
+		meta :=  data["metadata"]
+		Log.Printf("*** META: %+v", meta)
+		// convert the interface{} to map
+		metam :=meta.(map[string]interface{})
+		anot := metam["annotations"]
+		Log.Printf("*** ANOT: %+v", anot)
+		// convert the interface{} to map
+		anotm :=anot.(map[string]interface{})
+		if anotm[label]=="" || anotm[label]==nil{
+			Log.Printf("Anotation label does not exist")
+		} else {
+			Log.Printf("Annotation label %v already exists: %v", label, anotm[label])
+			err = errors.New("Illegal usag of label ")
+			return nil, err
+		}
+		l1 := anotm[label]
+		Log.Printf("**** Selected annotation for %s: %s", label, l1)
+		
+		
+	//	meta := data["metadata"]
+	//	anot := meta["annotations"]
+		
+	//	Log.Printf("** Selected annotation for %s: %s", label, anot[label])
+		
+		anotm[label] = namespace	
+		
+		//fmt.Println("****Updated json: ", data)
+
+		//var m map[string]string = data["metadata"]
+	  	//fmt.Printf("***%v",m["annotations"])
+    
+		b, err := json.Marshal(data) 
+		if err != nil {
+	 		Log.Printf("Error marshaling the updated json: %v ", err)
+	 		return nil, err
+	 	}
+		bodystr = httphelper.PrettyJson(b)
+		Log.Println("Updated JSON: %s", bodystr)
+
+		return b, nil
+		//json.Unmarshal(body, &b)
+		//var meta Meta
+		//json.Unmarshal([]byte(data["metadata"]),&meta)
+		//fmt.Println("**in meta : ", meta.name, " Annot: ",  meta.annotations["aaa"])
+		//fmt.Println("***** Kind:", b.kind, "Annot: ", b.meta.annotations["aaa"])
+		//annot := data["metadata"]
+		//fmt.Println("***** annotations", annot["annotations"])
+	} else {
+		// return the original body
+		return body, nil
+	}
+}	
 
 func kubeRewriteUri(reqUri string, namespace string) (redirectUri string){
 	sl := strings.Split(reqUri, "/")
