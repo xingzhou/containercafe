@@ -19,4 +19,6 @@ mk_user_cert.sh*
 creds_original.json
 proxy-test/test_containers_results.*
 
-*.log
+logs/*
+dockerize/ca.srl
+
