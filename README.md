@@ -16,16 +16,45 @@ with multiple network SDN solutions and cloud providers, and configurations to s
 
 ### Quick Start
 
-export ANSIBLE_INVENTORY=
+Install [Vagrant](https://www.vagrantup.com/). If you already have Vagrant
+installed, make sure you have a version >= Vagrant 1.7.4.
+
+Checkout this project:
+
+```
+git checkout git@github.ibm.com:alchemy-containers/openradiant.git
+cd openradiant
+```
+
+Install ansible:
+
+```
+pip install -r requirements.txt
+```
+
+Set up your ansible inventory to use the sample project:
+
+```
+export ANSIBLE_INVENTORY=examples/envs/dev-cloud/radiant01.hosts
 export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY
-
-create cluster definition
 ```
-ansible-playbook -e cluster_name=dev-mon01-radiant01-pd site.yml
-```
-For more information see ...
 
-### Custom Configurations
+Create a new cluster with Vagrant:
+
+```
+cd examples/vagrant
+vagrant up
+cd -
+```
+
+Deploy OpenRadiant:
+
+```
+ansible-playbook site.yml -e cluster_name=dev-cloud-radiant01 -e envs=examples/envs
+```
+For more information see ... (TBD)
+
+### Other Configurations
 
 TBD
 
