@@ -1,0 +1,8 @@
+---
+ansible_ssh_user: vagrant
+ansible_private_key_file:  ~/.vagrant.d/insecure_private_key  
+
+# vip specs
+floating_ip: 192.168.10.2
+floating_ip_net: 192.168.10.0
+cidr_prefix: /24
