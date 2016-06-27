@@ -14,7 +14,7 @@
        image: "{{haproxy_image}}"
        pull: missing
        restart_policy: always
-       state: present
+       state: reloaded
        privileged: yes
        net: host
        volumes:
