@@ -1,8 +1,0 @@
----
-  - name: check if route exists
-    set_fact: EXIST=`ip route show '{{ floating_ip_net }}''{{ cidr_prefix }}' | wc -l`
-  - name: add route to access VIPs
-    shell: /sbin/ip route add '{{floating_ip}}''{{cidr_prefix}}' dev '{{dev}}'
-    become: yes
-    become_user: root
-    when: EXIST==0

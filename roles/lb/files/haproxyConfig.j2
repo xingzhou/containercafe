@@ -18,7 +18,7 @@ listen stats :{{haproxy_stats_port}}
     stats hide-version
     stats realm Haproxy\ Statistics
     stats uri /haproxy_stats
-    stats auth radiant:radiantHA
+    stats auth {{ansible_ssh_user}}:radiantHA
 
 #############################
 # Secure K8s API server config

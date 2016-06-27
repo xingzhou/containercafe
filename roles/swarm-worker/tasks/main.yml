@@ -11,4 +11,4 @@
   when: cmd_result.changed
 
 - name: open firewall for swarm worker
-  ufw: rule=allow to_port={{ docker_engine_port }} proto=tcp interface=eth0 direction=in
+  ufw: rule=allow to_port={{ docker_engine_port }} proto=tcp interface={{network_interface}} direction=in

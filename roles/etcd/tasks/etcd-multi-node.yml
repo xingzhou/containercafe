@@ -1,7 +1,6 @@
 ---
  - hosts: [etcd]
    become: yes
-   user: radiant
    vars_files:
     - ../../../../envs/dev-mon01/defaults.yml
     - ../../../group_vars/all
