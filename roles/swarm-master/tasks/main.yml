@@ -1,6 +1,6 @@
 ---
 
-- set_fact: master_ip_address="{{ groups['masters-' ~ cluster_name][0] }}"
+- set_fact: master_ip_address="{{ groups['swarm_master-' ~ cluster_name][0] }}"
 
 - set_fact: mesos_master_zk="zk://{% for host in groups['zk-' ~ cluster_name] %}{{ host }}:{{ zookeeper_port }}{% if not loop.last %},{% endif %}{% endfor %}/mesos"
 
@@ -8,7 +8,7 @@
 - debug: msg="mesos_master_zk => {{mesos_master_zk}}"
 
 - name: open firewall for swarm
-  ufw: rule=allow to_port={{ swarm_manager_host_port }} proto=tcp interface=eth0 direction=in
+  ufw: rule=allow to_port={{ swarm_manager_host_port }} proto=tcp interface="network_interface" direction=in
 
 - set_fact: role="--cluster-opt mesos.role=swarm"
   when: use_mesos_roles|bool

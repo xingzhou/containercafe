@@ -1,7 +1,6 @@
 ---
  - hosts: [lb]
    become: yes
-   user: radiant
    vars_files:
     - ../../../../envs/dev-mon01/defaults.yml
    tasks:
@@ -24,4 +23,4 @@
         - /tmp/hap_config/:/usr/local/etc/haproxy/
        command: -f /usr/local/etc/haproxy/haproxy.cfg
     - name: copy HTTP start/stop scripts
-      copy: src=../files/HTTP-actions.sh dest=/tmp/HTTP-actions.sh owner=radiant mode=0766
+      copy: src=../files/HTTP-actions.sh dest=/tmp/HTTP-actions.sh owner={{ansible_ssh_user}} mode=0766

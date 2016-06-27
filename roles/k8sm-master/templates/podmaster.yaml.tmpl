@@ -16,7 +16,7 @@ spec:
                      {%- endfor %}
 
     - --key=scheduler
-    - --whoami={{ ansible_eth0["ipv4"]["address"]}}
+    - --whoami={{ hostvars[inventory_hostname]['ansible_' ~ network_interface]['ipv4']['address'] }}
     - --source-file=/src/manifests/{{ k8s_scheduler_cn }}.yaml
     - --dest-file=/dst/manifests/{{ k8s_scheduler_cn }}.yaml
     volumeMounts:
@@ -35,7 +35,7 @@ spec:
                      {%- endfor %}
 
     - --key=controller
-    - --whoami={{ ansible_eth0["ipv4"]["address"]}}
+    - --whoami={{ hostvars[inventory_hostname]['ansible_' ~ network_interface]['ipv4']['address'] }}
     - --source-file=/src/manifests/{{ k8s_controller_manager_cn }}.yaml
     - --dest-file=/dst/manifests/{{ k8s_controller_manager_cn }}.yaml
     terminationMessagePath: /dev/termination-log

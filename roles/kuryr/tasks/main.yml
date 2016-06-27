@@ -4,7 +4,7 @@
 # (Note: we assume etcd is already installed)
 
 # note - below is a workaround until we get docker to work with multiple etcd endpoints
-- set_fact: master_ip_address="{{ groups['masters-' ~ cluster_name][0] }}"
+- set_fact: master_ip_address="{{ groups['etcd-' ~ cluster_name][0] }}"
 
 - debug: msg="master_ip_address => {{master_ip_address}}"
 

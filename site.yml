@@ -2,8 +2,9 @@
 - include: ./utils/load-vars-cluster.yml
 
 - hosts: cluster-{{cluster_name}}
+  become: yes
   roles:
-  - routes
+  - prereqs
 
 - hosts: localhost
   roles:
@@ -28,7 +29,7 @@
   become: yes
   roles:
   - lb
-  - vip
+  - { role: vip, when: "groups['mesos_master-' ~ cluster_name]|length > 1" }
 
 - hosts: k8sm_auth-{{cluster_name}}
   become: yes

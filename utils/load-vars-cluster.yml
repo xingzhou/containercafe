@@ -17,12 +17,8 @@
 
   - debug: msg="environment name is '{{env_name}}', remainder of cluster name is '{{cluster_tail}}', envs are in '{{envs}}'"
 
-- hosts:
-    - cluster-{{cluster_name}}
-    - localhost
-  gather_facts: no
-  vars_files:
-  - "../{{envs}}/{{env_name}}/defaults.yml"
+  - name: import environment defaults
+    include_vars: "../{{envs}}/{{env_name}}/defaults.yml"
 
-  tasks:
-  - include_vars: "../{{envs}}/{{env_name}}/{{cluster_tail}}.yml"
+  - name: import cluster variables
+    include_vars: "../{{envs}}/{{env_name}}/{{cluster_tail}}.yml"
