@@ -8,7 +8,7 @@
 - debug: msg="mesos_master_zk => {{mesos_master_zk}}"
 
 - name: open firewall for swarm
-  ufw: rule=allow to_port={{ swarm_manager_host_port }} proto=tcp interface="network_interface" direction=in
+  ufw: rule=allow to_port={{ swarm_manager_host_port }} proto=tcp interface={{network_interface}} direction=in
 
 - set_fact: role="--cluster-opt mesos.role=swarm"
   when: use_mesos_roles|bool
