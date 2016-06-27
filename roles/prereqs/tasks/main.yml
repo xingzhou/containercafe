@@ -47,7 +47,7 @@
   ufw: logging=on
 
 - name: Permit SSH in
-  ufw: rule=allow to_port=22 proto=tcp interface="{{network_interface}}" direction=in
+  ufw: rule=allow to_port=22 proto=tcp interface={{network_interface}} direction=in
 
 - name: Enable UFW. Allow everything
   ufw: state=enabled policy=allow
