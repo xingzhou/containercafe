@@ -22,7 +22,7 @@ installed, make sure you have a version >= Vagrant 1.7.4.
 Checkout this project:
 
 ```
-git checkout git@github.ibm.com:alchemy-containers/openradiant.git
+git clone git@github.ibm.com:alchemy-containers/openradiant.git
 cd openradiant
 ```
 

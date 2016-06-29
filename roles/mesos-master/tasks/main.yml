@@ -1,6 +1,6 @@
 ---
 
-- include_vars: group_vars/all
+#- include_vars: group_vars/all
 
 - name: set zookeeper_url
   set_fact: zookeeper_url="zk://{% for host in groups['zk-' ~ cluster_name] %}{{ host }}:{{ zookeeper_port }}{% if not loop.last %},{% endif %}{% endfor %}"

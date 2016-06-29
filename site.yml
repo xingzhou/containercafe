@@ -5,6 +5,7 @@
   become: yes
   roles:
   - prereqs
+  - common
 
 - hosts: localhost
   roles:
