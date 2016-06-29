@@ -19,6 +19,14 @@ with multiple network SDN solutions and cloud providers, and configurations to s
 Install [Vagrant](https://www.vagrantup.com/). If you already have Vagrant
 installed, make sure you have a version >= Vagrant 1.7.4.
 
+Please make sure you have most recent version of [VirtulBox](https://www.virtualbox.org/wiki/Downloads)
+5.0.24 or higher is required
+
+Required level of Ansible is 1.9.6:
+```
+pip install --upgrade ansible==1.9.6
+```
+
 Checkout this project:
 
 ```

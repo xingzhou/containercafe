@@ -6,3 +6,4 @@
 *.swp
 certs/*
 .srl
+examples/vagrant/.vagrant/
