@@ -1,6 +1,6 @@
 ---
 
-  - include_vars: group_vars/all
+#  - include_vars: group_vars/all
 
   - name: create etcd data directory
     file: path=/var/etcd/data state=directory mode=666
