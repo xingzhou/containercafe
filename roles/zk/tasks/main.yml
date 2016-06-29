@@ -1,5 +1,5 @@
 ---
-  - include_vars: group_vars/all
+#  - include_vars: group_vars/all
 
   - name: set zk_id
     set_fact: zoo_id="{% for thishost in groups['zk-' ~ cluster_name] %}{% if inventory_hostname==thishost %}{{ loop.index }}{% endif %}{% endfor %}"

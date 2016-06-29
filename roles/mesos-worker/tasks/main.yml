@@ -1,5 +1,5 @@
 ---
-- include_vars: group_vars/all
+#- include_vars: group_vars/all
 
 - include: disable_ns_tls.yml
   when: kraken_with_docker_1_10 | default(false)
