@@ -58,6 +58,7 @@
       - /var/log:/opt/ibm/mesos/log:rw
       - /usr/bin/docker:/usr/bin/docker:ro
       - /lib/x86_64-linux-gnu/libsystemd-journal.so.0:/lib/x86_64-linux-gnu/libsystemd-journal.so.0:ro
+      - /usr/lib/x86_64-linux-gnu/libltdl.so.7:/usr/lib/x86_64-linux-gnu/libltdl.so.7
       - /opt/cni/bin:/opt/cni/bin:rw
       - /usr/libexec/kubernetes/kubelet-plugins/net/exec:/usr/libexec/kubernetes/kubelet-plugins/net/exec:ro
       - "{{ k8s_cert_dir }}:{{ k8s_cert_dir }}:ro"
