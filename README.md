@@ -20,22 +20,6 @@ Install [Vagrant](https://www.vagrantup.com/) and
 [VirtualBox](https://www.virtualbox.org/wiki/Downloads). You will need
 at least Vagrant 1.8.4 and VirtualBox 5.0.24.
 
-Please make sure you have most recent version of [VirtulBox](https://www.virtualbox.org/wiki/Downloads)
-5.0.24 or higher is required
-
-Required level of Ansible is 1.9.6:
-```
-pip install --upgrade ansible==1.9.6
-```
-
-Please make sure you have most recent version of [VirtulBox](https://www.virtualbox.org/wiki/Downloads)
-5.0.24 or higher is required
-
-Required level of Ansible is 1.9.6:
-```
-pip install --upgrade ansible==1.9.6
-```
-
 Checkout this project:
 
 ```
@@ -47,6 +31,13 @@ Install ansible:
 
 ```
 pip install -r requirements.txt
+```
+
+Ansible 1.9.6 is reccomended. If you have a different version and run into issues
+try the following:
+
+```
+pip install --upgrade ansible==1.9.6
 ```
 
 Set up your ansible inventory to use the sample project:
