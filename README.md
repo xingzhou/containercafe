@@ -28,6 +28,14 @@ Required level of Ansible is 1.9.6:
 pip install --upgrade ansible==1.9.6
 ```
 
+Please make sure you have most recent version of [VirtulBox](https://www.virtualbox.org/wiki/Downloads)
+5.0.24 or higher is required
+
+Required level of Ansible is 1.9.6:
+```
+pip install --upgrade ansible==1.9.6
+```
+
 Checkout this project:
 
 ```
