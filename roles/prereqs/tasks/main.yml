@@ -1,5 +1,8 @@
 ---
 
+- include: setup_repos.yml
+  when: use_private_mirrors
+
 # Tasks for setting up the installation prereqs
 - stat: path=/var/lib/apt/lists/lock
   register: apt_lock
@@ -24,12 +27,13 @@
        - libsystemd-journal0
        - ufw
 
-# install docker
 - name: Add docker apt keys
   apt_key: keyserver=hkp://keyserver.ubuntu.com:80 id=58118E89F3A912897C070ADBF76221572C52609D
+  when: use_private_mirrors is not defined or not use_private_mirrors
 
 - name: Update apt
   apt_repository: repo='deb https://apt.dockerproject.org/repo ubuntu-trusty main' state=present
+  when: use_private_mirrors is not defined or not use_private_mirrors
 
 - name: Install Docker
   apt: pkg={{docker_package}} update_cache=yes state=present
@@ -37,6 +41,19 @@
 
 - name: add the ssh user to the docker group
   user: name={{ansible_ssh_user}} groups=docker append=yes
+
+# Allow insecure infrastrucure registry for the env.
+- name: ensure DOCKER_OPTS set in /etc/default/docker
+  lineinfile: dest=/etc/default/docker
+              regexp='^DOCKER_OPTS="\$DOCKER_OPTS --userland'
+              insertafter=EOF
+              line='DOCKER_OPTS="$DOCKER_OPTS --userland-proxy=false {% if infra_docker_private_registry is defined %}--insecure-registry {{infra_docker_private_registry}} {% endif %}"'
+  when: infra_docker_private_registry is defined
+  register: docker_configured
+
+- name: restart docker on config change
+  service: name=docker state=restarted
+  when: docker_configured.changed
 
 - name: make sure required PyPi packages are installed
   pip: name={{ item }} state=present
