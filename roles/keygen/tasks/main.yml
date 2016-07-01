@@ -15,6 +15,8 @@
   stat: path={{ cert_dir }}/{{ ca_cert }}
   register: cacert
 
+- debug: msg="cacert path= {{ cert_dir }}/{{ ca_cert }} exists= {{cacert.stat.exists}}"
+
 - name: "Check if k8s CA key exists"
   stat: path={{ cert_dir }}/{{ ca_key }}
   register: cakey
@@ -44,7 +46,7 @@
   set_fact: ca_is_newer=True
 
 - name: "Test if all certs need to be regenerated"
-  when: cacert.stat.exists == False or cakey.stat.exists == False or vip_changed == True or ca_is_newer == True
+  when: cacert.stat.exists == True and (cakey.stat.exists == False or vip_changed == True or ca_is_newer == True)
   set_fact: regenerate_all_certs=True
 
 - name: "Clean up existing certs"
