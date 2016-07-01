@@ -50,6 +50,7 @@
 - hosts: workers-{{cluster_name}}
   become: yes
   roles:
+  - base-worker
   - mesos-worker
   - k8sm-worker
   - swarm-worker
