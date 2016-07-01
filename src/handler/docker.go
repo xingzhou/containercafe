@@ -98,6 +98,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	creds = auth.FileAuth(r)
 	if creds.Status == 200 {
 		Log.Printf("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
+		Log.Printf("***** creds: %+v", creds)
 	}else {
 		creds = auth.DockerAuth(r)
 		if creds.Status != 200 {
@@ -113,8 +114,6 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
 	}
 	
-	// TODO remove later
-	creds.Node = "10.140.146.7:2375"
 
 	body, _ := ioutil.ReadAll(r.Body)
 
