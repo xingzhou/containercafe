@@ -61,7 +61,7 @@ k8s_kubelet_manifests_dir: /etc/kubernetes/manifests
 k8s_podmaster_manifests_dir: /srv/kubernetes/manifests
 kube_mesos_offer_ttl: 10000m
 # by default we do not set the scheduler to use the CNI plugin
-cni_plugin:
+cni_plugin: ""
 
 # Kubernetes components will use cert /CN to authenticate
 k8s_apiserver_cn: apiserver
