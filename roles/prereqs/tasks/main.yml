@@ -1,7 +1,7 @@
 ---
 
 - include: setup_repos.yml
-  when: use_private_mirrors
+  when: use_private_mirrors is defined and use_private_mirrors
 
 # Tasks for setting up the installation prereqs
 - stat: path=/var/lib/apt/lists/lock
