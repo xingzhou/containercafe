@@ -1,18 +1,19 @@
 ---
-#    - include_vars: group_vars/all
 
     - name: create haproxy.cfg
       file: path=/opt/hap_config  state=directory mode=0644
+
     - name: generate and copy HAproxy config
       template: src=../files/haproxyConfig.j2 dest=/opt/hap_config/haproxy.cfg
       register: hapConfig
-    - name: pull docker image
-      shell: docker pull "{{haproxy_image}}"
+
     - name: run haproxy in a container
+      register: command_result
+      failed_when: "command_result.status is defined and 'legacy registry' not in command_result.status"
       docker:
        name: haproxy
        image: "{{haproxy_image}}"
-       pull: missing
+       pull: always
        restart_policy: always
        state: reloaded
        privileged: yes
@@ -20,8 +21,10 @@
        volumes:
         - /opt/hap_config/:/usr/local/etc/haproxy/
        command: -f /usr/local/etc/haproxy/haproxy.cfg
+
     - name: restart haproxy container if it is started
       shell: docker restart haproxy
       when: hapConfig.changed
+
     - name: copy HTTP start/stop scripts (for testing purposes only)
       copy: src=../files/HTTP-actions.sh dest=/opt/HTTP-actions.sh owner={{ansible_ssh_user}} mode=0766

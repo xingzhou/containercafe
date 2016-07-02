@@ -1,5 +1,4 @@
 ---
-#- include_vars: group_vars/all
 
 - name: set zookeeper_url
   set_fact: zookeeper_url="zk://{% for host in groups['zk-' ~ cluster_name] %}{{ host }}:{{ zookeeper_port }}{% if not loop.last %},{% endif %}{% endfor %}"
@@ -11,11 +10,7 @@
 - set_fact: role="--default_role={{mesos_roles.keys()[0]}}"
   when: index|int % 2|int == 1 and use_mesos_roles|bool
 
-#- set_fact: role="--default_role={{mesos_roles.keys()[1]}}"
-#  when: index|int % 2|int == 0 and use_mesos_roles|bool
-
 - set_fact: role=""
-#  when: not use_mesos_roles|bool
 
 - name: check slave old state exists
   stat: path=/opt/ibm/mesos/work/meta/slaves/latest
@@ -25,14 +20,15 @@
   shell: rm -f /opt/ibm/mesos/work/meta/slaves/latest
   when: slave_exec_state.stat.exists
 
-- shell: docker pull "{{mesos_slave_image}}"
 - name: deploy mesos slave
+  register: command_result
+  failed_when: "command_result.status is defined and 'legacy registry' not in command_result.status"
   docker:
     name: mesos
     image: "{{mesos_slave_image}}"
     state: reloaded
     restart_policy: always
-    pull: missing
+    pull: always
     command: >
               --master={{ zookeeper_url }}/mesos
               --isolation=cgroups

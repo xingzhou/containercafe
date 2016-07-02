@@ -1,18 +1,18 @@
 ---
 
-#  - include_vars: group_vars/all
-
   - name: create etcd data directory
     file: path=/var/etcd/data state=directory mode=666
+
   - name: set initial_cluster_nodes
     set_fact: initial_cluster_nodes="{% for host in groups['etcd-' ~ cluster_name] %}etcd{{loop.index -1}}=http://{{ host }}:{{etcd_advertise_peer_port}}{% if not loop.last %},{% endif %}{% endfor %}"
-  - name: pull docker image
-    shell: docker pull "{{etcd_image}}"
+
   - name: start etcd in a container
+    register: command_result
+    failed_when: "command_result.status is defined and 'legacy registry' not in command_result.status"
     docker:
      name: etcd{{groups['etcd-' ~ cluster_name].index(inventory_hostname)}}
      state: reloaded
-     pull: missing
+     pull: always
      restart_policy: always
      image: "{{etcd_image}}"
      command: >

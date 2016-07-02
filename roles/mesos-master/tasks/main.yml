@@ -1,7 +1,5 @@
 ---
 
-#- include_vars: group_vars/all
-
 - name: set zookeeper_url
   set_fact: zookeeper_url="zk://{% for host in groups['zk-' ~ cluster_name] %}{{ host }}:{{ zookeeper_port }}{% if not loop.last %},{% endif %}{% endfor %}"
 
@@ -14,12 +12,13 @@
 - set_fact: roles=""
   when: not use_mesos_roles|bool
 
-- shell: docker pull "{{mesos_master_image}}"
 - name: deploy mesos master
+  register: command_result
+  failed_when: "command_result.status is defined and 'legacy registry' not in command_result.status"
   docker:
     name: mesos
     image: "{{mesos_master_image}}"
-    pull: missing
+    pull: always
     state: reloaded
     restart_policy: always
     command: --ip={{ inventory_hostname }} --no-hostname_lookup --zk={{ zookeeper_url }}/mesos --quorum={{ mesos_quorum }} --allocation_interval={{ mesos_allocation_interval }} {{roles}}

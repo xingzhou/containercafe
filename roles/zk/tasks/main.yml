@@ -7,13 +7,13 @@
   - name: set zk_servers
     set_fact: zookeeper_hosts="{% for host in groups['zk-' ~ cluster_name] %}{{ host }},{{ loop.index }}{% if not loop.last %};{% endif %}{% endfor %}"
 
-  - shell: docker pull "{{zookeeper_image}}"
-
   - name: deploy zookeeper
+    register: command_result
+    failed_when: "command_result.status is defined and 'legacy registry' not in command_result.status"
     docker:
      name: zookeeper
      image: "{{zookeeper_image}}"
-     pull: missing
+     pull: always
      state: reloaded
      restart_policy: always
      command:  --servers "{{ zookeeper_hosts }}" --id "{{ zoo_id }}"

@@ -18,13 +18,15 @@
 
 # deploy swarm manager only one one master for now
 # TODO - use --cluster-opt  mesos.offerrefusetimeout to pass timeout when upstream
-- shell: docker pull "{{swarm_image}}"
 - name: deploy swarm manager
+  register: command_result
+  ignore_errors: yes
+  failed_when: "command_result.status is defined and 'legacy registry' not in command_result.status"
   when: master_ip_address == inventory_hostname
   docker:
     name: swarm
     image: "{{swarm_image}}"
-    pull: missing
+    pull: always
     state: reloaded
     restart_policy: always
     env:
