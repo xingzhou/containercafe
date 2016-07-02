@@ -7,7 +7,9 @@
 - name: "Ensure CNI exec directory exists"
   file: path=/opt/cni/bin/ state=directory recurse=yes
 
-- shell: docker pull "{{networkcontroller_image}}"
+- name: pull network controller image
+  shell: docker pull  "{{networkcontroller_image}}"
+
 - name: "Copy CNI configuration and binaries to default host paths"
   shell: "{{ item }} "
   with_items:
