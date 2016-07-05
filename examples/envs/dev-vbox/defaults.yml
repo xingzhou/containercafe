@@ -1,1 +1,4 @@
 ---
+
+# Referenced in roles/prereqs.  If this option is engaged then TODO: WRITE THIS
+use_private_mirrors: False
