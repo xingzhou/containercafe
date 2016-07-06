@@ -9,7 +9,7 @@ to configure Kubernetes and Swarm for a secure and highly available deployment, 
 with multiple network SDN solutions and cloud providers, and configurations to support multitenancy.
 
 * [Code of Conduct](#code-of-conduct)
-* [Contributing to the project](#Contributing-to-the-project)
+* [Contributing to the project](#contributing-to-the-project)
 * [Maintainers](#maintainers)
 * [Communication](#communication)
 * [Quick Start](#quick-start)
