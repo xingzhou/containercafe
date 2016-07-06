@@ -8,11 +8,16 @@ containers management technologies such as Kubernetes, Swarm and Mesos. OpenRadi
 to configure Kubernetes and Swarm for a secure and highly available deployment, provides integration
 with multiple network SDN solutions and cloud providers, and configurations to support multitenancy.
 
+* [Code of Conduct](#code-of-conduct)
 * [Quick Start](#quick-start)
 * [Other Configurations](#custom-configurations)
 * [Learn concepts and commands](#learn-concepts-and-commands)
 * [License](#license)
 * [Issues](#issues)
+
+### Code of Conduct
+
+Participation in the OpenRadiant community is governed by the OpenRadiant [Code of Conduct](CONDUCT.md)
 
 ### Quick Start
 
