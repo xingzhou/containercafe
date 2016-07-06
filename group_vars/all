@@ -126,7 +126,8 @@ mesos_allocation_interval: 500ms
 ################################################################
 # Docker
 ################################################################
-docker_package: docker-engine=1.10.3-0~trusty
+#docker_package: docker-engine=1.10.3-0~trusty
+docker_package: docker-engine=1.11.2-0~trusty
 docker_engine_port: 2375
 
 ################################################################
