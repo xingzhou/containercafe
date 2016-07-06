@@ -3,6 +3,6 @@ Maintainers
 First Last GHE email
 Paolo Dettori dettori dettori@us.ibm.com
 Hai Huan haih haih@us.ibm.com
-Ali Kanso akanso@us.ibm.com
+Ali Kanso akanso akanso@us.ibm.com
 Mariusz Sabath sabath sabath@us.ibm.com
 Mike Spreitzer mspreitz mspreitz@us.ibm.com
