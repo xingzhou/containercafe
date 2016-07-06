@@ -8,11 +8,27 @@ containers management technologies such as Kubernetes, Swarm and Mesos. OpenRadi
 to configure Kubernetes and Swarm for a secure and highly available deployment, provides integration
 with multiple network SDN solutions and cloud providers, and configurations to support multitenancy.
 
+* [Code of Conduct](#code-of-conduct)
+* [Contributing to the project](#contributing-to-the-project)
+* [Maintainers](#maintainers)
+* [Communication](#communication)
 * [Quick Start](#quick-start)
 * [Other Configurations](#custom-configurations)
 * [Learn concepts and commands](#learn-concepts-and-commands)
 * [License](#license)
 * [Issues](#issues)
+
+### Code of Conduct
+Participation in the OpenRadiant community is governed by the OpenRadiant [Code of Conduct](CONDUCT.md)
+
+### Contributing to the project
+We welcome contributions to the OpenRadiant Project in many forms. There's always plenty to do! Full details of how to contribute to this project are documented in the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+
+### Maintainers
+The project's [maintainers](MAINTAINERS.txt): are responsible for reviewing and merging all pull requests and they guide the over-all technical direction of the project.
+
+### Communication
+We use \[TODO] [OpenRadiant Slack](https://OpenRadiant.slack.org/) for communication between developers.
 
 ### Quick Start
 
@@ -122,7 +138,7 @@ cat > sleepy-pod.yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  name: sleepy-pod 
+  name: sleepy-pod
   annotations:
     containers-label.alpha.kubernetes.io/com.swarm.tenant.0: demo
 spec:
