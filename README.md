@@ -138,7 +138,7 @@ cat > sleepy-pod.yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  name: sleepy-pod 
+  name: sleepy-pod
   annotations:
     containers-label.alpha.kubernetes.io/com.swarm.tenant.0: demo
 spec:
