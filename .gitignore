@@ -14,6 +14,7 @@ mk_user_cert.sh*
 *.cnf
 *.key
 *.log
+*.pem
 
 creds_original.json
 proxy-test/logs/*
