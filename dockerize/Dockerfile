@@ -1,5 +1,18 @@
 FROM ubuntu
 
+# Add Labels to image that shows git build details in metadata
+ARG git_commit_id=unknown
+ARG git_remote_url=unknown
+ARG build_date=unknown
+ARG jenkins_build_id=unknown
+ARG jenkins_build_number=unknown
+
+LABEL git-commit-id=${git_commit_id}
+LABEL git-remote-url=${git_remote_url}
+LABEL build-date=${build_date}
+LABEL jenkins-build-id=${jenkins_build_id}
+LABEL jenkins-build-number=${jenkins_build_number}
+
 #install docker
 #RUN apt-get update && apt-get install -y golang
 RUN apt-get update && apt-get install -y wget
