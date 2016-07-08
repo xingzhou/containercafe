@@ -135,13 +135,15 @@
     required_volumes: "{{ cacerts_volume + required_volumes }}"
   when: "openstack_install_kind == 'kraken'"
 
+- name: "Pulling image {{ kuryr_image }}"
+  shell: docker pull "{{ kuryr_image }}"
+  when: infrastructure_docker_registry_type == 'v1'
+
 - name: deploy kuryr in docker
-  register: command_result
-  failed_when: "command_result.status is defined and 'legacy registry' not in command_result.status"
   docker:
     name: kuryr
     image: "{{kuryr_image}}"
-    pull: always
+    pull: "{{image_pull_type}}"
     state: reloaded
     restart_policy: always
     privileged: yes
