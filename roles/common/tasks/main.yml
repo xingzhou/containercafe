@@ -1,0 +1,7 @@
+---
+
+- name: update /etc/hosts to use inventory IP for hostname
+  lineinfile: dest="/etc/hosts" regexp="^.*{{ ansible_nodename }}" line="{{ inventory_hostname }} {{ ansible_nodename }}"
+
+- name: remove from /etc/hosts hostname entry not matching inventory IP
+  replace: dest="/etc/hosts" regexp="^(?!{{ inventory_hostname }}).+ *{{ ansible_nodename }}.*" replace=''

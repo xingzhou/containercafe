@@ -1,0 +1,66 @@
+---
+
+- name: set zookeeper_url
+  set_fact: zookeeper_url="zk://{% for host in groups['zk-' ~ cluster_name] %}{{ host }}:{{ zookeeper_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+
+# initial implementation of roles assignment for slaves
+# it should be based on weight, we will use 50 % split for now
+- set_fact: index={{ansible_nodename.split('-')[-1]}}
+
+- set_fact: role="--default_role={{mesos_roles.keys()[0]}}"
+  when: index|int % 2|int == 1 and use_mesos_roles|bool
+
+- set_fact: role=""
+
+- name: check slave old state exists
+  stat: path=/opt/ibm/mesos/work/meta/slaves/latest
+  register: slave_exec_state
+
+- name: remove old state for slaves
+  shell: rm -f /opt/ibm/mesos/work/meta/slaves/latest
+  when: slave_exec_state.stat.exists
+
+- name: "Pulling image {{ mesos_slave_image }}"
+  shell: docker pull "{{ mesos_slave_image }}"
+  when: infrastructure_docker_registry_type == 'v1'
+
+- name: deploy mesos slave
+  docker:
+    name: mesos
+    image: "{{mesos_slave_image}}"
+    state: reloaded
+    restart_policy: always
+    pull: "{{image_pull_type}}"
+    command: >
+              --master={{ zookeeper_url }}/mesos
+              --isolation=cgroups
+              --resources="{{mesos_slaves_resources}}"
+              --ip={{inventory_hostname}}
+              --no-hostname_lookup
+              --executor_registration_timeout=300secs
+              "{{role}}"
+    privileged: yes
+    net: host
+    pid: host
+    volumes:
+      - /opt/ibm/mesos/work:/opt/ibm/mesos/work:rw
+      - /:/rootfs:ro
+      - /sys:/sys:ro
+      - /dev:/dev
+      - /var/lib/docker:/var/lib/docker:rw
+      - /openstack/docker:/openstack/docker:rw
+      - /var/run:/var/run:rw
+      - /var/log:/opt/ibm/mesos/log:rw
+      - /usr/bin/docker:/usr/bin/docker:ro
+      - /lib/x86_64-linux-gnu/libsystemd-journal.so.0:/lib/x86_64-linux-gnu/libsystemd-journal.so.0:ro
+      - /usr/lib/x86_64-linux-gnu/libltdl.so.7:/usr/lib/x86_64-linux-gnu/libltdl.so.7
+      - /opt/cni/bin:/opt/cni/bin:rw
+      - /usr/libexec/kubernetes/kubelet-plugins/net/exec:/usr/libexec/kubernetes/kubelet-plugins/net/exec:ro
+      - "{{ k8s_cert_dir }}:{{ k8s_cert_dir }}:ro"
+
+- name: check if restart of mesos slave is needed
+  docker:
+    name: mesos
+    image: "{{mesos_slave_image}}"
+    state: restarted
+  when: hostvars['localhost']['regenerate_all_certs'] is defined

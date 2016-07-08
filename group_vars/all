@@ -1,0 +1,161 @@
+---
+################################################################
+# Envs default location
+################################################################
+envs: ../radiant-envs/envs
+
+################################################################
+# Network Interface (control plane)
+################################################################
+
+network_interface: eth1
+
+################################################################
+# Certificates
+################################################################
+
+cert_dir: "{{playbook_dir}}/certs/{{cluster_name}}"
+ca_cert: ca.pem
+ca_key: ca-key.pem
+ca_srl: ca.srl
+
+################################################################
+# VIP
+################################################################
+# cidr_prefix: /26
+
+vip_k8s_apiserver_ip: "{{floating_ip}}"
+vip_k8s_apiserver_port: 443
+
+vip_k8s_rabac_ip: "{{floating_ip}}"
+vip_k8s_rabac_port: 444
+
+vip_k8s_scheduler_ip: "{{floating_ip}}"
+vip_k8s_scheduler_port: 81
+
+vip_mesos_master_ip: "{{floating_ip}}"
+
+vip_swarm_master_ip: "{{floating_ip}}"
+vip_swarm_master_port: 2375
+###############################################################
+# HAproxy
+###############################################################
+haproxy_image: haproxy:1.5
+haproxy_stats_port: 9000
+traffic_type: tcp
+lb_k8s: true
+lb_k8s_secure: false
+lb_swarm: true
+lb_mesos: false
+
+################################################################
+# Kubernetes
+################################################################
+kube_image: radiant1/km
+kube_podmaster_image: gcr.io/google_containers/podmaster:1.1
+kube_infra_image: gcr.io/google_containers/pause
+k8s_etc_dir: /etc/kubernetes
+k8s_cert_dir: "{{k8s_etc_dir}}/cert"
+k8s_log_dir: /var/log/kubernetes
+k8s_kubelet_manifests_dir: /etc/kubernetes/manifests
+k8s_podmaster_manifests_dir: /srv/kubernetes/manifests
+kube_mesos_offer_ttl: 10000m
+# by default we do not set the scheduler to use the CNI plugin
+cni_plugin: ""
+
+# Kubernetes components will use cert /CN to authenticate
+k8s_apiserver_cn: apiserver
+k8s_scheduler_cn: scheduler
+k8s_controller_manager_cn: controller-manager
+k8s_kubelet_cn: kubelet
+k8s_admin_cn: admin
+k8s_user_cn: haih
+
+k8s_service_ip_range: 10.10.10.0/24
+k8s_apiserver_sport: 8443
+k8s_apiserver_port: 8080
+k8s_scheduler_port: 10251
+kubernetes_tunnel_to_apiserver: True
+
+################################################################
+# Etcd
+################################################################
+
+etcd_image: radiant1/etcd
+etcd_port: 4001
+etcd_advertise_peer_port: 2380
+etcd_listen_client_port: 2379
+
+################################################################
+# UCARP
+################################################################
+
+dev: "{{network_interface}}"
+
+################################################################
+# Remote ABAC
+################################################################
+
+rabac_image: radiant1/remoteabac
+rabac_port: 8888
+rabac_policy_file: abac-policy
+rabac_cn: remoteabac
+
+################################################################
+# Zookeeper
+################################################################
+
+zookeeper_image: radiant1/zookeeper
+zookeeper_port: 2181
+
+################################################################
+# Mesos
+################################################################
+
+mesos_master_image: radiant1/mesos-master
+mesos_slave_image: radiant1/mesos-slave
+mesos_master_port: 5050
+mesos_slave_port: 5050
+use_mesos_roles: true
+mesos_roles:
+  swarm: 0.5
+  kube: 0.5
+mesos_slaves_resources: "cpus(swarm):2;cpus(kube):2;mem(swarm):4096;mem(kube):4096;disk(swarm):204800;disk(kube):204800;ports(swarm):[15000-25000];ports(kube):[55000-65000]"
+mesos_allocation_interval: 500ms
+
+################################################################
+# Docker
+################################################################
+docker_package: docker-engine=1.11.2-0~trusty
+docker_engine_port: 2375
+
+################################################################
+# Swarm
+################################################################
+swarm_image: radiant1/swarm
+swarm_manager_host_port: 4375
+swarm_manager_port: 4375
+swarm_manager_mesos_host_port: 3376
+swarm_manager_mesos_port: 3375
+swarm_mesos_refuse_seconds: 0.1s
+swarm_mesos_tasktimeout: 10m
+swarm_mesos_offertimeout: 10000m
+
+###############################################################
+# Kuryr
+################################################################
+kuryr_image: radiant1/kuryr
+
+###############################################################
+# Network Controller
+################################################################
+networkcontroller_image: radiant1/networkcontroller_image
+openstack_install_kind: none
+
+###############################################################
+# Infrastructure docker registry (used to deploy radiant components)
+################################################################
+# possible values: v1 or v2 
+infrastructure_docker_registry_type: v2
+# use 'always' with v2 and 'missing' with v1
+image_pull_type: always

@@ -1,0 +1,32 @@
+---
+
+    - name: create haproxy.cfg
+      file: path=/opt/hap_config  state=directory mode=0644
+
+    - name: generate and copy HAproxy config
+      template: src=../files/haproxyConfig.j2 dest=/opt/hap_config/haproxy.cfg
+      register: hapConfig
+
+    - name: "Pulling image {{ haproxy_image }}"
+      shell: docker pull "{{ haproxy_image }}"
+      when: infrastructure_docker_registry_type == 'v1'
+
+    - name: run haproxy in a container
+      docker:
+       name: haproxy
+       image: "{{haproxy_image}}"
+       pull: "{{image_pull_type}}"
+       restart_policy: always
+       state: reloaded
+       privileged: yes
+       net: host
+       volumes:
+        - /opt/hap_config/:/usr/local/etc/haproxy/
+       command: -f /usr/local/etc/haproxy/haproxy.cfg
+
+    - name: restart haproxy container if it is started
+      shell: docker restart haproxy
+      when: hapConfig.changed
+
+    - name: copy HTTP start/stop scripts (for testing purposes only)
+      copy: src=../files/HTTP-actions.sh dest=/opt/HTTP-actions.sh owner={{ansible_ssh_user}} mode=0766

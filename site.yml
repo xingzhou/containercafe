@@ -1,0 +1,58 @@
+---
+- include: ./utils/load-vars-cluster.yml
+
+- hosts: cluster-{{cluster_name}}
+  become: yes
+  roles:
+  - prereqs
+  - common
+
+- hosts: localhost
+  roles:
+  - keygen
+
+- hosts: zk-{{cluster_name}}
+  become: yes
+  roles:
+  - zk
+
+- hosts: mesos_master-{{cluster_name}}
+  become: yes
+  roles:
+  - mesos-master
+
+- hosts: etcd-{{cluster_name}}
+  become: yes
+  roles:
+  - etcd
+
+- hosts: lb-{{cluster_name}}
+  become: yes
+  roles:
+  - lb
+  - { role: vip, when: "groups['mesos_master-' ~ cluster_name]|length > 1" }
+
+- hosts: k8sm_auth-{{cluster_name}}
+  become: yes
+  roles:
+  - auth
+
+- hosts: k8sm_master-{{cluster_name}}
+  become: yes
+  roles:
+  - k8sm-master
+
+- hosts: swarm_master-{{cluster_name}}
+  become: yes
+  roles:
+  - swarm-master
+
+- hosts: workers-{{cluster_name}}
+  become: yes
+  roles:
+  - base-worker
+  - mesos-worker
+  - k8sm-worker
+  - swarm-worker
+  - { role: kuryr, when: "openstack_install_kind in ('kraken', 'devstack')" }
+  - { role: cni, when: "openstack_install_kind in ('kraken', 'devstack')" }
