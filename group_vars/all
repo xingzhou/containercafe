@@ -151,3 +151,11 @@ kuryr_image: radiant1/kuryr
 ################################################################
 networkcontroller_image: radiant1/networkcontroller_image
 openstack_install_kind: none
+
+###############################################################
+# Infrastructure docker registry (used to deploy radiant components)
+################################################################
+# possible values: v1 or v2 
+infrastructure_docker_registry_type: v2
+# use 'always' with v2 and 'missing' with v1
+image_pull_type: always

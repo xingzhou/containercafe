@@ -35,13 +35,15 @@
         {{ comma() }}http://{{ host }}:{{ etcd_port }}/{{ rabac_policy_file }}
       {%- endfor -%}
 
+- name: "Pulling image {{ rabac_image }}"
+  shell: docker pull "{{ rabac_image }}"
+  when: infrastructure_docker_registry_type == 'v1'
+
 - name: "Deploy remoteabac"
-  register: command_result
-  failed_when: "command_result.status is defined and 'legacy registry' not in command_result.status"
   docker:
     name: remoteabac
     image: "{{ rabac_image }}"
-    pull: always
+    pull: "{{image_pull_type}}"
     state: reloaded
     restart_policy: always
     net: host

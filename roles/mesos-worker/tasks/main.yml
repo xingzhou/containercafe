@@ -20,15 +20,17 @@
   shell: rm -f /opt/ibm/mesos/work/meta/slaves/latest
   when: slave_exec_state.stat.exists
 
+- name: "Pulling image {{ mesos_slave_image }}"
+  shell: docker pull "{{ mesos_slave_image }}"
+  when: infrastructure_docker_registry_type == 'v1'
+
 - name: deploy mesos slave
-  register: command_result
-  failed_when: "command_result.status is defined and 'legacy registry' not in command_result.status"
   docker:
     name: mesos
     image: "{{mesos_slave_image}}"
     state: reloaded
     restart_policy: always
-    pull: always
+    pull: "{{image_pull_type}}"
     command: >
               --master={{ zookeeper_url }}/mesos
               --isolation=cgroups
