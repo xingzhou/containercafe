@@ -7,6 +7,9 @@
 certs/*
 .srl
 .vagrant
+examples/vagrant/.vagrant/
+proxy/.metadata/*
+*.metadata/*
+*.log
 .metadata/*
 examples/vagrant/.vagrant/
-

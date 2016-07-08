@@ -14,10 +14,10 @@ mk_user_cert.sh*
 *.cnf
 *.key
 *.log
-*.pem
 
 creds_original.json
 proxy-test/logs/*
 proxy-test/test_containers_results.*
 logs/*
 dockerize/ca.srl
+
