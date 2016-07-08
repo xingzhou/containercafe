@@ -18,6 +18,7 @@ import (
 	"errors"
 )
 
+
 // supported Kubernetes api uri prefix patterns
 // these kube url patterns require namespaces:
 var kubePrefixPatterns = []string {
