@@ -6,8 +6,8 @@
 *.swp
 certs/*
 .srl
-<<<<<<< HEAD
 .vagrant
-=======
->>>>>>> origin/issue#21
 examples/vagrant/.vagrant/
+proxy/.metadata/*
+*.metadata/*
+*.log
