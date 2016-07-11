@@ -94,12 +94,13 @@ On the master you will find both the `kubectl` and `docker`
 The Swarm master is configured for multi-tenant use.  To prepare to
 use it as a tenant, do this on the master:
 ```
-cd; mkdir -p radiant/configs/demo; cat > radiant/configs/demo/config.json
+cd; mkdir -p radiant/configs/demo; cat > radiant/configs/demo/config.json <<EOF
 {
     "HttpHeaders": {
           "X-Auth-TenantId": "demo"
     }
 }
+EOF
 ```
 
 Then you will want these commands on the master:
