@@ -179,7 +179,7 @@ For more information see ... (TBD)
 
 On your local browser, enter the following URL:
 
-<master_ip>:<harproxy_GUI_port>/haproxy_stats
+master_ip:harproxy_GUI_port/haproxy_stats
 
 Example: 
 http://192.168.10.2:9000/haproxy_stats (port 9000 is statically assigned)
