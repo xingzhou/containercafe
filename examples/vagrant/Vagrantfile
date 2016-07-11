@@ -8,11 +8,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty64"
   config.ssh.insert_key = false
   (1..2).each do |i|
-    config.vm.define "radiant#{i}" do |node|
+    config.vm.define "radiant#{i+1}" do |node|
       node.vm.network "private_network", ip: "192.168.10.#{i+1}"
-      node.vm.hostname = "radiant#{i}"
+      node.vm.hostname = "radiant#{i+1}"
       config.vm.provider "virtualbox" do |nodeopts|
-        nodeopts.name = "radiant#{i}"
+        nodeopts.name = "radiant#{i+1}"
         nodeopts.memory = 1536
         nodeopts.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
         nodeopts.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
