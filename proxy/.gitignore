@@ -6,7 +6,7 @@ pkg/darwin_amd64/*
 mylog.txt
 
 user_certificates/*
-mk_user_cert.sh*
+mk_user_cert.sh~*
 
 .settings/com.googlecode.goclipse.core.prefs
 
