@@ -173,8 +173,17 @@ is 172.17.0.5):
 ```
 kubectl exec sleepy-pod ping -- -c 2 172.17.0.5
 ```
-
 For more information see ... (TBD)
+
+####To check the HAproxy statistics using the GUI:
+
+On your local browser, enter the following URL:
+
+master_ip:harproxy_GUI_port/haproxy_stats
+
+Example: 
+http://192.168.10.2:9000/haproxy_stats (port 9000 is statically assigned)
+When prompt for the user_namer:password  use  vagrant:radiantHA
 
 ### Other Configurations
 

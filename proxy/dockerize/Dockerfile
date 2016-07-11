@@ -32,6 +32,9 @@ ENV docker_port="8089"
 ENV docker_api_ver="/v1.18"
 ENV tls_inbound="true"
 ENV tls_outbound="true"
+# containers is started as:
+# docker run -v dockerize:/opt/tls_certs --name hjproxy -p 8087:8087 hijack
+ENV client_cert_file="/opt/tls_certs/hjclient.pem"
 ENV client_cert_file="/opt/tls_certs/hjclient.pem"
 ENV client_key_file="/opt/tls_certs/hjclient.key"
 ENV server_cert_file="/opt/tls_certs/hjserver.pem"
@@ -53,12 +56,20 @@ ENV consul_ip="127.0.0.1"
 ENV consul_port="8500"
 
 #Copy the self-signed certs and keys
-ADD hjserver.pem /hijack/hjserver.pem
-ADD hjserver.key  /hijack/hjserver.key
-ADD hjclient.pem /hijack/hjclient.pem
-ADD hjclient.key  /hijack/hjclient.key
-ADD kadmin.key /hijack/kadmin.key
-ADD kadmin.pem /hijack/kadmin.pem
+# everyhing under dockerize dir is already available to container as '/opt/tls_certs'
+# so why are we coping them again?
+# These are the default certs in case the container was not starte with above volume
+#ADD hjserver.pem /hijack/hjserver.pem
+#ADD hjserver-key.pem  /hijack/hjserver.key
+#ADD hjclient.pem /hijack/hjclient.pem
+#ADD hjclient.key  /hijack/hjclient.key
+#ADD kadmin.key /hijack/kadmin.key
+#ADD kadmin.pem /hijack/kadmin.pem
+#ADD creds.json /hijack/creds.json
+
+ADD make_TLS_certs.sh /hijack/make_TLS_certs.sh
+ADD mk_user_cert.sh /hijack/mk_user_cert.sh
+ADD creds.json /hijack/creds.json
 
 ADD build.info /hijack/build.info
 
