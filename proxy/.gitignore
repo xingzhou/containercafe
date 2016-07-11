@@ -20,4 +20,4 @@ proxy-test/logs/*
 proxy-test/test_containers_results.*
 logs/*
 dockerize/ca.srl
-
+dockerize/src/*
