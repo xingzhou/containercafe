@@ -20,3 +20,4 @@ proxy-test/test_containers_results.*
 logs/*
 dockerize/ca.srl
 dockerize/src/*
+dockerize/OpenRadiant/*
