@@ -12,7 +12,6 @@ mk_user_cert.sh~*
 
 *.csr
 *.cnf
-*.key
 *.log
 
 creds_original.json
