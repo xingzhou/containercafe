@@ -18,6 +18,8 @@ creds_original.json
 proxy-test/logs/*
 proxy-test/test_containers_results.*
 logs/*
+dockerize/*.pem
+dockerize/*.key
 dockerize/ca.srl
 dockerize/src/*
 dockerize/OpenRadiant/*
