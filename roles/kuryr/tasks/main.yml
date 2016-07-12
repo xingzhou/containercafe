@@ -3,8 +3,10 @@
 # Tasks for Kuryr installation as Docker container on a worker machine.
 # (Note: we assume etcd is already installed)
 
-# note - below is a workaround until we get docker to work with multiple etcd endpoints
-- set_fact: master_ip_address="{{ groups['etcd-' ~ cluster_name][0] }}"
+- set_fact:
+    master_ip_address: "{{ groups['etcd-' ~ cluster_name][0] }}"
+    ovs_path:
+    dbsock_path:
 
 - debug: msg="master_ip_address => {{master_ip_address}}"
 
@@ -113,11 +115,20 @@
   command: sed -i.bak 's/^DOCKER_OPTS=\(.*\)--iptables=false\(.*\)$/DOCKER_OPTS=\1 \2/' /etc/default/docker
   register: iptables_result
 
+- set_fact: etcd_cluster="etcd://{% for host in groups['etcd-' ~ cluster_name] %}{{ host }}:{{ etcd_port }}{% if not loop.last %},{% endif %}{% endfor %}/docker"
+
+- name: configure DOCKER_OPTS for etcd k/v store
+  lineinfile: dest=/etc/default/docker
+              regexp='^DOCKER_OPTS="\$DOCKER_OPTS --cluster-store'
+              insertafter=EOF
+              line='DOCKER_OPTS="$DOCKER_OPTS --cluster-store={{etcd_cluster}} --cluster-advertise={{network_interface}}:{{docker_engine_port}}"'
+  register: docker_cfg
+
 - name: restart docker engine
   service:
     name: docker
     state: restarted
-  when: iptables_result.changed or kury_plugin.changed
+  when: iptables_result.changed or kury_plugin.changed or docker_cfg.changed
 
 - set_fact:
     required_volumes:
@@ -125,6 +136,7 @@
       - "{{ ovs_path }}:{{ ovs_path }}"
       - "{{ dbsock_path }}:{{ dbsock_path }}"
       - "/sbin/brctl:/sbin/brctl"
+    when: "openstack_install_kind == 'devstack'"
 
 - set_fact:
     cacerts_volume:
