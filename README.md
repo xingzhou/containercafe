@@ -34,7 +34,7 @@ We use \[TODO] [OpenRadiant Slack](https://OpenRadiant.slack.org/) for communica
 
 This produces a very simple demonstration cluster of two VirtualBox
 VMs, one master and one worker.  They have Mesos installed, and
-Kubernetes and Swarm playing nice together thanks to Mesos.  The
+Kubernetes and Swarm playing nicely together thanks to Mesos.  The
 networking is Docker bridge networking.  The Swarm master is modified
 for multi-tenant use.
 
@@ -65,7 +65,7 @@ pip install --upgrade ansible==1.9.6
 Set up your ansible inventory to use the sample project:
 
 ```
-export ANSIBLE_INVENTORY=examples/envs/dev-vbox/radiant01.hosts
+export ANSIBLE_INVENTORY=../examples/envs/dev-vbox/radiant01.hosts
 export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY
 ```
 
@@ -80,16 +80,17 @@ cd -
 Deploy OpenRadiant:
 
 ```
-ansible-playbook site.yml -e cluster_name=dev-vbox-radiant01 -e envs=examples/envs
+cd ansible
+ansible-playbook site.yml -e cluster_name=dev-vbox-radiant01
 ```
 
-Now you open an SSH connection to the master like this:
+Now you can open an SSH connection to the master node:
 ```
 ssh -i ~/.vagrant.d/insecure_private_key vagrant@192.168.10.2
 ```
 
 On the master you will find both the `kubectl` and `docker`
-(currently 1.10) commands on your `$PATH`.
+(currently 1.11) commands on your `$PATH`.
 
 The Swarm master is configured for multi-tenant use.  To prepare to
 use it as a tenant, do this on the master:
@@ -119,7 +120,7 @@ At first, there will be none.  So create one, like this:
 docker run --name s1 -d -m 128m busybox sleep 864000
 ```
 
-Then list it, with `docker ps`.  You can inspect its network
+Then, get a list of containers, with `docker ps`.  You can inspect its network
 configuration from inside, like this:
 ```
 docker exec s1 ifconfig
@@ -181,7 +182,7 @@ On your local browser, enter the following URL:
 
 master_ip:harproxy_GUI_port/haproxy_stats
 
-Example: 
+Example:
 http://192.168.10.2:9000/haproxy_stats (port 9000 is statically assigned)
 When prompt for the user_namer:password  use  vagrant:radiantHA
 
