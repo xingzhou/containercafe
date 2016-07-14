@@ -17,10 +17,11 @@ After the completion of the above command, we should have a running vagrant envi
 
 A sample output would look like:
 
-Current machine states:
+   Current machine states:
 
-radiant2                  running (virtualbox)
-radiant3                  running (virtualbox)
+   radiant2                  running (virtualbox)
+   
+   radiant3                  running (virtualbox)
 
 There are multiple ways to ssh into a vagrant machine, the easiest is to use "vagrant ssh".
 
