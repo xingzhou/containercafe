@@ -50,6 +50,13 @@ git clone git@github.ibm.com:alchemy-containers/openradiant.git
 cd openradiant
 ```
 
+For Ubuntu 14.04, install the following python tools:
+
+```
+sudo apt-get install python-pip
+sudo apt-get install python-dev
+```
+
 Install ansible:
 
 ```
