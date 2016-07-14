@@ -23,3 +23,5 @@ dockerize/*.key
 dockerize/ca.srl
 dockerize/src/*
 dockerize/OpenRadiant/*
+admin-certs/ca.srl
+admin-certs/*.srl

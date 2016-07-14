@@ -13,6 +13,7 @@ with multiple network SDN solutions and cloud providers, and configurations to s
 * [Maintainers](#maintainers)
 * [Communication](#communication)
 * [Quick Start](#quick-start)
+* [Proxy Setup](#proxy-setup)
 * [Other Configurations](#custom-configurations)
 * [Learn concepts and commands](#learn-concepts-and-commands)
 * [License](#license)
@@ -47,6 +48,13 @@ Checkout this project:
 ```
 git clone git@github.ibm.com:alchemy-containers/openradiant.git
 cd openradiant
+```
+
+For Ubuntu 14.04, install the following python tools:
+
+```
+sudo apt-get install python-pip
+sudo apt-get install python-dev
 ```
 
 Install ansible:
@@ -185,6 +193,11 @@ master_ip:harproxy_GUI_port/haproxy_stats
 Example:
 http://192.168.10.2:9000/haproxy_stats (port 9000 is statically assigned)
 When prompt for the user_namer:password  use  vagrant:radiantHA
+
+To setup Proxy, follow the steps in [Proxy Setup](#proxy-setup)
+
+### Proxy Setup
+For details, please follow [Proxy documentation](proxy/README.md)
 
 ### Other Configurations
 
