@@ -1,18 +1,18 @@
 ## Vagrant Quick Deployment
 
 Vagrant is a tool for building complete virutalized development environments. 
-Vagrant uses a base image to quickly clone a virtual machine. These base images are known as "boxes" in Vagrant
+Vagrant uses a base image to quickly clone a virtual machine. These base images are known as "boxes" in Vagrant. 
 A "VagrantFile" is used to describe how to configure and provision our machines.
 To provision a development environment with vagrant we use the "vagrant up" command in the same directory branch of the VagrantFile.
 
 
-$ vagrant up
+     $ vagrant up
 
 
 After the completion of the above command, we should have a running vagrant environment. We can verify this environment by using the "vagrant status" command.
 
 
-$ vagrant status
+     $ vagrant status
 
 
 A sample output would look like:
@@ -25,19 +25,19 @@ radiant3                  running (virtualbox)
 There are multiple ways to ssh into a vagrant machine, the easiest is to use "vagrant ssh".
 
 
-$ vagrant ssh radiant2
+    $ vagrant ssh radiant2
 
 
 Alternatively we can use the typical way to ssh into a machine:
 
 
-$ ssh user@machine_address e.g. ssh vagrant@192.168.10.2
+    $ ssh user@machine_address e.g. ssh vagrant@192.168.10.2
 
 
 We can use the vagrant ssh to externally execute commands inside the machine. For instance to get the ip address of the machine we can use:
 
 
-$ vagrant ssh radiant2 -c 'ifconfig'
+    $ vagrant ssh radiant2 -c 'ifconfig'
 
 
 ### Troubleshooting the deployment
