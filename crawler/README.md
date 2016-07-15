@@ -231,5 +231,7 @@ $ CRAWLER --crawlmode OUTCONTAINER \
 ```
 
 You can now view the crawl data in kibana dashboard.
-Open "http://<elk-container-host>:5601"
-
+Open 
+```bash
+"http://<elk-container-host>:5601"
+```
