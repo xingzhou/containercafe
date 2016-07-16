@@ -81,7 +81,7 @@ kubernetes_tunnel_to_apiserver: True
 # Etcd
 ################################################################
 
-etcd_image: radiant1/etcd
+etcd_image: quay.io/coreos/etcd
 etcd_port: 4001
 etcd_advertise_peer_port: 2380
 etcd_listen_client_port: 2379
@@ -105,15 +105,15 @@ rabac_cn: remoteabac
 # Zookeeper
 ################################################################
 
-zookeeper_image: radiant1/zookeeper
+zookeeper_image: openradiant/zookeeper
 zookeeper_port: 2181
 
 ################################################################
 # Mesos
 ################################################################
 
-mesos_master_image: radiant1/mesos-master
-mesos_slave_image: radiant1/mesos-slave
+mesos_master_image: mesosphere/mesos-master:1.0.0-rc2
+mesos_slave_image: mesosphere/mesos-slave:1.0.0-rc2
 mesos_master_port: 5050
 mesos_slave_port: 5050
 use_mesos_roles: true
