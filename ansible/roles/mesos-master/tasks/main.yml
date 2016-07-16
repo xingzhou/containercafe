@@ -23,7 +23,16 @@
     pull: "{{image_pull_type}}"
     state: reloaded
     restart_policy: always
-    command: --ip={{ inventory_hostname }} --no-hostname_lookup --zk={{ zookeeper_url }}/mesos --quorum={{ mesos_quorum }} --allocation_interval={{ mesos_allocation_interval }} {{roles}}
+    env:
+      MESOS_LOG_DIR: /var/log/mesos
+      MESOS_WORK_DIR: /var/tmp/mesos
+    command: >
+              --ip={{ inventory_hostname }}
+              --no-hostname_lookup
+              --zk={{ zookeeper_url }}/mesos
+              --quorum={{ mesos_quorum }}
+              --allocation_interval={{ mesos_allocation_interval }}
+              {{roles}}
     privileged: yes
     net: host
     ports:

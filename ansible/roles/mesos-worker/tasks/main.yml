@@ -31,6 +31,9 @@
     state: reloaded
     restart_policy: always
     pull: "{{image_pull_type}}"
+    env:
+      MESOS_LOG_DIR: /var/log/mesos
+      MESOS_WORK_DIR: /var/tmp/mesos
     command: >
               --master={{ zookeeper_url }}/mesos
               --isolation=cgroups
