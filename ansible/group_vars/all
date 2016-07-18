@@ -51,7 +51,7 @@ lb_mesos: false
 ################################################################
 # Kubernetes
 ################################################################
-kube_image: radiant1/km
+kube_image: openradiant/km
 kube_podmaster_image: gcr.io/google_containers/podmaster:1.1
 kube_infra_image: gcr.io/google_containers/pause
 k8s_etc_dir: /etc/kubernetes
