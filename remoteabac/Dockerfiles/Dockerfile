@@ -23,7 +23,3 @@ COPY remoteabac /opt/kubernetes/
 COPY ruser /opt/kubernetes/
 COPY empty /tmp/
 ENTRYPOINT ["/opt/kubernetes/remoteabac"]
-
-#ADD remoteabac /remoteabac
-#ADD ruser /ruser
-#ENTRYPOINT ["/remoteabac"]
