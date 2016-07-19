@@ -1,5 +1,4 @@
 FROM scratch
-#FROM ubuntu
 
 MAINTAINER Hai Huang <haih@us.ibm.com>
 
@@ -23,7 +22,3 @@ COPY remoteabac /opt/kubernetes/
 COPY ruser /opt/kubernetes/
 COPY empty /tmp/
 ENTRYPOINT ["/opt/kubernetes/remoteabac"]
-
-#ADD remoteabac /remoteabac
-#ADD ruser /ruser
-#ENTRYPOINT ["/remoteabac"]
