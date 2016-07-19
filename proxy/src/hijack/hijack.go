@@ -5,6 +5,9 @@ import (
 	"strconv"
 	"strings"
 	"os"
+	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 
 	// _ "net/http/pprof" //for profiling only
 
@@ -69,7 +72,7 @@ func main() {
 
 	//Rely on NGINX to route accepted docker/swarm url paths only to hijackproxy
 	http.HandleFunc("/", handler.DockerEndpointHandler)
-	Log.Printf("All handlers reqistered")
+	Log.Printf("All handlers registered")
 	
 	
 	/*for profiling only
@@ -82,7 +85,41 @@ func main() {
 	var err error
 	if conf.IsTlsInbound() {
 		Log.Printf("Starting TLS listener service")
-		err = http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), conf.GetServerCertFile(), conf.GetServerKeyFile(), nil)
+		// Here is how started the server earlier, before parsing the user certs:
+		//	err = http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), conf.GetServerCertFile(), conf.GetServerKeyFile(), nil)
+		
+		// Here is the new server setup
+		//caCert, err := ioutil.ReadFile(conf.GetServerCertFile())
+		caCert, err := ioutil.ReadFile(conf.GetCaCertFile())
+		if err != nil {
+			Log.Println(err)
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+	
+		// Setup HTTPS client
+		tlsConfig := &tls.Config{
+			ClientCAs: caCertPool,
+			// NoClientCert
+			// RequestClientCert
+			// RequireAnyClientCert
+			// VerifyClientCertIfGiven
+			// RequireAndVerifyClientCert
+			//ClientAuth: tls.NoClientCert,
+			//ClientAuth: tls.RequestClientCert,
+			//ClientAuth: tls.RequireAnyClientCert,
+			// ClientAuth: tls.VerifyClientCertIfGiven,
+			ClientAuth: tls.RequireAndVerifyClientCert,
+		}
+		tlsConfig.BuildNameToCertificate()
+	
+		server := &http.Server{
+			Addr:      ":"+strconv.Itoa(listen_port),
+			TLSConfig: tlsConfig,
+		}
+	
+		server.ListenAndServeTLS(conf.GetServerCertFile(), conf.GetServerKeyFile()) 
+
 	} else {
 		Log.Printf("Starting non-TLS listener service")
 		err = http.ListenAndServe(":"+strconv.Itoa(listen_port), nil)
