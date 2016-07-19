@@ -12,6 +12,44 @@ import (
 // Use a file as authentication credentials store (mainly for trusted test SWARM tenants)
 // BlueMix space id is passed in request header as X-Auth-Project-Id header and is used as search key into the file
 func FileAuth(r *http.Request) (creds Creds) {
+	// let's start with 400 Bad Request 
+	creds.Status = 400
+	if (r.TLS == nil || len(r.TLS.PeerCertificates) < 1) {
+		Log.Printf("**** Error, request missing client TLS certificate")
+		return
+	}
+
+	Log.Printf("**** RequestTLS %+v", r.TLS)
+	Log.Printf("**** Length TLS %v", len(r.TLS.PeerCertificates))
+	Log.Printf("**** Client TLS %v", r.TLS.PeerCertificates)
+	
+	//var errlist []error
+	for _, cert := range r.TLS.PeerCertificates {
+		Log.Printf("**** CN from CERT: %v", cert.Subject.CommonName)
+		Log.Printf("**** Subject from CERT: %+v", cert.Subject)
+	
+	//	chains, err := cert.Verify(a.opts)
+	//	if err != nil {
+	//		errlist = append(errlist, err)
+	//		continue
+	//	}
+
+//	for _, chain := range chains {
+//		user, ok, err := a.user.User(chain)
+	//	if err != nil {
+//			errlist = append(errlist, err)
+//			continue
+//		}
+
+//		if ok {
+//			return user, ok, err
+//		}
+//	}
+	}
+	
+	
+    //Log.Printf("**** Request TLSUnique %+v", r.TLS.TLSUnique)
+    
 	creds.Status = 404
 	//  swarm-auth now uses 'X-Auth-TenantId' instead of 'X-Auth-Project-Id'
 	// space_id := r.Header.Get("X-Auth-Project-Id")
