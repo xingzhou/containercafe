@@ -18,17 +18,19 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     mkdir -p $GOPATH/src && mkdir -p $GOPATH/pkg && mkdir -p $GOPATH/bin &&\
     cd / && curl -O -L $GO_URL &&\
     tar zxvf $(basename $GO_URL) &&\
-    rm $(basename $GO_URL)
-
-RUN    go get -u github.com/tools/godep &&\
+    rm $(basename $GO_URL) &&\
+    go get -u github.com/tools/godep &&\
     cd $PROJECT_DIR/cmd/remoteabac && godep go install -a remoteabac.go &&\
-    cd $PROJECT_DIR/cmd/ruser && godep go install -a ruser.go
+    cd $PROJECT_DIR/cmd/ruser && godep go install -a ruser.go &&\
+    mkdir -p /opt/kubernetes &&\
+    cp $GOBIN/remoteabac /opt/kubernetes/ &&\
+    cp $GOBIN/ruser /opt/kubernetes/ &&\
+    rm -rf $GOPATH &&\
+    rm -rf $GOROOT &&\
+    apt-get purge --auto-remove -y build-essential rsync git curl &&\
+    apt-get autoremove -y &&\
+    apt-get clean &&\
+    rm -rf /usr/lib/gcc
 
-#    rm -rf $PROJECT_DIR &&\
-#    rm -rf $GOROOT &&\
-#    apt-get remove -y build-essential rsync git curl &&\
-#    apt-get autoremove -y
-
-#COPY remoteabac /opt/kubernetes/
-#COPY ruser /opt/kubernetes/
-#ENTRYPOINT ["/opt/kubernetes/remoteabac"]
+WORKDIR /opt/kubernetes/
+ENTRYPOINT ["/opt/kubernetes/remoteabac"]

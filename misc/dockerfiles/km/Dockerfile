@@ -38,7 +38,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     cp _output/local/go/bin/kubectl /opt/kubernetes/bin/kubectl &&\
     rm -rf $PROJECT_DIR &&\
     rm -rf $GOROOT &&\
-    apt-get remove -y build-essential rsync git curl &&\
-    apt-get autoremove -y
+    apt-get purge --auto-remove -y build-essential rsync git curl &&\
+    apt-get autoremove -y &&\
+    apt-get clean &&\
+    rm -rf /usr/lib/gcc
 
 WORKDIR /opt/kubernetes/bin

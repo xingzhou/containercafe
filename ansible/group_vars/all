@@ -96,7 +96,7 @@ dev: "{{network_interface}}"
 # Remote ABAC
 ################################################################
 
-rabac_image: radiant1/remoteabac
+rabac_image: openradiant/remoteabac
 rabac_port: 8888
 rabac_policy_file: abac-policy
 rabac_cn: remoteabac
@@ -132,7 +132,7 @@ docker_engine_port: 2375
 ################################################################
 # Swarm
 ################################################################
-swarm_image: radiant1/swarm
+swarm_image: openradiant/swarm
 swarm_manager_host_port: 4375
 swarm_manager_port: 4375
 swarm_manager_mesos_host_port: 3376
@@ -144,7 +144,7 @@ swarm_mesos_offertimeout: 10000m
 ###############################################################
 # Kuryr
 ################################################################
-kuryr_image: radiant1/kuryr
+kuryr_image: kuryr/libnetwork
 
 ###############################################################
 # Network Controller

@@ -37,6 +37,7 @@
     command: >
               --master={{ zookeeper_url }}/mesos
               --isolation=cgroups
+              --containerizers=docker,mesos
               --resources="{{mesos_slaves_resources}}"
               --ip={{inventory_hostname}}
               --no-hostname_lookup

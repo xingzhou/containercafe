@@ -1,5 +1,4 @@
 FROM scratch
-#FROM ubuntu
 
 MAINTAINER Hai Huang <haih@us.ibm.com>
 
