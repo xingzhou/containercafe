@@ -23,11 +23,24 @@ func FileAuth(r *http.Request) (creds Creds) {
 	Log.Printf("**** Length TLS %v", len(r.TLS.PeerCertificates))
 	Log.Printf("**** Client TLS %v", r.TLS.PeerCertificates)
 	
+	cn := ""
 	//var errlist []error
 	for _, cert := range r.TLS.PeerCertificates {
+		
 		Log.Printf("**** CN from CERT: %v", cert.Subject.CommonName)
+		cn = cert.Subject.CommonName
+		// cert could be CA:
+		if (len(cn) != 0 && cn != "containers-api-dev.stage1.ng.bluemix.net") {
+			break
+		}
+		
 		Log.Printf("**** Subject from CERT: %+v", cert.Subject)
+	}
+	if cn == "" {
+		return
+	}
 	
+	Apikey := cn
 	//	chains, err := cert.Verify(a.opts)
 	//	if err != nil {
 	//		errlist = append(errlist, err)
@@ -45,7 +58,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 //			return user, ok, err
 //		}
 //	}
-	}
+	
 	
 	
     //Log.Printf("**** Request TLSUnique %+v", r.TLS.TLSUnique)
@@ -54,7 +67,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 	//  swarm-auth now uses 'X-Auth-TenantId' instead of 'X-Auth-Project-Id'
 	// space_id := r.Header.Get("X-Auth-Project-Id")
 	//space_id := r.Header.Get(conf.GetSwarmAuthHeader())
-	Apikey := r.Header.Get("X-Tls-Client-Dn")
+	//Apikey := r.Header.Get("X-Tls-Client-Dn")
     fname := conf.GetStubAuthFile()
 	fp, err := os.Open(fname)
 	if err != nil{
