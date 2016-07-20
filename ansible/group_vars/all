@@ -51,7 +51,7 @@ lb_mesos: false
 ################################################################
 # Kubernetes
 ################################################################
-kube_image: radiant1/km
+kube_image: openradiant/km
 kube_podmaster_image: gcr.io/google_containers/podmaster:1.1
 kube_infra_image: gcr.io/google_containers/pause
 k8s_etc_dir: /etc/kubernetes
@@ -81,7 +81,7 @@ kubernetes_tunnel_to_apiserver: True
 # Etcd
 ################################################################
 
-etcd_image: radiant1/etcd
+etcd_image: quay.io/coreos/etcd
 etcd_port: 4001
 etcd_advertise_peer_port: 2380
 etcd_listen_client_port: 2379
@@ -96,7 +96,7 @@ dev: "{{network_interface}}"
 # Remote ABAC
 ################################################################
 
-rabac_image: radiant1/remoteabac
+rabac_image: openradiant/remoteabac
 rabac_port: 8888
 rabac_policy_file: abac-policy
 rabac_cn: remoteabac
@@ -105,15 +105,15 @@ rabac_cn: remoteabac
 # Zookeeper
 ################################################################
 
-zookeeper_image: radiant1/zookeeper
+zookeeper_image: openradiant/zookeeper
 zookeeper_port: 2181
 
 ################################################################
 # Mesos
 ################################################################
 
-mesos_master_image: radiant1/mesos-master
-mesos_slave_image: radiant1/mesos-slave
+mesos_master_image: mesosphere/mesos-master:1.0.0-rc2
+mesos_slave_image: mesosphere/mesos-slave:1.0.0-rc2
 mesos_master_port: 5050
 mesos_slave_port: 5050
 use_mesos_roles: true
@@ -132,7 +132,7 @@ docker_engine_port: 2375
 ################################################################
 # Swarm
 ################################################################
-swarm_image: radiant1/swarm
+swarm_image: openradiant/swarm
 swarm_manager_host_port: 4375
 swarm_manager_port: 4375
 swarm_manager_mesos_host_port: 3376
@@ -144,7 +144,7 @@ swarm_mesos_offertimeout: 10000m
 ###############################################################
 # Kuryr
 ################################################################
-kuryr_image: radiant1/kuryr
+kuryr_image: kuryr/libnetwork
 
 ###############################################################
 # Network Controller

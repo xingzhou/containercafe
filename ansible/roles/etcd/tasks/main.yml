@@ -18,7 +18,7 @@
      restart_policy: always
      image: "{{etcd_image}}"
      command: >
-          -name etcd{{groups['etcd-' ~ cluster_name].index(inventory_hostname)}}
+          etcd -name etcd{{groups['etcd-' ~ cluster_name].index(inventory_hostname)}}
           -data-dir /var/etcd/data
           -advertise-client-urls http://{{inventory_hostname}}:{{etcd_port}}
           -listen-client-urls http://0.0.0.0:{{etcd_port}}

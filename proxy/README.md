@@ -107,15 +107,22 @@ and can be overridden using the docker -e option on [startup](rundocker.sh)
 ## Hints and Troubleshooting Errors
 
  * `Error response from daemon: client is newer than server (client API version: 1.24, server API version: 1.22)`
- run `export DOCKER_API_VERSION=1.22` before running any docker commands. 
+ run `export DOCKER_API_VERSION=1.22` before running any docker commands.
 
  * `An error occurred trying to connect: Get https://localhost:8087/v1.21/images/4a419cdeaf69/json: tls: oversized record received with length 20527[]`
  In order to fix this problem, use `DOCKER_TLS_VERIFY=""` prefix for running 'docker' command
 
  * `docker: Error response from daemon: Task launched with invalid offers: Offer ea1a4d71-cf69-4292-90e7-530c77a5458b-O1 is no longer valid.`
- There is a caching problem on Mesos. Issue [#10](https://github.ibm.com/alchemy-containers/openradiant/issues/100)
+ There is a caching problem on Mesos. Issue [#100](https://github.ibm.com/alchemy-containers/openradiant/issues/100)
  is tracking it. Simply just repeat your last command. It should purge the cache
  and work again.
+
+ * `docker: Error response from daemon: driver failed programming external connectivity on endpoint hjproxy (0910f89f1b27f3b05081a0bcec3ceadb6d335873d191b3f055ff82257cf77e5d): Error starting userland proxy: write /port/tcp:0.0.0.0:8087:tcp:172.17.0.2:8087/ctl: errno 526.` Please make sure no
+ other process is running on port specified for proxy. Standalone proxy test on 8087?
+
+  * `Could not read CA certificate "dockerize/OpenRadiant/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem": open dockerize/OpenRadiant/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem: no such file or directory`
+  Are you sure you are running your docker commands from `openradiant/proxy/`
+  directory? 
 
 
 ## Running Test Scripts
