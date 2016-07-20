@@ -100,6 +100,12 @@ To modify the value in the running container:
 docker exec -it hjproxy /bin/bash
 ```
 
+To view the content of the current authorization file:
+```
+docker exec hjproxy cat /hijack/creds.json
+```
+
+
 **NOTE**: All default config options are defined in the [Dockerfile](dockerize/Dockerfile),
 and can be overridden using the docker -e option on [startup](rundocker.sh)
 
@@ -122,7 +128,7 @@ and can be overridden using the docker -e option on [startup](rundocker.sh)
 
   * `Could not read CA certificate "dockerize/OpenRadiant/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem": open dockerize/OpenRadiant/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem: no such file or directory`
   Are you sure you are running your docker commands from `openradiant/proxy/`
-  directory? 
+  directory?
 
 
 ## Running Test Scripts
