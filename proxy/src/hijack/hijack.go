@@ -105,10 +105,6 @@ func main() {
 			// RequireAnyClientCert
 			// VerifyClientCertIfGiven
 			// RequireAndVerifyClientCert
-			//ClientAuth: tls.NoClientCert,
-			//ClientAuth: tls.RequestClientCert,
-			//ClientAuth: tls.RequireAnyClientCert,
-			// ClientAuth: tls.VerifyClientCertIfGiven,
 			ClientAuth: tls.RequireAndVerifyClientCert,
 		}
 		tlsConfig.BuildNameToCertificate()
