@@ -1,14 +1,26 @@
-# Proxy Environment Setup and Development
+# OpenRadiant Proxy
+Proxy intercepts the communication between the clients (Docker or Kubernetes) and
+the OpenRadiant cluster, using HTTP session hijacking. It validates the tenant
+and provided TLS certificates. It also redirects to proper shard when cluster
+sharing is used.
+
+## Proxy Environment Setup and Development
 Steps below explain the basic configuration and setup to run Proxy. This setup
 assumes the target system already has Docker installed, the Proxy will be deployed
 locally to manage Swarm and Kubernetes instances also installed locally, using
 the ansible scripts described in [Quick Start](../README.md#quick-start)
 For other deployments, one can still follow these steps, with adjustments provided below.
 
-## Step 1: Get proxy code
+The steps below work best with native docker [for Mac, Unix or Windows](http://www.docker.com/products/overview)
+It would also work with `docker-machine`, but it requires additional steps. Look
+for /[DOCKER MACHINE] tag.
+
+### Step 1: Get proxy code
 If you have not done this already, clone the repository:
 
 ```
+git clone git@github.ibm.com:alchemy-containers/openradiant.git
+# or
 git clone https://github.ibm.com/alchemy-containers/openradiant.git
 ```
 Then build and deploy it:
@@ -40,7 +52,7 @@ source ./set_local_env.sh
 ```
 
 
-## Step 2: Setting up the tenant
+### Step 2: Setting up the tenant
 From another terminal go back to the proxy directory and then execute the script
 to create TLS certificates and API key for the given tenant. The example is
 using tenant `test1`
@@ -92,12 +104,25 @@ docker exec -it hjproxy /bin/bash
 and can be overridden using the docker -e option on [startup](rundocker.sh)
 
 
-## Errors and Hints
+## Hints and Troubleshooting Errors
 
-`An error occurred trying to connect: Get https://localhost:8087/v1.21/images/4a419cdeaf69/json: tls: oversized record received with length 20527[]`
+ * `Error response from daemon: client is newer than server (client API version: 1.24, server API version: 1.22)`
+ run `export DOCKER_API_VERSION=1.22` before running any docker commands.
 
-In order to fix this problem, use `DOCKER_TLS_VERIFY=""` prefix for running 'docker' command
+ * `An error occurred trying to connect: Get https://localhost:8087/v1.21/images/4a419cdeaf69/json: tls: oversized record received with length 20527[]`
+ In order to fix this problem, use `DOCKER_TLS_VERIFY=""` prefix for running 'docker' command
 
+ * `docker: Error response from daemon: Task launched with invalid offers: Offer ea1a4d71-cf69-4292-90e7-530c77a5458b-O1 is no longer valid.`
+ There is a caching problem on Mesos. Issue [#100](https://github.ibm.com/alchemy-containers/openradiant/issues/100)
+ is tracking it. Simply just repeat your last command. It should purge the cache
+ and work again.
+
+ * `docker: Error response from daemon: driver failed programming external connectivity on endpoint hjproxy (0910f89f1b27f3b05081a0bcec3ceadb6d335873d191b3f055ff82257cf77e5d): Error starting userland proxy: write /port/tcp:0.0.0.0:8087:tcp:172.17.0.2:8087/ctl: errno 526.` Please make sure no
+ other process is running on port specified for proxy. Standalone proxy test on 8087?
+
+  * `Could not read CA certificate "dockerize/OpenRadiant/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem": open dockerize/OpenRadiant/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem: no such file or directory`
+  Are you sure you are running your docker commands from `openradiant/proxy/`
+  directory? 
 
 
 ## Running Test Scripts

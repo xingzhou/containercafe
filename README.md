@@ -50,11 +50,11 @@ git clone git@github.ibm.com:alchemy-containers/openradiant.git
 cd openradiant
 ```
 
-For Ubuntu 14.04, install the following python tools:
+If you are running Ubuntu in your host, you may need to install the following
+python packages:
 
 ```
-sudo apt-get install python-pip
-sudo apt-get install python-dev
+sudo apt-get install python-pip python-dev
 ```
 
 Install ansible:
@@ -70,13 +70,6 @@ try the following:
 pip install --upgrade ansible==1.9.6
 ```
 
-Set up your ansible inventory to use the sample project:
-
-```
-export ANSIBLE_INVENTORY=../examples/envs/dev-vbox/radiant01.hosts
-export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY
-```
-
 Create a new cluster with Vagrant:
 
 ```
@@ -89,6 +82,8 @@ Deploy OpenRadiant:
 
 ```
 cd ansible
+export ANSIBLE_INVENTORY=../examples/envs/dev-vbox/radiant01.hosts
+export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY
 ansible-playbook site.yml -e cluster_name=dev-vbox-radiant01
 ```
 
