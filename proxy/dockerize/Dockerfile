@@ -34,6 +34,7 @@ ENV tls_inbound="true"
 ENV tls_outbound="true"
 # containers is started as:
 # docker run -v dockerize:/opt/tls_certs --name hjproxy -p 8087:8087 hijack
+ENV ca_cert_file="/opt/tls_certs/ca.pem"
 ENV client_cert_file="/opt/tls_certs/hjclient.pem"
 ENV client_cert_file="/opt/tls_certs/hjclient.pem"
 ENV client_key_file="/opt/tls_certs/hjclient.key"
