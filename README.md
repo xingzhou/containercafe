@@ -13,6 +13,7 @@ with multiple network SDN solutions and cloud providers, and configurations to s
 * [Maintainers](#maintainers)
 * [Communication](#communication)
 * [Quick Start](#quick-start)
+* [Proxy Setup](#proxy-setup)
 * [Other Configurations](#custom-configurations)
 * [Learn concepts and commands](#learn-concepts-and-commands)
 * [License](#license)
@@ -49,6 +50,13 @@ git clone git@github.ibm.com:alchemy-containers/openradiant.git
 cd openradiant
 ```
 
+If you are running Ubuntu in your host, you may need to install the following
+python packages:
+
+```
+sudo apt-get install python-pip python-dev
+```
+
 Install ansible:
 
 ```
@@ -60,13 +68,6 @@ try the following:
 
 ```
 pip install --upgrade ansible==1.9.6
-```
-
-Set up your ansible inventory to use the sample project:
-
-```
-export ANSIBLE_INVENTORY=../examples/envs/dev-vbox/radiant01.hosts
-export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY
 ```
 
 Create a new cluster with Vagrant:
@@ -81,6 +82,8 @@ Deploy OpenRadiant:
 
 ```
 cd ansible
+export ANSIBLE_INVENTORY=../examples/envs/dev-vbox/radiant01.hosts
+export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY
 ansible-playbook site.yml -e cluster_name=dev-vbox-radiant01
 ```
 
@@ -185,6 +188,11 @@ master_ip:harproxy_GUI_port/haproxy_stats
 Example:
 http://192.168.10.2:9000/haproxy_stats (port 9000 is statically assigned)
 When prompt for the user_namer:password  use  vagrant:radiantHA
+
+To setup Proxy, follow the steps in [Proxy Setup](#proxy-setup)
+
+### Proxy Setup
+For details, please follow [Proxy documentation](proxy/README.md)
 
 ### Other Configurations
 
