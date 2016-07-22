@@ -23,10 +23,9 @@
     pull: "{{image_pull_type}}"
     state: reloaded
     restart_policy: always
-    env:
-      MESOS_LOG_DIR: /var/log/mesos
-      MESOS_WORK_DIR: /var/tmp/mesos
     command: >
+              --work_dir=/var/tmp/mesos
+              --log_dir=/var/log/mesos
               --ip={{ inventory_hostname }}
               --no-hostname_lookup
               --zk={{ zookeeper_url }}/mesos
