@@ -13,11 +13,11 @@
 - set_fact: role=""
 
 - name: check slave old state exists
-  stat: path=/opt/ibm/mesos/work/meta/slaves/latest
+  stat: path=/var/tmp/mesos/work/meta/slaves/latest
   register: slave_exec_state
 
 - name: remove old state for slaves
-  shell: rm -f /opt/ibm/mesos/work/meta/slaves/latest
+  shell: rm -f /var/tmp/mesos/work/meta/slaves/latest
   when: slave_exec_state.stat.exists
 
 - name: "Pulling image {{ mesos_slave_image }}"
@@ -47,15 +47,14 @@
     net: host
     pid: host
     volumes:
-      - /opt/ibm/mesos/work:/opt/ibm/mesos/work:rw
-      - /:/rootfs:ro
-      - /sys:/sys:ro
-      - /dev:/dev
+      - /var/tmp/mesos:/var/tmp/mesos:rw
+      - /var/log/mesos:/var/log/mesos:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
       - /var/lib/docker:/var/lib/docker:rw
-      - /openstack/docker:/openstack/docker:rw
-      - /var/run:/var/run:rw
-      - /var/log:/opt/ibm/mesos/log:rw
-      - /usr/bin/docker:/usr/bin/docker:ro
+      - /cgroup:/cgroup
+      - /sys:/sys
+      - /dev:/dev
+      - /usr/bin/docker:/usr/local/bin/docker:ro
       - /lib/x86_64-linux-gnu/libsystemd-journal.so.0:/lib/x86_64-linux-gnu/libsystemd-journal.so.0:ro
       - /usr/lib/x86_64-linux-gnu/libltdl.so.7:/usr/lib/x86_64-linux-gnu/libltdl.so.7
       - /opt/cni/bin:/opt/cni/bin:rw
