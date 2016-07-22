@@ -1,6 +1,11 @@
 #!/bin/bash
 set -v
 cp -r src dockerize
+cp ../ansible/certs/dev-vbox-radiant01/ca* admin-certs
+cp ../ansible/certs/dev-vbox-radiant01/admin-key.pem admin-certs/kadmin.key
+cp ../ansible/certs/dev-vbox-radiant01/admin.pem admin-certs/kadmin.pem
+./gen_server_certs.sh
+
 # copy TLS scripts to dockerize dir.
 cp admin-certs/* dockerize
 cp creds.json dockerize/
