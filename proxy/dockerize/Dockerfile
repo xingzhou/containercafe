@@ -15,7 +15,7 @@ LABEL jenkins-build-number=${jenkins_build_number}
 
 #install docker
 #RUN apt-get update && apt-get install -y golang
-RUN apt-get update && apt-get install -y wget
+RUN apt-get update && apt-get install -y wget curl
 RUN wget https://storage.googleapis.com/golang/go1.5.1.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.5.1.linux-amd64.tar.gz && rm -f go1.5.1.linux-amd64.tar.gz 
 
 ADD src/ /hijack/src/
@@ -41,8 +41,8 @@ ENV client_key_file="/opt/tls_certs/hjclient.key"
 ENV server_cert_file="/opt/tls_certs/hjserver.pem"
 ENV server_key_file="/opt/tls_certs/hjserver.key"
 ENV stub_auth_file="/hijack/creds.json"
-ENV kube_admin_key_file = "/opt/tls_certs/kadmin.key"
-ENV kube_admin_cert_file = "/opt/tls_certs/kadmin.pem"
+ENV kube_admin_key_file="/opt/tls_certs/kadmin.key"
+ENV kube_admin_cert_file="/opt/tls_certs/kadmin.pem"
 ENV ccsapi_admin_user=""
 ENV ccsapi_admin_psswd=""
 ENV surrogate_ids="false"
