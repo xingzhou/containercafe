@@ -5,29 +5,69 @@ starttime=$(date +%s)
 helpme()
 {
 	cat <<HELPMEHELPME
+
 Syntax: ${0} <proxy_location> <network_id> <tenant_id> <test_kube?> <num_containers> <num_pods> 
 Where:
 	proxy_location =
 	    local - test is targeting local instance of proxy (localhost:8087) (default if argument not given)
 	    dev-mon01 - test is targeting remote instance (https://containers-api-dev.stage1.ng.bluemix.net:9443)
-	network_id = id of network element to be inspected (using default as default)
-	tenant_id = user_id of current user; should match Apikey being used in the config file. Currently, default is "test1".
-	test_kube? = "true" or "false". In case of multi-user testing, only 1 user should run the kube tests ("true"); all others should be "false". 
-	num_containers = total number of containers to be created; equal split between containers with net, and containers without. 
-		If argument not given, default value is 5. 
 
-		*** RIGHT NOW ALL NO NET CONTAINERS THOUGH*** 
+	network_id = id of network element to be inspected (using default as default)
+
+	tenant_id = user_id of current user; should match Apikey being used in the config file. Currently, default is "test1".
+
+	test_kube? = "true" or "false". In case of multi-user testing, only 1 user should run the kube tests ("true"); all others should be "false". 
+
+	num_containers = total number of containers to be created; RIGHT NOW ALL W/O NETWORK. 
 
 	num_pods = total number of pods to be created. if argument not given, default value is 5. 
+
 	  
+
 Note: 
 	when running local, specify whether autentication is done by CCSAPI:
 		export DOCKER_CONFIG=certs/ccsapi 
 	or local fileauth:
 		export DOCKER_CONFIG=certs/fileauth
+
 	*** If executing multiple-user fileauth, export DOCKER_CONFIG=certs/fileauth/<user_id> *** 
+
 HELPMEHELPME
 }
+
+# helpme()
+# {
+# 	cat <<HELPMEHELPME
+
+# Syntax: ${0} <proxy_location> <network_id> <tenant_id> <test_kube?> <num_containers> <num_pods> 
+# Where:
+# 	proxy_location =
+# 	    local - test is targeting local instance of proxy (localhost:8087) (default if argument not given)
+# 	    dev-mon01 - test is targeting remote instance (https://containers-api-dev.stage1.ng.bluemix.net:9443)
+
+# 	network_id = id of network element to be inspected (using default as default)
+
+# 	tenant_id = user_id of current user; should match Apikey being used in the config file. Currently, default is "test1".
+
+# 	test_kube? = "true" or "false". In case of multi-user testing, only 1 user should run the kube tests ("true"); all others should be "false". 
+
+# 	num_containers = total number of containers to be created; equal split between containers with net, and containers without. 
+# 		If argument not given, default value is 5. 
+
+# 	num_pods = total number of pods to be created. if argument not given, default value is 5. 
+
+	  
+
+# Note: 
+# 	when running local, specify whether autentication is done by CCSAPI:
+# 		export DOCKER_CONFIG=certs/ccsapi 
+# 	or local fileauth:
+# 		export DOCKER_CONFIG=certs/fileauth
+
+# 	*** If executing multiple-user fileauth, export DOCKER_CONFIG=certs/fileauth/<user_id> *** 
+
+# HELPMEHELPME
+# }
 
 
 # Help check
@@ -78,10 +118,11 @@ if [[ "$TENANT_ID" == "" ]]; then
 fi 
 
 
-NUM_NET_CONTAINERS=0
+# NUM_NET_CONTAINERS=$((NUM_CONTAINERS / 2))
+# NUM_NO_NET_CONTAINERS=$((NUM_CONTAINERS - NUM_NET_CONTAINERS))
+
+NUM_NET_CONTAINERS=0 # No network for now
 NUM_NO_NET_CONTAINERS=$NUM_CONTAINERS
-#NUM_NET_CONTAINERS=$((NUM_CONTAINERS / 2))
-#NUM_NO_NET_CONTAINERS=$((NUM_CONTAINERS - NUM_NET_CONTAINERS))
 
 
 
@@ -486,16 +527,15 @@ function main() {
 	# Trying removing some with rm -f too 
 	NONET_COUNTER=1
 	while [  $NONET_COUNTER -le $NUM_NO_NET_CONTAINERS ]; do
-		if [ $((NONET_COUNTER%2)) -eq 0 ]; then 
+		if [ $(( $NONET_COUNTER % 2 )) -eq 0 ]; then 
 			test_stop "$TENANT_ID""_nonet_test""$NONET_COUNTER" 0
 			test_rm "$TENANT_ID""_nonet_test""$NONET_COUNTER" 0
-		else 
-			test_rm_f "$TENANT_ID""_nonet_test""$NONET_COUNTER" 0
-		fi
+		else
+			test_rm_f "$TENANT_ID""_nonet_test""$NONET_COUNTER" 0 
+		fi 
 
 		let NONET_COUNTER=NONET_COUNTER+1
 	done 
-
 
 
 	# NET_COUNTER=1
@@ -509,9 +549,11 @@ function main() {
 
 	test_network_ls 0
 
-	test_network_inspect $try_net_id 0
+	# REMOVING NETWORK INSPECT FOR NOW 
 
-	test_network_inspect "default" 0 
+	# test_network_inspect $try_net_id 0
+
+	# test_network_inspect "default" 0 
 
 
 	# Make sure everything is clean at the end 
@@ -532,3 +574,4 @@ if [[ "$TEST_KUBE" == "true" ]]; then
 	cd lib
 	./test_kube_pods.sh $NUM_PODS "$TENANT_ID" "$PROXY_LOC"
 fi 
+
