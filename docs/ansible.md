@@ -59,7 +59,7 @@ must have the form ``{{environment_name}}-{{cluster_short_name}}`
 (i.e.,
 `{{environment_role}}-{{environment_location}}-{{cluster_short_name}}`).
 There may be no dash in the `environment_kind` nor the
-`environment_instance`.  OpenRadiant presently leaves it up to you to
+`environment_location`.  OpenRadiant presently leaves it up to you to
 decide how to choose the environment role and location names.  In the
 tiny example you find a cluster named `dev-vbox-radiant01`.
 

@@ -4,8 +4,8 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 OpenRadiant is a modular platform for enterprise container-native
-devops solutions.  The OpenRadiant platform can be subsetted and/or
-extended to create the solution you desire.
+devops.  The OpenRadiant platform can be subsetted and/or extended to
+create the solution you desire.
 
 Features of the OpenRadiant platform include:
 * Kubernetes
