@@ -32,12 +32,12 @@
   - lb
   - { role: vip, when: "groups['mesos_master-' ~ cluster_name]|length > 1" }
 
-- hosts: k8sm_auth-{{cluster_name}}
+- hosts: k8s_auth-{{cluster_name}}
   become: yes
   roles:
   - auth
 
-- hosts: k8sm_master-{{cluster_name}}
+- hosts: k8s_master-{{cluster_name}}
   become: yes
   roles:
   - k8sm-master

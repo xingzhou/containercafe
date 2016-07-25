@@ -8,13 +8,13 @@
 mesos_master-dev-vbox-radiant01
 workers-dev-vbox-radiant01
 
-[k8sm_master-dev-vbox-radiant01:children]
+[k8s_master-dev-vbox-radiant01:children]
 mesos_master-dev-vbox-radiant01
 
 [swarm_master-dev-vbox-radiant01:children]
 mesos_master-dev-vbox-radiant01
 
-[k8sm_auth-dev-vbox-radiant01:children]
+[k8s_auth-dev-vbox-radiant01:children]
 mesos_master-dev-vbox-radiant01
 
 [zk-dev-vbox-radiant01:children]

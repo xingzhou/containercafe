@@ -30,9 +30,9 @@ inventory groups exist.  They are as follows.
 
 * `lb-{{cluster_name}}`: where to run the load balancer(s) for the master components
 
-* `k8sm_auth-{{cluster_name}}`: where to run OpenRadiant's RemoteABAC server(s)
+* `k8s_auth-{{cluster_name}}`: where to run OpenRadiant's RemoteABAC server(s)
 
-* `k8sm_master-{{cluster_name}}`: where to run the Kubernetes master components
+* `k8s_master-{{cluster_name}}`: where to run the Kubernetes master components
 
 * `swarm_master-{{cluster_name}}`: where to run the Swarm master components
 
