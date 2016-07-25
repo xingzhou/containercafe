@@ -1,0 +1,20 @@
+apiVersion: v1
+clusters:
+- cluster:
+    server: https://localhost:8087
+    certificate-authority: /Users/alicetarng/workspace/openradiant/proxy/dockerize/OpenRadiant/iRVseGMw6EYjuNoyGxPIZpfNEJcoOk6GCgITnIyxDBLSTpgA/ca.pem
+  name: radiant
+contexts:
+- context:
+    cluster: radiant
+    namespace: stest1-default
+    user: test1
+  name: radiant
+current-context: radiant
+kind: Config
+preferences: {}
+users:
+- name: test1
+  user:
+    client-certificate:  /Users/alicetarng/workspace/openradiant/proxy/dockerize/OpenRadiant/iRVseGMw6EYjuNoyGxPIZpfNEJcoOk6GCgITnIyxDBLSTpgA/cert.pem
+    client-key:  /Users/alicetarng/workspace/openradiant/proxy/dockerize/OpenRadiant/iRVseGMw6EYjuNoyGxPIZpfNEJcoOk6GCgITnIyxDBLSTpgA/key.pem
