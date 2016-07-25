@@ -3,9 +3,9 @@
 [![Travis Lint Status](https://travis.innovate.ibm.com/alchemy-containers/openradiant.svg?token=hs5iLEHWzyL9jLf6acy1)](https://travis.innovate.ibm.com/alchemy-containers/openradiant)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-OpenRadiant is a platform supporting various enterprise
-container-native devops solutions.  The OpenRadiant platform can be
-subsetted and/or extended to create the solution you desire.
+OpenRadiant is a modular platform for enterprise container-native
+devops solutions.  The OpenRadiant platform can be subsetted and/or
+extended to create the solution you desire.
 
 Features of the OpenRadiant platform include:
 * Kubernetes
@@ -24,7 +24,7 @@ OpenRadiant is a work in progress.  The above features are not yet
 available in all combinations.
 
 * [Architecture Overview](#architecture-overview)
-* [Ansible Overview](#ansible-overview)
+* [Ansible Structure](docs/ansible.md)
 * [Code of Conduct](#code-of-conduct)
 * [Contributing to the project](#contributing-to-the-project)
 * [Maintainers](#maintainers)
@@ -57,22 +57,6 @@ Kubernetes and Swarm workload is dispatched to the worker nodes.  The
 control plane nodes run the Kubernetes, Swarm, and/or Mesos control
 planes in an HA configuration.  We use Mesos to coordinate resource
 allocation decisions between Kubernetes and Swarm.
-
-### Ansible Overview
-
-The Ansible playbooks in OpenRadiant are modular in three dimensions.
-One is componentry: there is an includable Ansible playbook for each
-major component.  The second dimension is the inventory: the playbooks
-do *not* assume that your inventory is entirely dedicated to one shard
-or environment but rather allow your inventory to include multiple
-environments and also things unrelated to OpenRadiant.
-
-The third dimension is a factoring between provisioning of machines
-and deployment of software on those machines.  There are independent
-playbooks for each of those two phases, with a written contract
-between them.  Any provisioning technique that results in inventory
-content meeting the contract can be used with any of the software
-deployment playbooks (because they assume only the contract).
 
 
 ### Code of Conduct
