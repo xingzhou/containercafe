@@ -7,7 +7,7 @@ basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 subjectAltName = @alt_names
 [alt_names]
-{% for ip in groups['k8sm_master-' ~ cluster_name] %}
+{% for ip in groups['k8s_master-' ~ cluster_name] %}
 IP.{{loop.index}} = {{ ip }}
 {% endfor %}
 IP.10 = {{ floating_ip }}

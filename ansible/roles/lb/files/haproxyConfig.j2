@@ -33,7 +33,7 @@ frontend front-apiserver-secure
 backend back-apiserver-secure
   mode tcp
   balance roundrobin
-  {% for item in groups['k8sm_master-' ~ cluster_name] %}
+  {% for item in groups['k8s_master-' ~ cluster_name] %}
     server k8s_master-{{cluster_name}}{{loop.index}} {{item}}:{{k8s_apiserver_sport}}
   {% endfor %}
 {% endif %}
@@ -54,7 +54,7 @@ backend back-scheduler-insecure
   option forwardfor
   http-request set-header X-Forwarded-Port %[dst_port]
   http-request add-header X-Forwarded-Proto https if { ssl_fc }
-  {% for item in groups['k8sm_master-' ~ cluster_name] %}
+  {% for item in groups['k8s_master-' ~ cluster_name] %}
      server k8s_master-{{cluster_name}}{{loop.index}} {{item}}:{{k8s_scheduler_port}} check
   {% endfor %}
 {% endif %}
@@ -72,7 +72,7 @@ frontend front-rabac-secure
 backend back-rabac-secure
   mode tcp
   balance roundrobin
-  {% for item in groups['k8sm_master-' ~ cluster_name] %}
+  {% for item in groups['k8s_master-' ~ cluster_name] %}
    server k8s_master-{{cluster_name}}{{loop.index}} {{item}}:{{rabac_port}}
   {% endfor %}
 {% endif %}
