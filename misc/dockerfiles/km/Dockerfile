@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 
 ENV GO_VERSION 1.6.2
-ENV K8S_BRANCH release-1.3
+ENV K8S_BRANCH plugin_dir_and_annot_label
 ENV GO_URL=https://storage.googleapis.com/golang/go$GO_VERSION.linux-amd64.tar.gz
 ENV GOPATH=/work
 ENV PROJECT_DIR=$GOPATH/src/github.com/kubernetes/kubernetes
@@ -20,7 +20,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     cd / && curl -O -L $GO_URL &&\
     tar zxvf $(basename $GO_URL) &&\
     rm $(basename $GO_URL) &&\
-    git clone https://github.com/kubernetes/kubernetes.git $PROJECT_DIR &&\
+    git clone https://github.com/ibm-contribs/kubernetes.git $PROJECT_DIR &&\
     cd $PROJECT_DIR && git checkout $K8S_BRANCH &&\
     hack/build-go.sh \
     contrib/mesos/cmd/k8sm-scheduler \
