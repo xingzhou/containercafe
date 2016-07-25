@@ -31,8 +31,8 @@ RESULTS_PATH="../logs/""$TENANT_ID""_test_kube_pods_results_""$timestamp"".log"
 
 
 NUM_PODS=$1
-#NUM_ONE_PODS=$((NUM_PODS / 2))
-#NUM_TWO_PODS=$((NUM_PODS - NUM_ONE_PODS)) 
+NUM_ONE_PODS=$((NUM_PODS / 2))
+NUM_TWO_PODS=$((NUM_PODS - NUM_ONE_PODS)) 
 
 
 TEST_TYPE="kube"
@@ -46,14 +46,10 @@ space="f7f413cb-a678-412d-b024-8e17e28bcb88"
 user="d7eae25d39f061dd40937d3839b96fc34d4401391823160f"
 KUBE_PATH="kube/kubectl"
 
-# ONE_YAML_PATH="../conf/kube/web-test1.yaml"
-# ONE_NAME="kube-web-test1"
-# TWO_YAML_PATH="../conf/kube/web-test2.yaml"
-# TWO_NAME="kube-web-test2"
-
-YAML_PATH_A="../conf/kube/web-test"
-YAML_PATH_B=".yaml"
-KUBE_NAME="kube-web-test"
+ONE_YAML_PATH="../conf/kube/web-test1.yaml"
+ONE_NAME="kube-web-test1"
+TWO_YAML_PATH="../conf/kube/web-test2.yaml"
+TWO_NAME="kube-web-test2"
 
 # Probably gotta set up environment first
 function setup_env() {
@@ -183,83 +179,45 @@ function main() {
 
 	test_get_pods 0 
 
-	# ONE_COUNTER=0
-	# while [  $ONE_COUNTER -lt $NUM_ONE_PODS ]; do
+	ONE_COUNTER=0
+	while [  $ONE_COUNTER -lt $NUM_ONE_PODS ]; do
 
-	# 	delete_if_exists "$ONE_NAME"
-	# 	test_describe_pod "$ONE_NAME" 1 # Fail b/c doesn't exist 
-	# 	test_create_pod "$ONE_YAML_PATH" 0 
-	# 	test_get_pods 0
-	# 	test_describe_pod "$ONE_NAME" 0
+		delete_if_exists "$ONE_NAME"
+		test_describe_pod "$ONE_NAME" 1 # Fail b/c doesn't exist 
+		test_create_pod "$ONE_YAML_PATH" 0 
+		test_get_pods 0
+		test_describe_pod "$ONE_NAME" 0
 
-	# 	test_create_pod "$ONE_YAML_PATH" 1 # Should fail; already have 1 up.
-	# 	test_get_pods 0
-
-	# 	let ONE_COUNTER=ONE_COUNTER+1
-	# done 
-
-	# TWO_COUNTER=0
-	# while [  $TWO_COUNTER -lt $NUM_TWO_PODS ]; do
-
-	# 	delete_if_exists "$TWO_NAME"
-	# 	test_create_pod "$TWO_YAML_PATH" 0 
-	# 	test_describe_pod "$TWO_NAME" 0
-	# 	test_get_pods 0
-
-	# 	test_create_pod "$TWO_YAML_PATH" 1
-	# 	test_get_pods 0
-
-	# 	let TWO_COUNTER=TWO_COUNTER+1
-	# done 
-
-
-
-	COUNTER=1
-	while [  $COUNTER -le $NUM_PODS ]; do
-		local kube_name="$KUBE_NAME""$COUNTER"
-		local yaml_path="$YAML_PATH_A""$COUNTER""$YAML_PATH_B"
-
-		./make_yaml.sh $COUNTER
-
-		delete_if_exists "$kube_name"
-		test_create_pod "$yaml_path" 0
-		test_describe_pod "$kube_name" 0 
+		test_create_pod "$ONE_YAML_PATH" 1 # Should fail; already have 1 up.
 		test_get_pods 0
 
-		test_create_pod "$yaml_path" 1
+		let ONE_COUNTER=ONE_COUNTER+1
+	done 
+
+	TWO_COUNTER=0
+	while [  $TWO_COUNTER -lt $NUM_TWO_PODS ]; do
+
+		delete_if_exists "$TWO_NAME"
+		test_create_pod "$TWO_YAML_PATH" 0 
+		test_describe_pod "$TWO_NAME" 0
 		test_get_pods 0
 
-		let COUNTER=COUNTER+1
+		test_create_pod "$TWO_YAML_PATH" 1
+		test_get_pods 0
+
+		let TWO_COUNTER=TWO_COUNTER+1
 	done 
 
 
 	# Deleting 
+	test_delete_pod "$ONE_NAME" 0
+	test_get_pods 0
+	test_describe_pod "$ONE_NAME" 1 # Fail b/c doesn't exist 
+	test_delete_pod "$ONE_NAME" 1 # Fail b/c doesn't exist
 
+	test_delete_pod "$TWO_NAME" 0 
 
-	# test_delete_pod "$ONE_NAME" 0
-	# test_get_pods 0
-	# test_describe_pod "$ONE_NAME" 1 # Fail b/c doesn't exist 
-	# test_delete_pod "$ONE_NAME" 1 # Fail b/c doesn't exist
-
-	# test_delete_pod "$TWO_NAME" 0 
-
-	# test_get_pods 0
-
-
-	COUNTER=1
-	while [  $COUNTER -le $NUM_PODS ]; do
-		local kube_name="$KUBE_NAME""$COUNTER"
-		local yaml_path="$YAML_PATH_A""$COUNTER""$YAML_PATH_B"
-
-		test_delete_pod "$kube_name" 0
-		test_get_pods 0
-		test_describe_pod "$kube_name" 1
-		test_delete_pod "$kube_name" 1
-
-		test_get_pods 0 
-
-		let COUNTER=COUNTER+1
-	done 
+	test_get_pods 0
 
 	# Report summary of tests
 	sum_results "Kube" $RESULTS_PATH $TEST_COUNT $SUCCESS_COUNT $starttime

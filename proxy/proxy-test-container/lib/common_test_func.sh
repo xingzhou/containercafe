@@ -93,6 +93,6 @@ function sum_results() {
 	echo "Total = $TOTAL_COUNT tests" >> $RESULTS_PATH
 	echo "Passed = $PASS_COUNT tests" >> $RESULTS_PATH
 	echo "Failed = $FAIL_COUNT tests" >> $RESULTS_PATH
-	echo "Total time = $(($(date +%s) - $starttime))" >> $RESULTS_PATH
+	echo "Total time = $(($(date +%s) - $starttime)) sec" >> $RESULTS_PATH
 
 }
