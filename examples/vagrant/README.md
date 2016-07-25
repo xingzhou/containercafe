@@ -89,4 +89,4 @@ Then you have to clean up this machine from your environment. there are two way 
 
 
 
-After cleaning up the VM, we can retry the "vagrant up" command.
+After cleaning up the VM, you can retry with: "vagrant destroy" followed by the "vagrant up" command.
