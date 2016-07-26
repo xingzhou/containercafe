@@ -88,7 +88,7 @@ Following are the five with no meaningful default.
 * `cluster_name`: this identifies the cluster being processed, as
   discussed above.
 
-* `envs`: this identifies the parent directory underwhich the
+* `envs`: this identifies the parent directory under which the
   environment- and cluster-specific files are found.  The settings for
   the environment named `A-B` are found in `{{envs}}/A-B/defaults.yml`
   (if relative, the base is the filename of the playbook).
