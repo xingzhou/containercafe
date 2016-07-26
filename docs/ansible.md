@@ -96,11 +96,14 @@ Following are the five with no meaningful default.
 * `floating_ip`: this identifies the virtual IP (VIP) for most of the
   master components.
 
-* `floating_ip_net` and `cidr_prefix`: these define the subnet
-  (`{{floating_ip_net}}/{{cidr_prefix}}`) containing the VIP of the
-  master components.  These two variables are needed only if using
-  Swarm with Mesos.
-
+* `floating_ip_net` and `cidr_prefix`: these two variables identify
+  the subnet (`{{floating_ip_net}}/{{cidr_prefix}}`) that contains the
+  `floating_ip`.  That should be either (1) identical to the subnet of
+  the network interface (on the master machines) identified by the
+  `network_inteface` variable or (2) a subnet, disjoint from all the
+  others in the system, that all the machines in the cluster know to
+  be on the same network as (1).  These two variables are needed only
+  if the master components are being deployed in an HA configuration.
 
 When working on a cluster named `{{env_name}}-{{cluster_short_name}}`,
 the following files are relevant to the settings of the Ansible
