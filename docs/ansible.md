@@ -1,11 +1,12 @@
 ## Ansible
 
 The Ansible playbooks in OpenRadiant are modular in three dimensions.
-One is componentry: there is an includable Ansible playbook for each
-major component.  The second dimension is the inventory: the playbooks
-do *not* assume that your inventory is entirely dedicated to one shard
-or environment but rather allow your inventory to include multiple
-environments and also things unrelated to OpenRadiant.
+One is componentry: for each major component there is one or a few
+roles.  That will be changing, so that for each major component there
+is an includable playbook.  The second dimension is the inventory: the
+playbooks do *not* assume that your inventory is entirely dedicated to
+one shard or environment but rather allow your inventory to include
+multiple environments and also things unrelated to OpenRadiant.
 
 The third dimension is a factoring between provisioning of machines
 and deployment of software on those machines.  There are independent
@@ -20,19 +21,25 @@ there are no playbooks for environments, only shards.  A shard is also
 known as a cluster.  The contract for a cluster specifies that certain
 inventory groups exist.  They are as follows.
 
-* `cluster-{{cluster_name}}`: all the machines in the cluster
+* `cluster-{{cluster_name}}`: all the machines in the cluster ---
+  i.e., the union of the following groups
 
 * `workers-{{cluster_name}}`: the worker nodes in the cluster
 
-* `etcd-{{cluster_name}}`: where to run etcd servers
+* `etcd-{{cluster_name}}`: where to run etcd servers; should be an odd
+  number of machines
 
-* `zk-{{cluster_name}}`: where to run ZooKeeper servers
+* `zk-{{cluster_name}}`: where to run ZooKeeper servers; should be an
+  odd number of machines
 
-* `lb-{{cluster_name}}`: where to run the load balancer(s) for the master components
+* `lb-{{cluster_name}}`: where to run the load balancers for the master
+  components
 
-* `k8s_auth-{{cluster_name}}`: where to run OpenRadiant's RemoteABAC server(s)
+* `k8s_auth-{{cluster_name}}`: where to run OpenRadiant's Kubernetes
+  authorization servers
 
-* `k8s_master-{{cluster_name}}`: where to run the Kubernetes master components
+* `k8s_master-{{cluster_name}}`: where to run the Kubernetes master
+  components
 
 * `swarm_master-{{cluster_name}}`: where to run the Swarm master components
 
@@ -41,6 +48,9 @@ inventory groups exist.  They are as follows.
 By defining a group per HA component this contract enables a variety
 of deployment patterns: a set of machines per component, all
 components on each of a set of machines, and many in between.
+
+Except as noted above, you can put any number of machines in each of
+those groups.
 
 There are also some requirements on the provisioned machines.
 * They must run Ubuntu 14.04.
@@ -66,3 +76,49 @@ tiny example you find a cluster named `dev-vbox-radiant01`.
 OpenRadiant currently includes no playbooks for provisioning machines,
 and one playbook for installing software one them.  That is
 `ansible/site.yml`.
+
+The playbooks that deploy software on machines are parameterized by a
+large collection of Ansible variables.  Five have no meaningful
+defaults.  The others are defined by defaults in
+`ansible/group_vars/all` and can be overridden by settings in an
+environment-specific file and a cluster-specific file.
+
+Following are the five with no meaningful default.
+
+* `cluster_name`: this identifies the cluster being processed, as
+  discussed above.
+
+* `envs`: this identifies the parent directory under which the
+  environment- and cluster-specific files are found.  The settings for
+  the environment named `A-B` are found in `{{envs}}/A-B/defaults.yml`
+  (if relative, the base is the filename of the playbook).
+
+* `floating_ip`: this identifies the virtual IP (VIP) for most of the
+  master components.
+
+* `floating_ip_net` and `cidr_prefix`: these define the subnet
+  (`{{floating_ip_net}}/{{cidr_prefix}}`) containing the VIP of the
+  master components.  These two variables are needed only if using
+  Swarm with Mesos.
+
+
+When working on a cluster named `{{env_name}}-{{cluster_short_name}}`,
+the following files are relevant to the settings of the Ansible
+variables.
+
+* `ansible/group_vars/all` (and all the rest of the usual Ansible
+  story, which is mostly not exercised).  This provides the baseline
+  defaults.
+
+* `{{envs}}/{{env_name}}/defaults.yml`.  The playbook explicitly loads
+  this, and its settings override those from `ansible/group_vars/all`.
+
+* `{{envs}}/{{env_name}}/{{cluster_short_name}}.yml`.  The playbook
+  explicitly loads this, after the previous file --- so its settings
+  override the others.
+
+The settings for the master components VIP should appear in the
+cluster-specific file.  The `cluster_name` and `envs` should be
+supplied on the command line invoking the playbook.
+
+
