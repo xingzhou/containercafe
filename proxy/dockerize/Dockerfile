@@ -70,6 +70,7 @@ ENV consul_port="8500"
 
 ADD make_TLS_certs.sh /hijack/make_TLS_certs.sh
 ADD mk_user_cert.sh /hijack/mk_user_cert.sh
+ADD mk_kubeconfig.sh /hijack/mk_kubeconfig.sh 
 ADD creds.json /hijack/creds.json
 
 ADD build.info /hijack/build.info
