@@ -17,7 +17,7 @@
     update_cache: yes
   register: agu_rslt
 
-- name: Install prereqs
+- name: Install prereq Linux packages
   apt: name={{item}} state=present
   with_items:
        - curl
@@ -26,6 +26,17 @@
        - python-pip
        - libsystemd-journal0
        - ufw
+
+- name: ensure /opt/bin exists
+  file:
+    dest: /opt/bin
+    state: directory
+
+- name: Install Flannel
+  when: network_kind == 'flannel'
+  copy:
+    dest: /opt/bin/
+    src: "{{ lookup('env','HOME') }}/tmp/flannel-{{flannel_version}}/flanneld"
 
 - name: Add docker apt keys
   apt_key: keyserver=hkp://keyserver.ubuntu.com:80 id=58118E89F3A912897C070ADBF76221572C52609D

@@ -142,6 +142,20 @@ swarm_mesos_tasktimeout: 10m
 swarm_mesos_offertimeout: 10000m
 
 ###############################################################
+# Networking
+################################################################
+
+# The kind of networking to use.  Available values are "bridge" for
+# plain old docker bridge networking, "flannel" for Flannel with the
+# host-gw backend.
+
+network_kind: bridge
+
+# The version of Flannel to use
+
+flannel_version: "0.5.5"
+
+###############################################################
 # Kuryr
 ################################################################
 kuryr_image: kuryr/libnetwork
