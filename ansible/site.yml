@@ -1,6 +1,16 @@
 ---
 - include: ./utils/load-vars-cluster.yml
 
+- hosts: localhost
+  tasks:
+  - name: check value of network_kind
+    assert: { that: "network_kind in ('bridge', 'flannel')" }
+
+
+- hosts: localhost
+  roles:
+  - { role: flannel-local-prep, when: "network_kind == 'flannel'" }
+
 - hosts: cluster-{{cluster_name}}
   become: yes
   roles:
