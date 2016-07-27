@@ -114,5 +114,10 @@
 - name: "Start kubelet upstart service"
   service: name=kubelet state=started
 
-- name: "Set up KUBECONFIG environment variable for root user"
-  lineinfile: dest="/home/{{ ansible_ssh_user }}/.profile" line="export KUBECONFIG={{ k8s_etc_dir }}/admin-kubeconfig"
+- name: Ensure user profile exists
+  shell: if [ -f {{ ansible_user_dir }}/.profile ]; then echo OkeyDokey; else touch {{ ansible_user_dir }}/.profile; fi
+  register: rslt
+  changed_when: "'OkeyDokey' not in rslt.stdout"
+
+- name: "Set up KUBECONFIG environment variable for the user"
+  lineinfile: dest="{{ ansible_user_dir }}/.profile" line="export KUBECONFIG={{ k8s_etc_dir }}/admin-kubeconfig"
