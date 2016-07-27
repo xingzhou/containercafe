@@ -11,6 +11,7 @@ cp admin-certs/* dockerize
 cp creds.json dockerize/
 cp make_TLS_certs.sh dockerize/
 cp mk_user_cert.sh dockerize/
+cp mk_kubeconfig.sh dockerize/
 
 cd dockerize
 docker build -t proxy .
