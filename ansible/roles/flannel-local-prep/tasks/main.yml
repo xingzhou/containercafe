@@ -11,10 +11,6 @@
     force: no
     url: https://github.com/coreos/flannel/releases/download/v{{flannel_version}}/flannel-{{flannel_version}}-linux-amd64.tar.gz
 
-- name: unpack Flannel archive
-  shell: cd "{{ ansible_user_dir }}/tmp/" && tar xfz flannel-{{flannel_version}}-linux-amd64.tar.gz
-  when: False
-
 - name: unarchive Flannel
   unarchive:
     src: "{{ ansible_user_dir }}/tmp/flannel-{{flannel_version}}-linux-amd64.tar.gz"

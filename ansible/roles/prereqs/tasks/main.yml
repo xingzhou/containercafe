@@ -32,7 +32,7 @@
     dest: /opt/bin
     state: directory
 
-- name: Install Flannel
+- name: Install Flannel binary
   when: network_kind == 'flannel'
   copy:
     dest: /opt/bin/
