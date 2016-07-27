@@ -5,12 +5,8 @@ TENANT_ID="$2"
 
 cd $PATH
 
-if [ -f kube-config ]; then 
-	rm -f kube-config
-fi 
-touch kube-config
 
-echo "apiVersion: v1" >> kube-config
+echo "apiVersion: v1" > kube-config
 echo "clusters:" >> kube-config
 echo "- cluster:" >> kube-config
 echo "    server: https://localhost:8087" >> kube-config
