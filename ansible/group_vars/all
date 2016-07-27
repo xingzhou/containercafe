@@ -24,18 +24,18 @@ ca_srl: ca.srl
 ################################################################
 # cidr_prefix: /26
 
-vip_k8s_apiserver_ip: "{{floating_ip}}"
+vip_k8s_apiserver_ip: "{{master_vip}}"
 vip_k8s_apiserver_port: 443
 
-vip_k8s_rabac_ip: "{{floating_ip}}"
+vip_k8s_rabac_ip: "{{master_vip}}"
 vip_k8s_rabac_port: 444
 
-vip_k8s_scheduler_ip: "{{floating_ip}}"
+vip_k8s_scheduler_ip: "{{master_vip}}"
 vip_k8s_scheduler_port: 81
 
-vip_mesos_master_ip: "{{floating_ip}}"
+vip_mesos_master_ip: "{{master_vip}}"
 
-vip_swarm_master_ip: "{{floating_ip}}"
+vip_swarm_master_ip: "{{master_vip}}"
 vip_swarm_master_port: 2375
 ###############################################################
 # HAproxy

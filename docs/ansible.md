@@ -93,12 +93,12 @@ Following are the five with no meaningful default.
   the environment named `A-B` are found in `{{envs}}/A-B/defaults.yml`
   (if relative, the base is the filename of the playbook).
 
-* `floating_ip`: this identifies the virtual IP (VIP) for most of the
+* `master_vip`: this identifies the virtual IP (VIP) for most of the
   master components.
 
-* `floating_ip_net` and `cidr_prefix`: these two variables identify
-  the subnet (`{{floating_ip_net}}/{{cidr_prefix}}`) that contains the
-  `floating_ip`.  That should be either (1) identical to the subnet of
+* `master_vip_net` and `cidr_prefix`: these two variables identify
+  the subnet (`{{master_vip_net}}/{{cidr_prefix}}`) that contains the
+  `master_vip`.  That should be either (1) identical to the subnet of
   the network interface (on the master machines) identified by the
   `network_inteface` variable or (2) a subnet, disjoint from all the
   others in the system, that all the machines in the cluster know to
