@@ -183,7 +183,8 @@ function test_ps() {
 	local output
 	local timestamp=$(date +"%Y%m%d.%H%M%S")
 
-	local STARTTIME=$(date +%s)
+	# local STARTTIME=$(date +%s)
+	local STARTTIME=$(date +%s) # milliseconds
 	output=$(generic_docker_command $CMD_PREFIX "ps" 2>&1)
 	local RESULT=$?
 	local ENDTIME=$(date +%s)
