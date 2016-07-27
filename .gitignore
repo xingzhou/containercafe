@@ -13,3 +13,5 @@ proxy/.metadata/*
 *.log
 .metadata/*
 examples/vagrant/.vagrant/
+
+proxy/creds.json
