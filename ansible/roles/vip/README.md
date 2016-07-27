@@ -34,12 +34,12 @@ lose the master status.
 In your group_vars/all.yml file, update the following attributes, in this example, we are using 10.140.23.246 in subnet
 10.140.23.240/28.
 
-    floating_ip: 10.140.23.246  << Your floating ip address
+    master_vip: 10.140.23.246  << Your floating ip address
     undercloud_cidr:
      - 10.140.179.0/24        
      - 10.140.23.240/28        << Add your floating ip subnet (if different)
 
-    undercloud_floating_ip: '{{ floating_ip }}'  << Set the undercloud to your floating ip address
+    undercloud_master_vip: '{{ master_vip }}'  << Set the undercloud to your floating ip address
 
     vip:
       enabled: true          << Set the vip enabled flag to true

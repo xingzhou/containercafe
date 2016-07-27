@@ -35,7 +35,7 @@
   changed_when: False
 
 - name: "Set vip_changed"
-  when: vip.stat.exists == True and floating_ip == vipres.stdout
+  when: vip.stat.exists == True and master_vip == vipres.stdout
   set_fact: vip_changed=False
 
 - debug: msg="vip_changed is '{{vip_changed}}'"
@@ -376,6 +376,6 @@
     - chmod 0444 {{ cert_dir }}/{{ k8s_user_cn }}.pem
 
 - name: "Update vip file"
-  copy: content="{{ floating_ip }}" dest={{ cert_dir }}/vip mode=0644
+  copy: content="{{ master_vip }}" dest={{ cert_dir }}/vip mode=0644
   when: vip_changed == True
 - shell: touch {{ cert_dir }}/vip

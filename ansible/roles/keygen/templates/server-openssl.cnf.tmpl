@@ -10,4 +10,4 @@ subjectAltName = @alt_names
 {% for ip in groups['k8s_master-' ~ cluster_name] %}
 IP.{{loop.index}} = {{ ip }}
 {% endfor %}
-IP.10 = {{ floating_ip }}
+IP.10 = {{ master_vip }}
