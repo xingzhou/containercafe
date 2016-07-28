@@ -27,12 +27,6 @@
           -initial-cluster-token etcd-cluster-1
           -initial-cluster {{initial_cluster_nodes}}
           -initial-cluster-state new
-     net: bridge
-     expose:
-      - "{{etcd_port}}"
-      - "{{etcd_advertise_peer_port}}"
-     ports:
-      - "{{etcd_port}}:{{etcd_port}}"
-      - "{{etcd_advertise_peer_port}}:{{etcd_advertise_peer_port}}"
+     net: host
      volumes:
       - "/var/etcd/data:/var/etcd/data"
