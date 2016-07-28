@@ -156,17 +156,6 @@ network_kind: bridge
 flannel_version: "0.5.5"
 
 ###############################################################
-# Kuryr
-################################################################
-kuryr_image: kuryr/libnetwork
-
-###############################################################
-# Network Controller
-################################################################
-networkcontroller_image: radiant1/networkcontroller_image
-openstack_install_kind: none
-
-###############################################################
 # Infrastructure docker registry (used to deploy radiant components)
 ################################################################
 # possible values: v1 or v2
