@@ -13,4 +13,10 @@ export ccsapi_host=10.140.34.174:8081
 export consul_ip=10.140.34.174
 # radiant
 # start proxy
+
+cp -f ../ansible/certs/dev-vbox-radiant01/ca* admin-certs
+cp -f ../ansible/certs/dev-vbox-radiant01/admin-key.pem admin-certs/kadmin.key
+cp -f ../ansible/certs/dev-vbox-radiant01/admin.pem admin-certs/kadmin.pem
+./gen_server_certs.sh
+
 bin/hijack 
