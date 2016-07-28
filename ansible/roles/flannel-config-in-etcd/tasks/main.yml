@@ -1,0 +1,14 @@
+---
+
+- name: wait for etcd to start
+  wait_for:
+    port: "{{etcd_port}}"
+
+- name: make sure etcd is running
+  command: wget http://localhost:{{etcd_port}}/v2/keys -O-
+
+- name: set Flannel config
+  command: >
+    curl http://localhost:{{etcd_port}}/v2/keys/coreos.com/network/config
+    -XPUT
+    -d "value={\"Network\":\"{{pod_subnet}}\", \"Backend\": {\"Type\": \"host-gw\"}}"
