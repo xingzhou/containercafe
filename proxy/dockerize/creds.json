@@ -1,0 +1,1 @@
+{"Status":200, "Node":"10.140.146.7:2375", "Docker_id":"", "Container":"", "Swarm_shard":true, "Tls_override":true, "Space_id":"4975c8b9-a876-4e74-bebe-2f02f7e2b314", "Reg_namespace":"swarm", "Apikey":"CWch4JDD9GcTmog2w8zxUd0UyYMb6L2zEevN5RAowJnzyC4c", "Orguuid":"orgname", "Userid":"userid", "Endpoint_type":"radiant", "TLS_path":"proxy-test/certs/fileauth"}
