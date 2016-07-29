@@ -164,3 +164,12 @@ flannel_version: "0.5.5"
 infrastructure_docker_registry_type: v2
 # use 'always' with v2 and 'missing' with v1
 image_pull_type: always
+
+###############################################################
+# Leper Outcast Unclean
+################################################################
+
+# Set this to one of 'kraken', 'devstack', or 'none'.  Somebody should
+# put some real documentation here.  Better yet, clean up this mess.
+
+openstack_install_kind: none
