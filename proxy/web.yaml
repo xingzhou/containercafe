@@ -5,8 +5,7 @@ metadata:
   labels:
     app: web-ms-demo
   annotations:
-    aaa: bbbb
-    containers-label.alpha.kubernetes.io/com.swarm.tenant.0: sf7f413cb-a678-412d-b024-8e17e28bcb88-default
+    containers-annotations.alpha.kubernetes.io: "{ \"com.ibm.radiant.tenant.0\": \"stest1-default\",  \"OriginalName\": \"kube-web-server\" }"
 spec:
   containers:
     - name: kube-web-server
