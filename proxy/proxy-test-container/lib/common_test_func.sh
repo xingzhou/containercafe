@@ -26,53 +26,29 @@ function check_result() {
 	RESULT=$1
 	TIME=$2
 	TEST_COUNT=$3
-	SUMMARY="$4" # Double quotes - literal value of all the characters? 
+	SUMMARY="$4"  
 	RESULTS_PATH="$5"
 	EXPECTED=$6 # 0 = success
 	CMD_OUTPUT="$7"
 	TIMESTAMP="$8"
 
-	# if [ $TIME -eq 0 ]; then 
-	# 	TIME=1 
-	# fi 
-
 	TENANT_ID="$9"
 	TYPE="${10}"
 
 
-
-
 	# Process result
 	if [ $RESULT -eq $EXPECTED ]; then
-		# WHAT AM I DOING
-		#log "Test SUCCESS: $SUMMARY in $TIME seconds."
 		echo "$TIMESTAMP,$TIME,$TENANT_ID,$TYPE,test$TEST_COUNT,$SUMMARY,PASS,OK" >> $RESULTS_PATH
-
-
-		#echo "Test $TEST_COUNT -- PASS -- $SUMMARY -- Execution time $TIME seconds." >> $RESULTS_PATH
-
 		echo "" >> $RESULTS_PATH
-
 		# Pass back success
 		echo 1
-
 	else 
-		# What is this complicated stuff in the original
-		#log "Test FAILURE: $SUMMARY in $TIME seconds."
 		CMD_OUTPUT=$(echo $CMD_OUTPUT | tr "\n" " ")
 		echo "$TIMESTAMP,$TIME,$TENANT_ID,$TYPE,test$TEST_COUNT,$SUMMARY,FAIL,$CMD_OUTPUT" >> $RESULTS_PATH
-
-
-
-		#echo "Test $TEST_COUNT -- FAIL -- $SUMMARY -- Execution time $TIME seconds." >> $RESULTS_PATH
-		#CMD_OUTPUT=${CMD_OUTPUT//$'\n'/}
-		
-
 		echo "" >> $RESULTS_PATH
 		# Pass back failure
 		echo 0
 	fi 
-
 }
 
 

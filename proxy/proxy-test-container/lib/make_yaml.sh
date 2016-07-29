@@ -5,7 +5,6 @@ TENANT_ID="$2"
 FILE_PATH="../conf/kube/$TENANT_ID-web-test""$NUM"".yaml"
 
 if [ ! -f $FILE_PATH ]; then 
-	# Create it
 	touch $FILE_PATH
 	echo "apiVersion: v1" >> $FILE_PATH
 	echo "kind: Pod" >> $FILE_PATH
