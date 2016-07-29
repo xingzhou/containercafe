@@ -15,3 +15,5 @@ proxy/.metadata/*
 examples/vagrant/.vagrant/
 
 proxy/creds.json
+
+proxy/proxy-test-container/conf/kube/test*

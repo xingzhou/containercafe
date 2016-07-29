@@ -29,7 +29,7 @@ available in all combinations.
 * [Contributing to the project](#contributing-to-the-project)
 * [Maintainers](#maintainers)
 * [Communication](#communication)
-* [Tiny Exaple Solution](examples/tiny-example.md)
+* [Tiny Example Solution](examples/tiny-example.md)
 * [Proxy documentation](proxy/README.md)
 * [Learn concepts and commands](#learn-concepts-and-commands)
 * [License](#license)
