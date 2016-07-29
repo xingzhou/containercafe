@@ -25,5 +25,5 @@ if [ ! -f $FILE_PATH ]; then
 	echo "			env:" >> $FILE_PATH
 	echo "				-" >> $FILE_PATH
 	echo "				 name: \"TEST\"" >> $FILE_PATH
-	echo "				 value: \"$TENANT_ID-web-test$NUM\"" >> $FILE_PATH
+	echo "				 value: \"web-test$NUM\"" >> $FILE_PATH
 fi 
