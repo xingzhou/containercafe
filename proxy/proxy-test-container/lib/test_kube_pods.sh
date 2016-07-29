@@ -51,9 +51,9 @@ KUBE_PATH="kube/kubectl"
 # TWO_YAML_PATH="../conf/kube/web-test2.yaml"
 # TWO_NAME="kube-web-test2"
 
-YAML_PATH_A="../conf/kube/web-test"
+YAML_PATH_A="../conf/kube/$TENANT_ID-web-test"
 YAML_PATH_B=".yaml"
-KUBE_NAME="kube-web-test"
+KUBE_NAME="$TENANT_ID-kube-web-test"
 
 # Probably gotta set up environment first
 function setup_env() {
@@ -219,7 +219,7 @@ function main() {
 		local kube_name="$KUBE_NAME""$COUNTER"
 		local yaml_path="$YAML_PATH_A""$COUNTER""$YAML_PATH_B"
 
-		./make_yaml.sh $COUNTER
+		./make_yaml.sh $COUNTER "$TENANT_ID"
 
 		delete_if_exists "$kube_name"
 		test_create_pod "$yaml_path" 0

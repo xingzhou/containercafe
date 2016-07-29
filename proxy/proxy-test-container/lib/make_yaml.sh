@@ -1,7 +1,8 @@
 #!/bin/bash
 
 NUM="$1"
-FILE_PATH="../conf/kube/web-test""$NUM"".yaml"
+TENANT_ID="$2"
+FILE_PATH="../conf/kube/$TENANT_ID-web-test""$NUM"".yaml"
 
 if [ ! -f $FILE_PATH ]; then 
 	# Create it
@@ -9,7 +10,7 @@ if [ ! -f $FILE_PATH ]; then
 	echo "apiVersion: v1" >> $FILE_PATH
 	echo "kind: Pod" >> $FILE_PATH
 	echo "metadata:" >> $FILE_PATH
-	echo "	name: kube-web-test$NUM" >> $FILE_PATH
+	echo "	name: $TENANT_ID-kube-web-test$NUM" >> $FILE_PATH
 	echo "	labels:" >> $FILE_PATH
 	echo "		app: web-ms-demo" >> $FILE_PATH
 	echo "	annotations:" >> $FILE_PATH
@@ -24,5 +25,5 @@ if [ ! -f $FILE_PATH ]; then
 	echo "			env:" >> $FILE_PATH
 	echo "				-" >> $FILE_PATH
 	echo "				 name: \"TEST\"" >> $FILE_PATH
-	echo "				 value: \"web-test$NUM\"" >> $FILE_PATH
+	echo "				 value: \"$TENANT_ID-web-test$NUM\"" >> $FILE_PATH
 fi 
