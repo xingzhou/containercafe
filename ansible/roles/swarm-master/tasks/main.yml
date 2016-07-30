@@ -22,6 +22,7 @@
 
 # deploy swarm manager only one one master for now
 # TODO - use --cluster-opt  mesos.offerrefusetimeout to pass timeout when upstream
+# SWARM_DISCOVER_ALL_CONTAINERS=true allows viewing k8s containers via swarm
 - name: deploy swarm manager
   when: master_ip_address == inventory_hostname
   docker:
@@ -33,6 +34,7 @@
     env:
       MESOS_REFUSE_SECONDS: "{{swarm_mesos_refuse_seconds}}"
       SWARM_MESOS_ROLE: "swarm"
+      SWARM_DISCOVER_ALL_CONTAINERS: "true"
     command: >
             manage -c mesos-experimental --cluster-opt mesos.address={{inventory_hostname}}
             --cluster-opt mesos.port={{swarm_manager_mesos_host_port}}
