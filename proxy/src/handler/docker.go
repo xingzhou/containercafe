@@ -194,13 +194,15 @@ func createContainer(w http.ResponseWriter, r *http.Request, body []byte, creds 
 
 	net := getNetworkFromContainerCreate(body)
 	// if net != "" && net != "default" && net != "bridge"{
-	if net == "none" {
+
+	// make the net==none by default:
+	if net == "none" || net == "" {
 		Log.Printf("executing --net=none")
 		dockerHandler(w, r, body, creds, vars, req_id)
 		return
 	}
 	
-	if net != "" && net != "default"{
+	if net != "default"{
 		//copy body and replace net name by space_id+name
 		//body = rewriteNetworkInContainerCreate(body, creds.Space_id)
 		ForbiddenOperationHandler(w, r, "Only default network currenlty supported")

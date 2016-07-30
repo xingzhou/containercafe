@@ -44,6 +44,7 @@ cd examples/vagrant
 vagrant up
 cd -
 ```
+In case you face any issues, please follow [vagrant troubleshooting](vagrant/README.md)
 
 Deploy OpenRadiant:
 
