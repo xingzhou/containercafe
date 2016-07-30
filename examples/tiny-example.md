@@ -113,7 +113,7 @@ kind: Pod
 metadata:
   name: sleepy-pod
   annotations:
-    containers-label.alpha.kubernetes.io/com.swarm.tenant.0: demo
+    containers-annotations.alpha.kubernetes.io: "{ \"com.ibm.radiant.tenant.0\": \"demo\",  \"OriginalName\": \"sleeper\" }"
 spec:
   containers:
     - name: sleeper
