@@ -37,6 +37,7 @@
   copy:
     dest: /opt/bin/
     src: "{{ lookup('env','HOME') }}/tmp/flannel-{{flannel_version}}/flanneld"
+    mode: a+x
 
 - name: Add docker apt keys
   apt_key: keyserver=hkp://keyserver.ubuntu.com:80 id=58118E89F3A912897C070ADBF76221572C52609D

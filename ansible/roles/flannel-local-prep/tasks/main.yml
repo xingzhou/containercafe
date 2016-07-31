@@ -16,3 +16,9 @@
     src: "{{ ansible_user_dir }}/tmp/flannel-{{flannel_version}}-linux-amd64.tar.gz"
     dest: "{{ ansible_user_dir }}/tmp/"
     creates: "{{ ansible_user_dir }}/tmp/flannel-{{flannel_version}}/flanneld"
+
+- name: fetch Flannel upstart service
+  get_url:
+    dest: "{{ ansible_user_dir }}/tmp/"
+    force: no
+    url: https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/ubuntu/minion-flannel/init_conf/flanneld.conf
