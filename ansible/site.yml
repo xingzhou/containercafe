@@ -37,6 +37,12 @@
   - role: flannel-config-in-etcd
     when: "network_kind == 'flannel' and inventory_hostname == groups['etcd-' ~ cluster_name][0]"
 
+- hosts: workers-{{cluster_name}}
+  become: yes
+  roles:
+  - role: flannel-for-docker
+    when: "network_kind == 'flannel'"
+
 - hosts: lb-{{cluster_name}}
   become: yes
   roles:

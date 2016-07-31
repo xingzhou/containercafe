@@ -6,6 +6,7 @@
 
 - name: make sure etcd is running
   command: wget http://localhost:{{etcd_port}}/v2/keys -O-
+  changed_when: False
 
 - name: set Flannel config
   command: >
