@@ -55,7 +55,7 @@
       - /cgroup:/cgroup
       - /sys:/sys
       - /dev:/dev
-      - /usr/bin/docker:/usr/local/bin/docker:ro
+      - /usr/bin/docker:/usr/bin/docker:ro
       - /lib/x86_64-linux-gnu/libsystemd-journal.so.0:/lib/x86_64-linux-gnu/libsystemd-journal.so.0:ro
       - /usr/lib/x86_64-linux-gnu/libltdl.so.7:/usr/lib/x86_64-linux-gnu/libltdl.so.7
       - /opt/cni/bin:/opt/cni/bin:rw
