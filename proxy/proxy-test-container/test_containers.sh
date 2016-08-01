@@ -6,21 +6,24 @@ helpme()
 {
 	cat <<HELPMEHELPME
 
-Syntax: ${0} <proxy_location> <network_id> <tenant_id> <test_kube?> <num_containers> <num_pods> 
+Syntax: ${0} -l <proxy_location> -n <network_id> -t <tenant_id> -k <test_kube?> -c <num_containers> -p <num_pods> 
+
+* All flags technically optional; default values are set. 
+
 Where:
 	proxy_location =
-	    local - test is targeting local instance of proxy (localhost:8087) (default if argument not given)
+	    local - test is targeting local instance of proxy (localhost:8087). With proxy running on a container, this should be the option in use. (default) 
 	    dev-mon01 - test is targeting remote instance (https://containers-api-dev.stage1.ng.bluemix.net:9443)
 
-	network_id = id of network element to be inspected (using default as default)
+	network_id = id of network element to be inspected (currently unsupported - default is empty)
 
-	tenant_id = user_id of current user; should match Apikey being used in the config file. Currently, default is "test1".
+	tenant_id = tenant_id to be tested. Currently, default is "test1".
 
-	test_kube? = "true" or "false". In case of multi-user testing, only 1 user should run the kube tests ("true"); all others should be "false". 
+	test_kube? = "true" or "false". Default is true. 
 
-	num_containers = total number of containers to be created; RIGHT NOW ALL W/O NETWORK. 
+	num_containers = total number of containers to be created; default value is 5. 
 
-	num_pods = total number of pods to be created. if argument not given, default value is 5. 
+	num_pods = total number of pods to be created. If argument not given, default value is 5. 
 
 	  
 
