@@ -1,5 +1,7 @@
 #!/bin/bash
 set -v
+# copy src into dockerize directory so it can be build by Dockerfile
+cp -r src dockerize
 
 # manage certificates - copy them to admin-certs
 CERTS=../ansible/certs/dev-vbox-radiant01
