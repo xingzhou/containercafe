@@ -36,10 +36,78 @@ HELPMEHELPME
 }
 
 
-if [[ "$1" == "" || "$1" == "-?" || "$1" == "-h" || "$1" == "--help" || "$1" == "help" ]] ; then
-	helpme
-	exit 1
-fi
+while test $# -gt 0; do
+	case "$1" in 
+		"" || "-?" || "-h" || "--help" || "help")
+			helpme
+			exit 1
+			;;
+		-l)
+			shift 
+			if test $# -gt 0; then 
+				PROXY_LOC=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+			else
+				echo "Proxy location not specified"
+				exit 1
+			fi 
+			shift 
+			;;
+		-n)
+			shift
+			if test $# -gt 0; then 
+				try_net_id="$1"
+			else 
+				echo "No network id specified"
+				exit 1
+			fi 
+			shift
+			;; 
+		-t)
+			shift
+			if test $# -gt 0; then 
+				TENANT_ID="$1"
+			else
+				echo "No tenant_id specified"
+			fi 
+			shift 
+			;;
+		-k)
+			shift 
+			if test $# -gt 0; then
+				TEST_KUBE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+			else
+				echo "Test kube flag not specified"
+			fi 
+			shift 
+			;; 
+		-c)
+			shift
+			if test $# -gt 0; then 
+				NUM_CONTAINERS=$1
+			else
+				echo "Number of containers not specified"
+			fi 
+			shift
+			;;
+		-p)
+			shift
+			if test $# -gt 0; then 
+				NUM_PODS=$1
+			else 
+				echo "Number of pods not specified"
+			fi 
+			shift 
+			;;
+	esac
+done 
+
+
+
+
+# if [[ "$1" == "" || "$1" == "-?" || "$1" == "-h" || "$1" == "--help" || "$1" == "help" ]] ; then
+# 	helpme
+# 	exit 1
+# fi
 
 
 TEST_COUNT=0
@@ -48,15 +116,15 @@ date=$( date +%F )
 time=$( date +%T )
 timestamp="$date""_""$time"
 
-TENANT_ID="$3"
+#TENANT_ID="$3"
 RESULTS_PATH="logs/""$TENANT_ID""_test_swarm_results_""$timestamp"".log"
-PROXY_LOC=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-try_net_id="$2"
+#PROXY_LOC=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+#try_net_id="$2"
 
 
-TEST_KUBE=$(echo "$4" | tr '[:upper:]' '[:lower:]')
-NUM_CONTAINERS=$5
-NUM_PODS=$6
+# TEST_KUBE=$(echo "$4" | tr '[:upper:]' '[:lower:]')
+# NUM_CONTAINERS=$5
+# NUM_PODS=$6
 
 
 
@@ -69,11 +137,11 @@ mkdir -p logs
 if [[ "$PROXY_LOC" == "" ]]; then
 	PROXY_LOC="local"
 fi
-if [[ "$try_net_id" == "" ]]; then
-	try_net_id="default"
-fi 
 if [[ "$NUM_CONTAINERS" == "" ]]; then 
 	NUM_CONTAINERS=5
+fi 
+if [[ "TEST_KUBE" == "" ]]; then 
+	TEST_KUBE=true
 fi 
 if [[ "$NUM_PODS" == "" ]]; then
 	NUM_PODS=5
@@ -434,6 +502,10 @@ function main() {
 
 
 	test_network_ls 0
+
+	if [[ "$try_net_id" != "" ]]; then 
+		test_network_inspect "$try_net_id" 0
+	fi 
 
 	# Make sure everything is clean at the end 
 	test_ps_a 0
