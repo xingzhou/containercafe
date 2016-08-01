@@ -198,10 +198,6 @@ function main() {
 
 		test_delete_pod "$kube_name" 0
 		test_get_pods 0
-		test_describe_pod "$kube_name" 1
-		test_delete_pod "$kube_name" 1
-
-		test_get_pods 0 
 
 		let COUNTER=COUNTER+1
 	done 

@@ -38,7 +38,7 @@ HELPMEHELPME
 
 while test $# -gt 0; do
 	case "$1" in 
-		"" || "-?" || "-h" || "--help" || "help")
+		""|"-?"|"-h"|"--help"|"help")
 			helpme
 			exit 1
 			;;
