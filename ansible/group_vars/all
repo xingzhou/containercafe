@@ -69,7 +69,8 @@ k8s_scheduler_cn: scheduler
 k8s_controller_manager_cn: controller-manager
 k8s_kubelet_cn: kubelet
 k8s_admin_cn: admin
-k8s_user_cn: haih
+k8s_user_cn: user
+k8s_kube_proxy_cn: kube-proxy
 
 k8s_service_ip_range: 10.10.10.0/24
 k8s_apiserver_sport: 8443
@@ -78,6 +79,9 @@ k8s_scheduler_port: 10251
 kubernetes_tunnel_to_apiserver: True
 
 pod_subnet: "172.17.0.0/16"
+
+k8s_hyperkube_image: gcr.io/google_containers/hyperkube-amd64
+k8s_hyperkube_version: v1.3.0
 
 ################################################################
 # Etcd

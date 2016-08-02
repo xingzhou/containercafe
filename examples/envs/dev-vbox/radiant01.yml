@@ -1,5 +1,9 @@
 ---
-
+# deployment options
+kubernetes_deploy: true
+mesos_deploy: true
+swarm_deploy: true
+ha_deploy: false
 # vip specs
 master_vip: 192.168.10.2
 master_vip_net: 192.168.10.0

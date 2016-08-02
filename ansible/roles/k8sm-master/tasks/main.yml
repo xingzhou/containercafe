@@ -83,7 +83,7 @@
 - name: "Copy apiserver yaml file to {{ k8s_kubelet_manifests_dir }}"
   template: src={{ k8s_apiserver_cn }}.yaml.tmpl dest={{ k8s_kubelet_manifests_dir }}/{{ k8s_apiserver_cn }}.yaml mode=0644
 
-- name: "Copy apiserver yaml file to {{ k8s_kubelet_manifests_dir }}"
+- name: "Copy podmaster yaml file to {{ k8s_kubelet_manifests_dir }}"
   template: src=podmaster.yaml.tmpl dest={{ k8s_kubelet_manifests_dir }}/podmaster.yaml mode=0644
 
 - name: check if we have a kraken installed

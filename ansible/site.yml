@@ -23,25 +23,24 @@
 - hosts: zk-{{cluster_name}}
   become: yes
   roles:
-  - zk
+  - { role: zk, when: "mesos_deploy" }
 
 - hosts: mesos_master-{{cluster_name}}
   become: yes
   roles:
-  - mesos-master
+  - { role: mesos-master, when: "mesos_deploy" }
 
 - hosts: etcd-{{cluster_name}}
   become: yes
   roles:
-  - etcd
-  - role: flannel-config-in-etcd
-    when: "network_kind == 'flannel' and inventory_hostname == groups['etcd-' ~ cluster_name][0]"
+  - { role: etcd, when: "kubernetes_deploy" }
+  - { role: flannel-config-in-etcd, when: "network_kind == 'flannel' and inventory_hostname == groups['etcd-' ~ cluster_name][0]" }
 
 - hosts: lb-{{cluster_name}}
   become: yes
   roles:
-  - lb
-  - { role: vip, when: "groups['mesos_master-' ~ cluster_name]|length > 1" }
+  - { role: lb, when: "ha_deploy" }
+  - { role: vip, when: "groups['mesos_master-' ~ cluster_name]|length > 1 and ha_deploy" }
 
 - hosts: k8s_auth-{{cluster_name}}
   become: yes
@@ -51,17 +50,18 @@
 - hosts: k8s_master-{{cluster_name}}
   become: yes
   roles:
-  - k8sm-master
+  - { role: k8sm-master, when: "kubernetes_deploy" }
 
 - hosts: swarm_master-{{cluster_name}}
   become: yes
   roles:
-  - swarm-master
+  - { role: swarm-master, when: "swarm_deploy" }
 
 - hosts: workers-{{cluster_name}}
   become: yes
   roles:
   - base-worker
-  - mesos-worker
-  - k8sm-worker
-  - swarm-worker
+  - { role: mesos-worker, when: "mesos_deploy" }
+  - { role: k8sm-worker, when: "kubernetes_deploy" }
+  - { role: swarm-worker, when: "swarm_deploy" }
+  
