@@ -14,6 +14,7 @@ spec:
                      {%- for host in groups['etcd-' ~ cluster_name] -%}
                        {{ comma() }}http://{{ host }}:{{ etcd_port }}
                      {%- endfor %}
+
     - --key=scheduler
     - --whoami={{ hostvars[inventory_hostname]['ansible_' ~ network_interface]['ipv4']['address'] }}
     - --source-file=/src/manifests/{{ k8s_scheduler_cn }}.yaml

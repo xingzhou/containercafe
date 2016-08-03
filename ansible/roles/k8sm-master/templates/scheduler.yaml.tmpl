@@ -8,14 +8,14 @@ spec:
   hostNetwork: true
   containers:
   - name: kube-{{ k8s_scheduler_cn }}
-  {%if mesos_deploy%}
+  {%if kubernetes_on_mesos_deploy%}
     image: {{ kube_image }}
   {%elif kubernetes_deploy%}
     image: {{k8s_hyperkube_image}}:{{k8s_hyperkube_version}}
   {%endif%}
     imagePullPolicy: Always
     command:
-    {%if mesos_deploy%}
+    {%if kubernetes_on_mesos_deploy%}
     - /opt/kubernetes/bin/km
     {%elif kubernetes_deploy%}
     - /hyperkube
@@ -23,7 +23,7 @@ spec:
     - scheduler
     - --kubeconfig={{ k8s_etc_dir }}/{{ k8s_scheduler_cn }}-kubeconfig
 
-    {%if mesos_deploy%}
+    {%if kubernetes_on_mesos_deploy%}
     - --address={{ hostvars[inventory_hostname]['ansible_' ~ network_interface]['ipv4']['address'] }}
     - --advertised-address={{ vip_k8s_scheduler_ip }}:{{ vip_k8s_scheduler_port }}
     - --mesos-master=zk://{% for host in groups['zk-' ~ cluster_name] %}{{ host }}:{{ zookeeper_port }}{% if not loop.last %},{% endif %}{% endfor %}/mesos
@@ -33,12 +33,13 @@ spec:
                      {%- for host in groups['etcd-' ~ cluster_name] -%}
                        {{ comma() }}http://{{ host }}:{{ etcd_port }}
                      {%- endfor %}
+
     - --api-servers=https://{{ vip_k8s_apiserver_ip }}:{{ vip_k8s_apiserver_port }}
     - --run-proxy=false
     - --kubelet-kubeconfig={{ k8s_etc_dir }}/{{ k8s_kubelet_cn }}-kubeconfig
     - --kubelet-pod-infra-container-image={{ kube_infra_image }}
     - --v=2
-    {%endif%}{%if kubernetes_deploy%}
+    {%elif kubernetes_deploy%}
     - --master=https://{{ vip_k8s_apiserver_ip }}:{{vip_k8s_apiserver_port}}
     {%endif%}
     {{cni_plugin}}

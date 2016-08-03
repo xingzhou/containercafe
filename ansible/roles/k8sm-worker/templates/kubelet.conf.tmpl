@@ -7,7 +7,7 @@ console log
 pre-start script
         test -x /usr/local/bin/kubelet || { stop; exit 0; }
         /usr/local/bin/kubelet \
-		  --api-servers=https://{{floating_ip}}:{{vip_k8s_apiserver_port}} \
+		  --api-servers=https://{{master_vip}}:{{vip_k8s_apiserver_port}} \
 		  --allow-privileged=true \
 		  --config={{ k8s_kubelet_manifests_dir }} \
 		  --kubeconfig={{k8s_etc_dir}}/kubelet-kubeconfig \

@@ -39,7 +39,7 @@
 - hosts: lb-{{cluster_name}}
   become: yes
   roles:
-  - { role: lb, when: "ha_deploy" }
+  - lb
   - { role: vip, when: "groups['mesos_master-' ~ cluster_name]|length > 1 and ha_deploy" }
 
 - hosts: k8s_auth-{{cluster_name}}
@@ -64,4 +64,3 @@
   - { role: mesos-worker, when: "mesos_deploy" }
   - { role: k8sm-worker, when: "kubernetes_deploy" }
   - { role: swarm-worker, when: "swarm_deploy" }
-  
