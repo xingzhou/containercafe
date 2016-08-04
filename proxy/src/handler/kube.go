@@ -15,7 +15,7 @@ import (
 	"httphelper"
 	"conf"
 	"auth"
-	"errors"
+//	"errors"
 )
 
 
@@ -326,7 +326,8 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 		//data := map[string]map[string]map[string]string{}
 		//json.Unmarshal(body, &data)
 		
-		label := conf.GetSwarmAuthLabel()
+		auth_label := conf.GetSwarmAuthLabel()
+		annot_label := conf.GetAnnotationExtLabel()
 		
 		data := map[string]interface{}{}
 		json.Unmarshal(body, &data)
@@ -335,27 +336,27 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 		Log.Printf("*** META: %+v", meta)
 		// convert the interface{} to map
 		metam :=meta.(map[string]interface{})
-		anot := metam["annotations"]
-		Log.Printf("*** ANOT: %+v", anot)
+		annot := metam["annotations"]
+		Log.Printf("*** ANNOT: %+v", annot)
 		// convert the interface{} to map
-		anotm :=anot.(map[string]interface{})
-		if anotm[label]=="" || anotm[label]==nil{
-			Log.Printf("Anotation label does not exist")
+		annotm :=annot.(map[string]interface{})
+		if annotm[annot_label]=="" || annotm[annot_label]==nil{
+			Log.Printf("Annotation label does not exist")
 		} else {
-			Log.Printf("Annotation label %v already exists: %v", label, anotm[label])
+			Log.Printf("Annotation label %v already exists: %v", annot_label, annotm[annot_label])
 	//		err = errors.New("Illegal usag of label ")
 	//		return nil, err
 		}
-		l1 := anotm[label]
-		Log.Printf("**** Selected annotation for %s: %s", label, l1)
+		//l1 := anotm[label]
+		//Log.Printf("**** Selected annotation for %s: %s", label, l1)
 		
 		
 	//	meta := data["metadata"]
 	//	anot := meta["annotations"]
 		
 	//	Log.Printf("** Selected annotation for %s: %s", label, anot[label])
-		
-		anotm[label] = namespace	
+		new_value := "{ \"" + auth_label+ "\": \""+ namespace + "\",  \"OriginalName\": \"kube-web-server\" }"
+		annotm[annot_label] = new_value
 		
 		//fmt.Println("****Updated json: ", data)
 
