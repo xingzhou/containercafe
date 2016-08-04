@@ -311,7 +311,7 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 		//	  		"name":"testtt1",
 		//	  		"namespace":"s21f85bc8-5a1a-403a-8a82-cdb757defd72-default",
 		//	  		"annotations":{
-		//	  			"containers-label.alpha.kubernetes.io/com.ibm.radiant.tenant.0":"sf7f413cb-a678-412d-b024-8e17e28bcb88-default",
+		//	  			containers-annotations.alpha.kubernetes.io: "{ \"com.ibm.radiant.tenant.0\": \"stest1-default\",  \"OriginalName\": \"kube-web-server\" }"
 		//
 		// and the one to create a replication controller (group):
 		//  {
@@ -343,8 +343,8 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 			Log.Printf("Anotation label does not exist")
 		} else {
 			Log.Printf("Annotation label %v already exists: %v", label, anotm[label])
-			err = errors.New("Illegal usag of label ")
-			return nil, err
+	//		err = errors.New("Illegal usag of label ")
+	//		return nil, err
 		}
 		l1 := anotm[label]
 		Log.Printf("**** Selected annotation for %s: %s", label, l1)
