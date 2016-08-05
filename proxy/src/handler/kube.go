@@ -360,12 +360,12 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 	specm :=spec.(map[string]interface{})
 	conts := specm["containers"]
 	Log.Printf("*** CONTS: %+v", conts)
-	contsm :=conts.(map[string]interface{})
-	
-	for _,cont := range contsm {
+	//contsm :=conts.([]interface{})
+	contsm := make([]interface{}, 1)
+	for index,cont := range contsm {
 		Log.Printf("*** CONT: %+v ", cont)
-		
-	//	Log.Printf("*** CONT: %+v, index %v, name: %v", cont, index, cont["name"])
+		Log.Printf("*** CONT: %+v, index %v, ", cont, index)
+		//Log.Printf("*** CONT: %+v, index %v, name: %v", cont, index, cont["name"])
 	}
 	
 		
