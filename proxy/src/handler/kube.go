@@ -360,9 +360,13 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 	specm :=spec.(map[string]interface{})
 	conts := specm["containers"]
 	Log.Printf("*** CONTS: %+v", conts)
-//	for index,cont := range conts {
-//		Log.Printf("*** CONT: %+v, index %v, name: %v", cont, index, cont["name"])
-//	}
+	contsm :=conts.(map[string]interface{})
+	
+	for _,cont := range contsm {
+		Log.Printf("*** CONT: %+v ", cont)
+		
+	//	Log.Printf("*** CONT: %+v, index %v, name: %v", cont, index, cont["name"])
+	}
 	
 		
 	//	Log.Printf("** Selected annotation for %s: %s", label, anot[label])
