@@ -2,7 +2,15 @@
 
 The Ansible playbooks in OpenRadiant are modular in three dimensions.
 One is componentry: for each major component there is one or a few
-roles.
+roles.  As part of this dimension, OpenRadiant is extensible regarding
+the networking technology used.  OpenRadiant has the concept of a
+"networking plugin", which supplies the Ansible roles that deploy the
+chosen networking technology.  OpenRadiant includes two networking
+plugins: (a) one that uses Docker bridge networking (which is not
+really functional if you have more than one worker) and (b) one that
+uses Flannel with its "host-gw" backend.  As a solution developer you
+can supply and configure OpenRadiant to use an alternate networking
+plugin that you supply.
 
 The second dimension is the inventory: the playbooks do *not* assume
 that your inventory is entirely dedicated to one shard or environment
@@ -120,9 +128,15 @@ and one playbook for installing software one them.  That is
 ## Ansible Variables
 
 The playbooks that deploy software on machines are parameterized by a
-large collection of Ansible variables.  Five have no meaningful
-defaults.  The others are defined by defaults in
-`ansible/group_vars/all` and can be overridden by settings in an
+large collection of Ansible variables.  OpenRadiant introduces a
+distinction between _primary_ variables, which a deployer may set, and
+_secondary_ variables, which are really just intermediates in the
+logic of the Ansible roles.
+
+### Primary Ansible Variables
+
+Five have no meaningful defaults.  The others are defined by defaults
+in `ansible/group_vars/all` and can be overridden by settings in an
 environment-specific file and a cluster-specific file.
 
 Following are the five with no meaningful default.
@@ -168,4 +182,42 @@ The settings for the master components VIP should appear in the
 cluster-specific file.  The `cluster_name` and `envs` should be
 supplied on the command line invoking the playbook.
 
+
+### Secondary Ansible Variables
+
+These are of no interest to a deployer of OpenRadiant or a solution
+built on it.  These _are_ of interest to a developer of a solution
+that extends OpenRadiant.  Mostly the secondary variables are just set
+in certain roles and read in others.
+
+Following are the secondary variables of interest to an extension
+developer.
+
+* `etcd_deploy`: Controls whether etcd is deployed.  Initially set to
+  `False`.  After the networking plugin's `-variables` role has had a
+  chance to set this variable to `True`, this variable is also set to
+  `True` if any other settings imply the need for etcd.
+
+* `k8s_scheduler_network_args`: An array of strings.  The are
+  arguments to add to the command that runs the Kubernetes scheduler.
+  Initially set to the empty array; the neworking plugin may set it
+  otherwise.  Moot if Kubernetes is not being deployed.
+
+
+## Networking Plugins
+
+A networking plugin named `fred` supplies the following Ansible roles.
+
+* `fred-variables`: This role is invoked on localhost and on all
+  cluster machines after the global default settings and environment-
+  and cluster-specific settings, before anything else is done.
+
+* `fred-local-prep`: This role is invoked on localhost after all the
+  variables have been set and before any work is done on the managed
+  machines.
+
+* `fred-remote-prep`: This role is invoked on all the cluster
+  machines, after the local prep and after the deployment of etcd
+  and/or ZooKeeper, before the deployment of higher level frameworks
+  such as Mesos or Kubernetes.
 

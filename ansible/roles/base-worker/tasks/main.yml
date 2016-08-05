@@ -1,4 +1,0 @@
----
-
-- include: disable_ns_tls.yml
-  when: openstack_install_kind == "kraken"

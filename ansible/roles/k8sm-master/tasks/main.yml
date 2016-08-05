@@ -91,10 +91,6 @@
   stat: path=/root/stackrc
   register: stackrc
 
-- name: use CNI plugin if kraken or devstack is used
-  set_fact: cni_plugin="- --kubelet-network-plugin=cni"
-  when: openstack_install_kind in ('kraken', 'devstack')
-
 - name: "Copy scheduler yaml file to {{ k8s_podmaster_manifests_dir }}"
   template: src={{ k8s_scheduler_cn }}.yaml.tmpl dest={{ k8s_podmaster_manifests_dir }}/{{ k8s_scheduler_cn }}.yaml mode=0644
 

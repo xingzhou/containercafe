@@ -1,0 +1,5 @@
+---
+
+- name: Set etcd_deploy to True because Flannel requires etcd
+  set_fact:
+    etcd_deploy: True

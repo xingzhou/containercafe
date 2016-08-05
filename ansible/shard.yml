@@ -1,15 +1,36 @@
 ---
 - include: ./utils/load-vars-cluster.yml
 
+- hosts:
+    - cluster-{{cluster_name}}
+    - localhost
+  tasks:
+  - debug: msg="network plugin is {{network_kind}}"
+
+- include: netvars.yml
+
+- hosts:
+    - cluster-{{cluster_name}}
+    - localhost
+  roles:
+#  - "{{ network_kind }}-variables"
+  tasks:
+  - name: Set etcd_deploy to True if other settings imply deploying etcd
+    set_fact:
+      etcd_deploy: True
+    when: kubernetes_deploy
+
 - hosts: localhost
   tasks:
   - fail:
       msg: ha_deploy must be True when there are multiple hosts in the mesos_master-{{ cluster_name }} group in your Ansible inventory
     when: groups['mesos_master-' ~ cluster_name]|length > 1 and not ha_deploy
 
+  - fail:
+
 - hosts: localhost
   roles:
-  - { role: flannel-local-prep, when: "network_kind == 'flannel'" }
+#  - "{{ network_kind }}-local-prep"
 
 - hosts: cluster-{{cluster_name}}
   become: yes
@@ -26,22 +47,20 @@
   roles:
   - { role: zk, when: "mesos_deploy" }
 
+- hosts: etcd-{{cluster_name}}
+  become: yes
+  roles:
+  - { role: etcd, when: "etcd_deploy" }
+
+- hosts: cluster-{{cluster_name}}
+  become: yes
+  roles:
+#  - role: "{{ network_kind }}-remote-prep"
+
 - hosts: mesos_master-{{cluster_name}}
   become: yes
   roles:
   - { role: mesos-master, when: "mesos_deploy" }
-
-- hosts: etcd-{{cluster_name}}
-  become: yes
-  roles:
-  - { role: etcd, when: "kubernetes_deploy" }
-  - { role: flannel-config-in-etcd, when: "network_kind == 'flannel' and inventory_hostname == groups['etcd-' ~ cluster_name][0]" }
-
-- hosts: workers-{{cluster_name}}
-  become: yes
-  roles:
-  - role: flannel-for-docker
-    when: "network_kind == 'flannel'"
 
 - hosts: lb-{{cluster_name}}
   become: yes
@@ -67,7 +86,6 @@
 - hosts: workers-{{cluster_name}}
   become: yes
   roles:
-  - base-worker
   - { role: mesos-worker, when: "mesos_deploy" }
   - { role: k8sm-worker, when: "kubernetes_deploy" }
   - { role: swarm-worker, when: "swarm_deploy" }

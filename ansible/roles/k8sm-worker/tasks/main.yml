@@ -64,10 +64,6 @@
   register: stackrc
   when: kubernetes_deploy
 
-- name: Use CNI plugin if kraken or devstack is used
-  set_fact: cni_plugin="- --kubelet-network-plugin=cni"
-  when: openstack_install_kind in ('kraken', 'devstack') and kubernetes_deploy
-
 - name: Copy kubelet and kubectl from image to local (for bootstrapping)
   shell: "{{ item }} "
   with_items:
