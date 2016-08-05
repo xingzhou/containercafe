@@ -62,13 +62,13 @@ Do this for all users in their respective terminals.
 `cd proxy-test-container`
 In each corresponding window, run the test script, `test_containers.sh` 
 
-`test_containers.sh` has 6 possible flags (all optional):
-1) -l (proxy_Location): either local or dev-mon01. Indicates where proxy should be run - on user's local machine, or in the "dev-mon01" data center. For container testing, the proxy runs locally. Local is the default. 
-2) -n (network_id): id of the network element to be inspected. Currently not supported; therefore, default is empty. 
-3) -t (tenant_id): the tenant id to be used in testing. Default is `test1`. 
-4) -k (test_kube): `true` or `false`. Default is true; kube tests will be run. 
-5) -c (num_containers): the total number of containers to be created, all without network. If no argument passed, default value is 5. 
-6) -p (num_pods): the total number of pods to be created. If no argument is passed, default value is 5. 
+`test_containers.sh` has 6 possible flags (all optional): <br />
+1) -l (proxy_Location): either local or dev-mon01. Indicates where proxy should be run - on user's local machine, or in the "dev-mon01" data center. For container testing, the proxy runs locally. Local is the default. <br />
+2) -n (network_id): id of the network element to be inspected. Currently not supported; therefore, default is empty. <br />
+3) -t (tenant_id): the tenant id to be used in testing. Default is `test1`. <br />
+4) -k (test_kube): `true` or `false`. Default is true; kube tests will be run. <br /> 
+5) -c (num_containers): the total number of containers to be created, all without network. If no argument passed, default value is 5. <br />
+6) -p (num_pods): the total number of pods to be created. If no argument is passed, default value is 5. <br />
 
 
 Suppose each test wants to examine a lifecycle of 3 containers and 3 pods.
