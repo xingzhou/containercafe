@@ -135,11 +135,11 @@ logic of the Ansible roles.
 
 ### Primary Ansible Variables
 
-Five have no meaningful defaults.  The others are defined by defaults
+Six have no meaningful defaults.  The others are defined by defaults
 in `ansible/group_vars/all` and can be overridden by settings in an
 environment-specific file and a cluster-specific file.
 
-Following are the five with no meaningful default.
+Following are the six with no meaningful default.
 
 * `cluster_name`: this identifies the cluster being processed, as
   discussed above.
@@ -148,6 +148,13 @@ Following are the five with no meaningful default.
   environment- and cluster-specific files are found.  The settings for
   the environment named `A-B` are found in `{{envs}}/A-B/defaults.yml`
   (if relative, the base is the filename of the playbook).
+
+* `network_kind`: this is the name of the network plugin to use.  This
+  must be supplied on the Ansible command line (because an Ansible
+  playbook can not invoke a role whose name is not computable at the
+  start of the playbook); in the future we will provide a shell script
+  that reads this variable's setting according to our conventions and
+  then invokes the playbook.
 
 * `master_vip`: this identifies the virtual IP (VIP) for most of the
   master components.
@@ -179,8 +186,8 @@ variables.
   override the others.
 
 The settings for the master components VIP should appear in the
-cluster-specific file.  The `cluster_name` and `envs` should be
-supplied on the command line invoking the playbook.
+cluster-specific file.  The `cluster_name`, `envs`, and `network_kind`
+should be supplied on the command line invoking the playbook.
 
 
 ### Secondary Ansible Variables
