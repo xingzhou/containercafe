@@ -123,7 +123,7 @@ fi
 if [[ "$NUM_CONTAINERS" == "" ]]; then 
 	NUM_CONTAINERS=5
 fi 
-if [[ "TEST_KUBE" == "" ]]; then 
+if [[ "$TEST_KUBE" == "" ]]; then 
 	TEST_KUBE=true
 fi 
 if [[ "$NUM_PODS" == "" ]]; then
@@ -500,8 +500,8 @@ function main() {
 
 main
 
-
-if [[ "$TEST_KUBE" == "true" ]]; then 
+echo "$TEST_KUBE"
+if [ "$TEST_KUBE" = true ]; then 
 	cd lib
 	./test_kube_pods.sh $NUM_PODS "$TENANT_ID" "$PROXY_LOC"
 fi 
