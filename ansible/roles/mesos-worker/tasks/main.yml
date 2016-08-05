@@ -46,17 +46,22 @@
     net: host
     pid: host
     volumes:
+      - /openstack/docker:/openstack/docker:rw
+      - /var/tmp/hermes:/tmp/hermes:rw
+      - /root/stackrc:/root/stackrc:ro
       - /var/tmp/mesos:/var/tmp/mesos:rw
       - /var/log/mesos:/var/log/mesos:rw
-      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /var/run:/var/run:rw
       - /var/lib/docker:/var/lib/docker:rw
       - /cgroup:/cgroup
       - /sys:/sys
       - /dev:/dev
-      - /usr/bin/docker:/usr/local/bin/docker:ro
+      - /usr/bin/docker:/usr/bin/docker:ro
+      - /usr/local/bin/neutron:/usr/local/bin/neutron:ro
       - /lib/x86_64-linux-gnu/libsystemd-journal.so.0:/lib/x86_64-linux-gnu/libsystemd-journal.so.0:ro
       - /usr/lib/x86_64-linux-gnu/libltdl.so.7:/usr/lib/x86_64-linux-gnu/libltdl.so.7
       - /opt/cni/bin:/opt/cni/bin:rw
+      - /opt/stack:/opt/stack:ro
       - /usr/libexec/kubernetes/kubelet-plugins/net/exec:/usr/libexec/kubernetes/kubelet-plugins/net/exec:ro
       - "{{ k8s_cert_dir }}:{{ k8s_cert_dir }}:ro"
 

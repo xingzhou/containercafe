@@ -44,6 +44,7 @@ cd examples/vagrant
 vagrant up
 cd -
 ```
+In case you face any issues, please follow [vagrant troubleshooting](vagrant/README.md)
 
 Deploy OpenRadiant:
 
@@ -51,7 +52,7 @@ Deploy OpenRadiant:
 cd ansible
 export ANSIBLE_INVENTORY=../examples/envs/dev-vbox/radiant01.hosts
 export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY
-ansible-playbook site.yml -e cluster_name=dev-vbox-radiant01
+ansible-playbook shard.yml -e cluster_name=dev-vbox-radiant01
 ```
 
 Now you can open an SSH connection to the master node:
@@ -112,7 +113,7 @@ kind: Pod
 metadata:
   name: sleepy-pod
   annotations:
-    containers-label.alpha.kubernetes.io/com.swarm.tenant.0: demo
+    containers-annotations.alpha.kubernetes.io: "{ \"com.ibm.radiant.tenant.0\": \"demo\",  \"OriginalName\": \"sleeper\" }"
 spec:
   containers:
     - name: sleeper

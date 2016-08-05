@@ -4,9 +4,6 @@ metadata:
   name: kube-web-ms
   labels:
     app: web-ms-demo
-  annotations:
-    aaa: bbbb
-    containers-label.alpha.kubernetes.io/com.swarm.tenant.0: sf7f413cb-a678-412d-b024-8e17e28bcb88-default
 spec:
   containers:
     - name: kube-web-server

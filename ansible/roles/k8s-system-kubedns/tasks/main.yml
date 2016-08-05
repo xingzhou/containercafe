@@ -1,0 +1,21 @@
+---
+
+- name: Copy KubeDNS RC template
+  copy:
+    src: "{{ lookup('env','HOME') }}/tmp/skydns-rc.yaml"
+    dest: "{{ ansible_user_dir }}/"
+
+- name: Copy KubeDNS service template
+  copy:
+    src: "{{ lookup('env','HOME') }}/tmp/skydns-svc.yaml"
+    dest: "{{ ansible_user_dir }}/"
+
+- name: Create the KubeDNS RC if it does not already exist
+  shell: if kubectl get rc -l k8s-app=kube-dns --namespace=kube-system | grep kube-dns-v; then echo Goody; else kubectl create -f {{ ansible_user_dir }}/skydns-rc.yaml; fi
+  register: rslt
+  changed_when: "'Goody' not in rslt.stdout"
+
+- name: Create the KubeDNS service if it does not already exist
+  shell: if kubectl get service kube-dns --namespace=kube-system; then echo Goody; else kubectl create -f {{ ansible_user_dir }}/skydns-svc.yaml; fi
+  register: rslt
+  changed_when: "'Goody' not in rslt.stdout"
