@@ -3,7 +3,7 @@ vip:
    enabled: false
    interface: '{{network_interface}}'
    ip_address: '{{ master_vip }}'
-   cidr_prefix: '{{ cidr_prefix }}'
+   cidr_prefix: '/{{ master_vip_net_prefix_len }}'
    up_script: '/etc/network/vip-up.sh'
    down_script: '/etc/network/vip-down.sh'
    # id: Id number.  This needs to be the same for all hosts using the same vip [1-255]
