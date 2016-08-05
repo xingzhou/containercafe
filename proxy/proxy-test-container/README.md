@@ -1,5 +1,5 @@
-# Proxy Testing 
-Steps below explain configuration & setup to run Swarm & Kube testing. <br />
+# Testing, for Proxy running as a Container
+Steps below explain configuration & setup to run Swarm & Kube testing, while Proxy is running as a container. <br />
 Note: Steps below detail multi-user testing. Testing can also be done with a single-user. 
 
 
@@ -12,6 +12,8 @@ In seperate terminals, create certificates for each user. Execute: <br />
 `docker exec hjproxy /hijack/make_TLS_certs.sh test1` <br />
 `docker exec hjproxy /hijack/make_TLS_certs.sh test2` <br />
 `docker exec hjproxy /hijack/make_TLS_certs.sh test3`. <br />
+
+If user has a desired cluster server address to be used, pass that in as the 2nd argument. For example, if address is `10.140.223.5:2375`, execute `docker exec hjproxy /hijack/make_TLS_certs.sh test1 10.140.223.5:2375`. Otherwise, the default address 10.140.146.7:2375 will be used. 
 
 This will create the certificates, and setup the configurations necessary to run the tests for the given users. 
 
