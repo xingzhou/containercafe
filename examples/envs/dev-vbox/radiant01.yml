@@ -1,6 +1,11 @@
 ---
-
+# deployment options
+kubernetes_deploy: true
+mesos_deploy: false
+swarm_deploy: false
+ha_deploy: false
+kubernetes_on_mesos_deploy: false
 # vip specs
 master_vip: 192.168.10.2
 master_vip_net: 192.168.10.0
-cidr_prefix: /24
+master_vip_net_prefix_len: 24
