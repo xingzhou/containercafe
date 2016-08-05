@@ -1,11 +1,19 @@
-## Ansible
+# Ansible
 
 The Ansible playbooks in OpenRadiant are modular in three dimensions.
 One is componentry: for each major component there is one or a few
-roles.  The second dimension is the inventory: the playbooks do *not*
-assume that your inventory is entirely dedicated to one shard or
-environment but rather allow your inventory to include multiple
-environments and also things unrelated to OpenRadiant.
+roles.
+
+The second dimension is the inventory: the playbooks do *not* assume
+that your inventory is entirely dedicated to one shard or environment
+but rather allow your inventory to include multiple environments and
+also things unrelated to OpenRadiant.  This is part of a larger
+modularity statement, which is that OpenRadiant aims to constrain the
+operator's use of Ansible as little as possible.  In addition to
+recognizing that other stuff may be in the Ansible inventory, this
+also includes placing minimal requirements on the version of Ansible
+used and various other Ansible settings (e.g., config file settings,
+module library path).
 
 The third dimension is a factoring between provisioning of machines
 and deployment of software on those machines.  There are independent
@@ -14,7 +22,34 @@ between them.  Any provisioning technique that results in inventory
 content meeting the contract can be used with any of the software
 deployment playbooks (because they assume only the contract).
 
-### The Inventory Contract
+
+## Ansible versions and bugs and configuration
+
+OpenRadiant aims to place few constraints on the version of Ansible
+used and the Ansible configuration.  It has been shown to work with
+(a) versions 1.9.5, 1.9.6 (the latest, at the time of this writing,
+lower than Ansible 2), and 2.1.1.0 (the latest, at the time of this
+writing, in the Ansible 2 line) and (b) no `ansible.cfg`.  Earlier
+versions of Ansible 2 have a bug
+(https://github.com/ansible/ansible/issues/15930), which can be worked
+around by setting the `roles_path` to include the OpenRadiant roles.
+Extending OpenRadiant with a network plugin that is not part of
+OpenRadiant also requires setting `roles_path` to include the roles
+directory(s) containing the network plugin.
+
+OpenRadiant includes an `ansible.cfg` that sets `roles_path` to the
+OpenRadiant roles directory and has some other settings whose purpose
+is speeding up the Ansible execution.  A deployer is free to use a
+different `ansible.cfg`, provided `roles_path` is set if and as
+necessary.
+
+If you use OpenRadiant with a provisioning technology that involves a
+dynamic Ansible inventory then you will need a config file and/or
+environment variable settings as appropriate for that dynamic
+inventory.
+
+
+## The Inventory Contract
 
 Because the playbooks support multiple environments and shards, the
 inventory contract applies to a given environment or shard.  Currently
@@ -74,13 +109,15 @@ There may be no dash in the `environment_kind` nor the
 decide how to choose the environment role and location names.  In the
 tiny example you find a cluster named `dev-vbox-radiant01`.
 
-### The Playbooks
+
+## The Playbooks
 
 OpenRadiant currently includes no playbooks for provisioning machines,
 and one playbook for installing software one them.  That is
 `ansible/shard.yml`.
 
-### Ansible Variables
+
+## Ansible Variables
 
 The playbooks that deploy software on machines are parameterized by a
 large collection of Ansible variables.  Five have no meaningful
