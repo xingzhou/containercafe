@@ -342,6 +342,8 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 			Log.Printf("*** ANNOT: %+v", annot)
 			metam["annotations"] = annotm
 			// annot = metam["annotations"]
+			Log.Printf("*** ANNOTM: %+v", annotm)
+			Log.Printf("*** METAM: %+v", metam)
 		} else {
 			Log.Printf("*** ANNOT: %+v", annot)
 			// convert the interface{} to map
