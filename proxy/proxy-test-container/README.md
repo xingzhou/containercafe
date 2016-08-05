@@ -39,22 +39,30 @@ export DOCKER_CERT_PATH=dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGH
 # Setup kubernetes environment:
 export KUBECONFIG=dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I/kube-config
 ```
-Copy and paste the first 2 lines. For the variable `DOCKER_CERT_PATH`, first execute <br />
+Copy and paste the first 2 lines into the test terminal.
+
+To run the test successfully, the relative paths needs to be converted to absolute paths.
+For the variable `DOCKER_CERT_PATH`, first execute <br />
 `pwd` <br />
 Copy the resulting path, and paste it before `dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I`
 The final command should look something like:
-`export DOCKER_CERT_PATH=/Users/atarng/workspace/openradiant/proxy/dockerize/OpenRadiant/dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I`. 
+
+```
+export DOCKER_CERT_PATH=/Users/atarng/workspace/openradiant/proxy/dockerize/OpenRadiant/dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I 
+```
 Execute this command. <br />
 
-For Kubernetes, there will be something like <br />
+Same for Kubernetes. There will be something like: <br />
 `export KUBECONFIG=dockerize/OpenRadiant/dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I/kube-config`. 
 
 Do the same copy and pasting of the path to the outer directory before the presented path. The final command will look something like
-`export KUBECONFIG=/Users/atarng/workspace/openradiant/proxy/dockerize/OpenRadiant/dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I/kube-config`.
+```
+export KUBECONFIG=/Users/atarng/workspace/openradiant/proxy/dockerize/OpenRadiant/dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I/kube-config
+```
 Execute this command. <br />  
 
 
-Do this for all users in their respective terminals. 
+Do this for all tenants in their respective terminals. 
 
 
 
