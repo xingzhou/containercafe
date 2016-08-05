@@ -193,15 +193,22 @@ in certain roles and read in others.
 Following are the secondary variables of interest to an extension
 developer.
 
-* `etcd_deploy`: Controls whether etcd is deployed.  Initially set to
-  `False`.  After the networking plugin's `-variables` role has had a
-  chance to set this variable to `True`, this variable is also set to
-  `True` if any other settings imply the need for etcd.
+* `etcd_deploy`: A boolean that controls whether etcd is deployed.
+  Initially set to `False`.  After the networking plugin's
+  `-variables` role has had a chance to set this variable to `True`,
+  this variable is also set to `True` if any other settings imply the
+  need for etcd.
 
-* `k8s_scheduler_network_args`: An array of strings.  The are
-  arguments to add to the command that runs the Kubernetes scheduler.
+* `k8s_kubelet_network_args`: An array of strings.  If Kubernetes is
+  being used without Mesos then these are arguments to add to the
+  command line that runs the Kubernetes kubelet; if Mesos is involved
+  then these instead need to be the arguments added to the k8s
+  scheduler command line to influence the way the kubelets are run.
   Initially set to the empty array; the neworking plugin may set it
   otherwise.  Moot if Kubernetes is not being deployed.
+
+* `use_kube_system_kubedns`: A boolean that controls whether the KubeDNS
+  application is deployed as usual in the `kube-system` namespace.
 
 
 ## Networking Plugins

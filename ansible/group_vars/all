@@ -93,8 +93,6 @@ k8s_log_dir: /var/log/kubernetes
 k8s_kubelet_manifests_dir: /etc/kubernetes/manifests
 k8s_podmaster_manifests_dir: /srv/kubernetes/manifests
 kube_mesos_offer_ttl: 10000m
-# by default we do not set the scheduler to use the CNI plugin
-cni_plugin: ""
 
 # Kubernetes components will use cert /CN to authenticate
 k8s_apiserver_cn: apiserver
@@ -204,11 +202,6 @@ swarm_mesos_offertimeout: 10000m
 # in the doc on Ansible structure.
 
 network_kind: bridge
-
-# An array of arguments to add to the k8s scheduler command for the
-# sake of the networking plugin.
-
-k8s_scheduler_network_args: []
 
 # The version of Flannel to use
 

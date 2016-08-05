@@ -4,4 +4,4 @@
   when: inventory_hostname == groups['etcd-' ~ cluster_name][0]
 
 - include: worker-prep.yaml
-  when: inventory_hostname is in groups['workers-' ~ cluster_name]
+  when: inventory_hostname in groups['workers-' ~ cluster_name]
