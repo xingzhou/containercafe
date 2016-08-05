@@ -30,3 +30,7 @@
      net: host
      volumes:
       - "/var/etcd/data:/var/etcd/data"
+
+  - name: wait for etcd to start
+    wait_for:
+      port: "{{etcd_port}}"

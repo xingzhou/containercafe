@@ -1,9 +1,5 @@
 ---
 
-- name: wait for etcd to start
-  wait_for:
-    port: "{{etcd_port}}"
-
 - name: make sure etcd is running
   command: wget http://localhost:{{etcd_port}}/v2/keys -O-
   changed_when: False

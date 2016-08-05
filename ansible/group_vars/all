@@ -93,8 +93,6 @@ k8s_log_dir: /var/log/kubernetes
 k8s_kubelet_manifests_dir: /etc/kubernetes/manifests
 k8s_podmaster_manifests_dir: /srv/kubernetes/manifests
 kube_mesos_offer_ttl: 10000m
-# by default we do not set the scheduler to use the CNI plugin
-cni_plugin: ""
 
 # Kubernetes components will use cert /CN to authenticate
 k8s_apiserver_cn: apiserver
@@ -120,6 +118,10 @@ k8s_hyperkube_version: v1.3.0
 ################################################################
 # Etcd
 ################################################################
+
+# The secondary variable that controls whether etcd is deployed.
+
+etcd_deploy: False
 
 etcd_image: quay.io/coreos/etcd
 etcd_port: 4001
@@ -194,9 +196,10 @@ swarm_mesos_offertimeout: 10000m
 # Networking
 ################################################################
 
-# The kind of networking to use.  Available values are "bridge" for
-# plain old docker bridge networking, "flannel" for Flannel with the
-# host-gw backend.
+# The name of the networking plugin to use.  Built-in plugins include:
+# "bridge" for plain old docker bridge networking, "flannel" for
+# Flannel with the host-gw backend.  See the networking plugin details
+# in the doc on Ansible structure.
 
 network_kind: bridge
 
@@ -215,11 +218,3 @@ infrastructure_docker_registry_type: v2
 image_pull_type: always
 
 
-###############################################################
-# Leper Outcast Unclean
-################################################################
-
-# Set this to one of 'kraken', 'devstack', or 'none'.  Somebody should
-# put some real documentation here.  Better yet, clean up this mess.
-
-openstack_install_kind: none

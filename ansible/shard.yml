@@ -1,6 +1,31 @@
 ---
 - include: ./utils/load-vars-cluster.yml
 
+- hosts:
+    - cluster-{{cluster_name}}
+    - localhost
+  tasks:
+  - debug: msg="network plugin is {{network_kind}}"
+
+- hosts:
+    - cluster-{{cluster_name}}
+    - localhost
+
+  pre_tasks:
+  - name: Set secondary variables of networking to their initial values
+    set_fact:
+      k8s_kubelet_network_args: []
+      use_kube_system_kubedns: False
+
+  roles:
+  - "{{ network_kind }}-variables"
+
+  post_tasks:
+  - name: Set etcd_deploy to True if other settings imply deploying etcd
+    set_fact:
+      etcd_deploy: True
+    when: kubernetes_deploy
+
 - hosts: localhost
   tasks:
   - fail:
@@ -9,7 +34,7 @@
 
 - hosts: localhost
   roles:
-  - { role: flannel-local-prep, when: "network_kind == 'flannel'" }
+  - "{{ network_kind }}-local-prep"
 
 - hosts: cluster-{{cluster_name}}
   become: yes
@@ -26,22 +51,20 @@
   roles:
   - { role: zk, when: "mesos_deploy" }
 
+- hosts: etcd-{{cluster_name}}
+  become: yes
+  roles:
+  - { role: etcd, when: "etcd_deploy" }
+
+- hosts: cluster-{{cluster_name}}
+  become: yes
+  roles:
+  - role: "{{ network_kind }}-remote-prep"
+
 - hosts: mesos_master-{{cluster_name}}
   become: yes
   roles:
   - { role: mesos-master, when: "mesos_deploy" }
-
-- hosts: etcd-{{cluster_name}}
-  become: yes
-  roles:
-  - { role: etcd, when: "kubernetes_deploy" }
-  - { role: flannel-config-in-etcd, when: "network_kind == 'flannel' and inventory_hostname == groups['etcd-' ~ cluster_name][0]" }
-
-- hosts: workers-{{cluster_name}}
-  become: yes
-  roles:
-  - role: flannel-for-docker
-    when: "network_kind == 'flannel'"
 
 - hosts: lb-{{cluster_name}}
   become: yes
@@ -67,7 +90,6 @@
 - hosts: workers-{{cluster_name}}
   become: yes
   roles:
-  - base-worker
   - { role: mesos-worker, when: "mesos_deploy" }
   - { role: k8sm-worker, when: "kubernetes_deploy" }
   - { role: swarm-worker, when: "swarm_deploy" }
@@ -77,5 +99,5 @@
   roles:
   - role: k8s-system-kubedns
     when: >
-      network_kind == 'flannel' and
+      use_kube_system_kubedns and
       inventory_hostname == groups['k8s_master-' ~ cluster_name][0]
