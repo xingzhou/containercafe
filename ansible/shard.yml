@@ -1,0 +1,81 @@
+---
+- include: ./utils/load-vars-cluster.yml
+
+- hosts: localhost
+  tasks:
+  - fail:
+      msg: ha_deploy must be True when there are multiple hosts in the mesos_master-{{ cluster_name }} group in your Ansible inventory
+    when: groups['mesos_master-' ~ cluster_name]|length > 1 and not ha_deploy
+
+- hosts: localhost
+  roles:
+  - { role: flannel-local-prep, when: "network_kind == 'flannel'" }
+
+- hosts: cluster-{{cluster_name}}
+  become: yes
+  roles:
+  - prereqs
+  - common
+
+- hosts: localhost
+  roles:
+  - keygen
+
+- hosts: zk-{{cluster_name}}
+  become: yes
+  roles:
+  - { role: zk, when: "mesos_deploy" }
+
+- hosts: mesos_master-{{cluster_name}}
+  become: yes
+  roles:
+  - { role: mesos-master, when: "mesos_deploy" }
+
+- hosts: etcd-{{cluster_name}}
+  become: yes
+  roles:
+  - { role: etcd, when: "kubernetes_deploy" }
+  - { role: flannel-config-in-etcd, when: "network_kind == 'flannel' and inventory_hostname == groups['etcd-' ~ cluster_name][0]" }
+
+- hosts: workers-{{cluster_name}}
+  become: yes
+  roles:
+  - role: flannel-for-docker
+    when: "network_kind == 'flannel'"
+
+- hosts: lb-{{cluster_name}}
+  become: yes
+  roles:
+  - lb
+  - { role: vip, when: "groups['mesos_master-' ~ cluster_name]|length > 1 or ha_deploy" }
+
+- hosts: k8s_auth-{{cluster_name}}
+  become: yes
+  roles:
+  - auth
+
+- hosts: k8s_master-{{cluster_name}}
+  become: yes
+  roles:
+  - { role: k8sm-master, when: "kubernetes_deploy" }
+
+- hosts: swarm_master-{{cluster_name}}
+  become: yes
+  roles:
+  - { role: swarm-master, when: "swarm_deploy" }
+
+- hosts: workers-{{cluster_name}}
+  become: yes
+  roles:
+  - base-worker
+  - { role: mesos-worker, when: "mesos_deploy" }
+  - { role: k8sm-worker, when: "kubernetes_deploy" }
+  - { role: swarm-worker, when: "swarm_deploy" }
+
+- hosts: k8s_master-{{cluster_name}}
+  become: yes
+  roles:
+  - role: k8s-system-kubedns
+    when: >
+      network_kind == 'flannel' and
+      inventory_hostname == groups['k8s_master-' ~ cluster_name][0]
