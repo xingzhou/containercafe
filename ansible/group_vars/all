@@ -22,7 +22,11 @@ ca_srl: ca.srl
 ################################################################
 # VIP
 ################################################################
-# cidr_prefix: /26
+
+# A boolean.  Set to false if the Mesos master group has more than one
+# member and you do NOT want an HA deployment.
+
+ha_deploy: True
 
 vip_k8s_apiserver_ip: "{{master_vip}}"
 vip_k8s_apiserver_port: 443
@@ -51,6 +55,18 @@ lb_mesos: false
 ################################################################
 # Kubernetes
 ################################################################
+
+# A boolean controlling whether Kubernetes is deployed in any way at
+# all.
+
+kubernetes_deploy: True
+
+# Another boolean.  Set to True iff you want Kubernetes installed for
+# Mesos.  What happens if this is inconsistent with kubernetes_deploy
+# and/or mesos_depoy?
+
+kubernetes_on_mesos_deploy: True
+
 kube_image: openradiant/km
 kube_podmaster_image: gcr.io/google_containers/podmaster:1.1
 kube_infra_image: gcr.io/google_containers/pause
@@ -118,6 +134,10 @@ zookeeper_port: 2181
 # Mesos
 ################################################################
 
+# A boolean controlling whether Mesos is deployed
+
+mesos_deploy: True
+
 mesos_master_image: mesosphere/mesos-master:1.0.0-rc2
 mesos_slave_image: mesosphere/mesos-slave:1.0.0-rc2
 mesos_master_port: 5050
@@ -138,6 +158,11 @@ docker_engine_port: 2375
 ################################################################
 # Swarm
 ################################################################
+
+# A boolean controlling whether the SwarmV1 master is deployed.
+
+swarm_deploy: True
+
 swarm_image: openradiant/swarm
 swarm_manager_host_port: 4375
 swarm_manager_port: 4375
