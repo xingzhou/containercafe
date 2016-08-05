@@ -353,6 +353,17 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 		
 	//	meta := data["metadata"]
 	//	anot := meta["annotations"]
+	
+	spec := data["spec"]
+	Log.Printf("*** SPEC: %+v", spec)
+	// convert the interface{} to map
+	specm :=spec.(map[string]interface{})
+	conts := specm["containers"]
+	Log.Printf("*** CONTS: %+v", conts)
+//	for index,cont := range conts {
+//		Log.Printf("*** CONT: %+v, index %v, name: %v", cont, index, cont["name"])
+//	}
+	
 		
 	//	Log.Printf("** Selected annotation for %s: %s", label, anot[label])
 		new_value := "{ \"" + auth_label+ "\": \""+ namespace + "\",  \"OriginalName\": \"kube-web-server\" }"
