@@ -337,37 +337,41 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 		// convert the interface{} to map
 		metam :=meta.(map[string]interface{})
 		annot := metam["annotations"]
-		Log.Printf("*** ANNOT: %+v", annot)
-		// convert the interface{} to map
-		annotm :=annot.(map[string]interface{})
-		if annotm[annot_label]=="" || annotm[annot_label]==nil{
-			Log.Printf("Annotation label does not exist")
-		} else {
-			Log.Printf("Annotation label %v already exists: %v", annot_label, annotm[annot_label])
-	//		err = errors.New("Illegal usag of label ")
-	//		return nil, err
-		}
-		//l1 := anotm[label]
-		//Log.Printf("**** Selected annotation for %s: %s", label, l1)
+		if annot == nil {
+			 metam["annotations"] = ""
+			 annot = metam["annotations"]
+		}	
+			Log.Printf("*** ANNOT: %+v", annot)
+			// convert the interface{} to map
+			annotm :=annot.(map[string]interface{})
+			if annotm[annot_label]=="" || annotm[annot_label]==nil{
+				Log.Printf("Annotation label does not exist")
+			} else {
+				Log.Printf("Annotation label %v already exists: %v", annot_label, annotm[annot_label])
+		//		err = errors.New("Illegal usag of label ")
+		//		return nil, err
+			}
+			//l1 := anotm[label]
+			//Log.Printf("**** Selected annotation for %s: %s", label, l1)
+			
+			
+			//	meta := data["metadata"]
+			//	anot := meta["annotations"]
+			
+			spec := data["spec"]
+			Log.Printf("*** SPEC: %+v", spec)
+			// convert the interface{} to map
+			specm :=spec.(map[string]interface{})
+			conts := specm["containers"]
+			Log.Printf("*** CONTS: %+v", conts)
+			//contsm :=conts.([]interface{})
+			contsm := make([]interface{}, 1)
+			for index,cont := range contsm {
+				Log.Printf("*** CONT: %+v ", cont)
+				Log.Printf("*** CONT: %+v, index %v, ", cont, index)
+				//Log.Printf("*** CONT: %+v, index %v, name: %v", cont, index, cont["name"])
+			}
 		
-		
-	//	meta := data["metadata"]
-	//	anot := meta["annotations"]
-	
-	spec := data["spec"]
-	Log.Printf("*** SPEC: %+v", spec)
-	// convert the interface{} to map
-	specm :=spec.(map[string]interface{})
-	conts := specm["containers"]
-	Log.Printf("*** CONTS: %+v", conts)
-	//contsm :=conts.([]interface{})
-	contsm := make([]interface{}, 1)
-	for index,cont := range contsm {
-		Log.Printf("*** CONT: %+v ", cont)
-		Log.Printf("*** CONT: %+v, index %v, ", cont, index)
-		//Log.Printf("*** CONT: %+v, index %v, name: %v", cont, index, cont["name"])
-	}
-	
 		
 	//	Log.Printf("** Selected annotation for %s: %s", label, anot[label])
 		new_value := "{ \"" + auth_label+ "\": \""+ namespace + "\",  \"OriginalName\": \"kube-web-server\" }"
