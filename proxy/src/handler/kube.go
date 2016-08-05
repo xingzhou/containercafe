@@ -15,7 +15,7 @@ import (
 	"httphelper"
 	"conf"
 	"auth"
-//	"errors"
+	"errors"
 )
 
 
@@ -321,11 +321,9 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 		//  		"name":"group3",
 		//  		"labels":{"run":"group3"},
 		//  		"annotations":{
-		//  			"containers-label.alpha.kubernetes.io/com.ibm.radiant.tenant.0":"sf7f413cb-a678-412d-b024-8e17e28bcb88-default",
-			
-		//data := map[string]map[string]map[string]string{}
-		//json.Unmarshal(body, &data)
-		
+		//  			"containers-label.alpha.kubernetes.io: "{ \"com.ibm.radiant.tenant.0\": \"sf7f413cb-a678-412d-b024-8e17e28bcb88-default\" }"
+
+		// get the label names
 		auth_label := conf.GetSwarmAuthLabel()
 		annot_label := conf.GetAnnotationExtLabel()
 		
@@ -333,24 +331,18 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 		json.Unmarshal(body, &data)
 		
 		meta :=  data["metadata"]
-		Log.Printf("*** META: %+v", meta)
+		//Log.Printf("*** META: %+v", meta)
 		// convert the interface{} to map
 		metam :=meta.(map[string]interface{})
 		annot := metam["annotations"]
+		Log.Printf("***Original Annotations: %+v", annot)
 		var annotm map[string]interface{}
+		// annotations might not be provided in the yaml file:
 		if annot == nil {
-			Log.Printf("*** ANNOT: %+v", annot)
-			
-			// annot = metam["annotations"]
 			annotm = make(map[string]interface{})
-			Log.Printf("*** ANNOTM: %+v", annotm)
-			Log.Printf("*** METAM: %+v", metam)
-			annotm["test"] = "testvalue"
-			Log.Printf("*** ANNOTM: %+v", annotm)
 			metam["annotations"] = annotm
 		} else {
-			Log.Printf("*** ANNOT: %+v", annot)
-			// convert the interface{} to map
+			// convert the existing annotation interface{} to map
 			annotm =annot.(map[string]interface{})
 		}	
 
@@ -358,40 +350,35 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 				Log.Printf("Annotation label does not exist")
 			} else {
 				Log.Printf("Annotation label %v already exists: %v", annot_label, annotm[annot_label])
-		//		err = errors.New("Illegal usag of label ")
-		//		return nil, err
+				err = errors.New("Illegal usage of label ")
+				return nil, err
 			}
-			//l1 := anotm[label]
-			//Log.Printf("**** Selected annotation for %s: %s", label, l1)
-			
-			
-			//	meta := data["metadata"]
-			//	anot := meta["annotations"]
-			
-			spec := data["spec"]
-			Log.Printf("*** SPEC: %+v", spec)
-			// convert the interface{} to map
-			specm :=spec.(map[string]interface{})
-			conts := specm["containers"]
-			Log.Printf("*** CONTS: %+v", conts)
-			//contsm :=conts.([]interface{})
-			contsm := make([]interface{}, 1)
-			for index,cont := range contsm {
-				Log.Printf("*** CONT: %+v ", cont)
-				Log.Printf("*** CONT: %+v, index %v, ", cont, index)
-				//Log.Printf("*** CONT: %+v, index %v, name: %v", cont, index, cont["name"])
-			}
-		
-		
-	//	Log.Printf("** Selected annotation for %s: %s", label, anot[label])
-		new_value := "{ \"" + auth_label+ "\": \""+ namespace + "\",  \"OriginalName\": \"kube-web-server\" }"
-		annotm[annot_label] = new_value
-		
-		//fmt.Println("****Updated json: ", data)
 
-		//var m map[string]string = data["metadata"]
-	  	//fmt.Printf("***%v",m["annotations"])
-    
+			// Get the container name from spec/containers
+			//	"spec": {
+			//		"containers": [
+			//			{
+			//				"image": "mrsabath/web-ms:v3",
+			//				"name": "kube-web-server",
+
+//			spec := data["spec"]
+//			Log.Printf("*** SPEC: %+v", spec)
+//			// convert the interface{} to map
+//			specm :=spec.(map[string]interface{})
+//			conts := specm["containers"]
+//			Log.Printf("*** CONTS: %+v", conts)
+//			//contsm :=conts.([]interface{})
+//			contsm := make([]interface{}, 1)
+//			for index,cont := range contsm {
+//				Log.Printf("*** CONT: %+v ", cont)
+//				Log.Printf("*** CONT: %+v, index %v, ", cont, index)
+//				//Log.Printf("*** CONT: %+v, index %v, name: %v", cont, index, cont["name"])
+//			}
+//		new_value := "{ \"" + auth_label+ "\": \""+ namespace + "\",  \"OriginalName\": \"kube-web-server\" }"
+
+		new_value := "{ \"" + auth_label+ "\": \""+ namespace + "\" }"
+		annotm[annot_label] = new_value
+
 		b, err := json.Marshal(data) 
 		if err != nil {
 	 		Log.Printf("Error marshaling the updated json: %v ", err)
@@ -399,15 +386,7 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 	 	}
 		bodystr = httphelper.PrettyJson(b)
 		Log.Println("Updated JSON: %s", bodystr)
-
 		return b, nil
-		//json.Unmarshal(body, &b)
-		//var meta Meta
-		//json.Unmarshal([]byte(data["metadata"]),&meta)
-		//fmt.Println("**in meta : ", meta.name, " Annot: ",  meta.annotations["aaa"])
-		//fmt.Println("***** Kind:", b.kind, "Annot: ", b.meta.annotations["aaa"])
-		//annot := data["metadata"]
-		//fmt.Println("***** annotations", annot["annotations"])
 	} else {
 		// return the original body
 		return body, nil
