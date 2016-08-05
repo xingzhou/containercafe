@@ -17,19 +17,19 @@ In every terminal, execute the script to create test tenants: <br />
 `docker exec hjproxy /hijack/make_TLS_certs.sh test2` <br />
 `docker exec hjproxy /hijack/make_TLS_certs.sh test3`. <br />
 
-If you are using multiple openradiant shards, your your master cluster is different from 
+If you are using multiple openradiant shards, your master cluster is different from 
 default VIP: `192.168.10.2`, pass that VIP as the 2nd argument. For example, if address is 
 `192.168.10.10`, execute `docker exec hjproxy /hijack/make_TLS_certs.sh test1 192.168.10.10`. 
 Otherwise, the default address `192.168.10.2` will be used. 
 
-This will create the certificates for this tenant, and the configurations necessary to run the tests 
-for the given tenant. To view all the accounts valid for this proxy: 
+This will create the certificates for this tenant and the configurations necessary to run the tests. 
+To view all the accounts valid for this proxy: 
 ```
 docker exec hjproxy cat /hijack/creds.json
 ```
 
 ## Step 3: Environment Variables
-The certificate creation script will output a few export statements; for example: <br />
+The certificate creation script will output few export statements. For example: <br />
 ```
 # Setup docker environment:
 export DOCKER_HOST=localhost:8087
