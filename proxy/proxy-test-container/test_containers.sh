@@ -6,21 +6,24 @@ helpme()
 {
 	cat <<HELPMEHELPME
 
-Syntax: ${0} <proxy_location> <network_id> <tenant_id> <test_kube?> <num_containers> <num_pods> 
+Syntax: ${0} -l <proxy_location> -n <network_id> -t <tenant_id> -k <test_kube?> -c <num_containers> -p <num_pods> 
+
+* All flags technically optional; default values are set. 
+
 Where:
 	proxy_location =
-	    local - test is targeting local instance of proxy (localhost:8087) (default if argument not given)
+	    local - test is targeting local instance of proxy (localhost:8087). With proxy running on a container, this should be the option in use. (default) 
 	    dev-mon01 - test is targeting remote instance (https://containers-api-dev.stage1.ng.bluemix.net:9443)
 
-	network_id = id of network element to be inspected (using default as default)
+	network_id = id of network element to be inspected (currently unsupported - default is empty)
 
-	tenant_id = user_id of current user; should match Apikey being used in the config file. Currently, default is "test1".
+	tenant_id = tenant_id to be tested. Currently, default is "test1".
 
-	test_kube? = "true" or "false". In case of multi-user testing, only 1 user should run the kube tests ("true"); all others should be "false". 
+	test_kube? = "true" or "false". Default is true. 
 
-	num_containers = total number of containers to be created; RIGHT NOW ALL W/O NETWORK. 
+	num_containers = total number of containers to be created; default value is 5. 
 
-	num_pods = total number of pods to be created. if argument not given, default value is 5. 
+	num_pods = total number of pods to be created. If argument not given, default value is 5. 
 
 	  
 
@@ -36,10 +39,70 @@ HELPMEHELPME
 }
 
 
-if [[ "$1" == "" || "$1" == "-?" || "$1" == "-h" || "$1" == "--help" || "$1" == "help" ]] ; then
-	helpme
-	exit 1
-fi
+while test $# -gt 0; do
+	case "$1" in 
+		""|"-?"|"-h"|"--help"|"help")
+			helpme
+			exit 1
+			;;
+		-l)
+			shift 
+			if test $# -gt 0; then 
+				PROXY_LOC=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+			else
+				echo "Proxy location not specified"
+				exit 1
+			fi 
+			shift 
+			;;
+		-n)
+			shift
+			if test $# -gt 0; then 
+				try_net_id="$1"
+			else 
+				echo "No network id specified"
+				exit 1
+			fi 
+			shift
+			;; 
+		-t)
+			shift
+			if test $# -gt 0; then 
+				TENANT_ID="$1"
+			else
+				echo "No tenant_id specified"
+			fi 
+			shift 
+			;;
+		-k)
+			shift 
+			if test $# -gt 0; then
+				TEST_KUBE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+			else
+				echo "Test kube flag not specified"
+			fi 
+			shift 
+			;; 
+		-c)
+			shift
+			if test $# -gt 0; then 
+				NUM_CONTAINERS=$1
+			else
+				echo "Number of containers not specified"
+			fi 
+			shift
+			;;
+		-p)
+			shift
+			if test $# -gt 0; then 
+				NUM_PODS=$1
+			else 
+				echo "Number of pods not specified"
+			fi 
+			shift 
+			;;
+	esac
+done 
 
 
 TEST_COUNT=0
@@ -47,19 +110,7 @@ SUCCESS_COUNT=0
 date=$( date +%F )
 time=$( date +%T )
 timestamp="$date""_""$time"
-
-TENANT_ID="$3"
 RESULTS_PATH="logs/""$TENANT_ID""_test_swarm_results_""$timestamp"".log"
-PROXY_LOC=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-try_net_id="$2"
-
-
-TEST_KUBE=$(echo "$4" | tr '[:upper:]' '[:lower:]')
-NUM_CONTAINERS=$5
-NUM_PODS=$6
-
-
-
 TEST_TYPE="swarm"
 
 # create logs directory 
@@ -69,11 +120,11 @@ mkdir -p logs
 if [[ "$PROXY_LOC" == "" ]]; then
 	PROXY_LOC="local"
 fi
-if [[ "$try_net_id" == "" ]]; then
-	try_net_id="default"
-fi 
 if [[ "$NUM_CONTAINERS" == "" ]]; then 
 	NUM_CONTAINERS=5
+fi 
+if [[ "$TEST_KUBE" == "" ]]; then 
+	TEST_KUBE=true
 fi 
 if [[ "$NUM_PODS" == "" ]]; then
 	NUM_PODS=5
@@ -435,6 +486,10 @@ function main() {
 
 	test_network_ls 0
 
+	if [[ "$try_net_id" != "" ]]; then 
+		test_network_inspect "$try_net_id" 0
+	fi 
+
 	# Make sure everything is clean at the end 
 	test_ps_a 0
 	test_ps 0 
@@ -445,8 +500,8 @@ function main() {
 
 main
 
-
-if [[ "$TEST_KUBE" == "true" ]]; then 
+echo "$TEST_KUBE"
+if [ "$TEST_KUBE" = true ]; then 
 	cd lib
 	./test_kube_pods.sh $NUM_PODS "$TENANT_ID" "$PROXY_LOC"
 fi 
