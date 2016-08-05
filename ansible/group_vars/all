@@ -23,10 +23,20 @@ ca_srl: ca.srl
 # VIP
 ################################################################
 
-# A boolean.  Set to false if the Mesos master group has more than one
-# member and you do NOT want an HA deployment.
+# A Virtual IP (VIP) address is normally used by clients of various
+# master components when connecting to that component, so that the
+# binding of this address to machine can vary over time as part of the
+# HA solution.
+
+# A boolean controlling whether the VIP is dynamically bound to a
+# machine.  This must be set to True if the size of the Mesos master
+# group is greater than one.  We use
+# https://www.pureftpd.org/project/ucarp for the dynamic binding.
 
 ha_deploy: True
+
+# The following variables are details of how the VIP is used.  There
+# is no known reason to vary any of them.
 
 vip_k8s_apiserver_ip: "{{master_vip}}"
 vip_k8s_apiserver_port: 443
@@ -41,9 +51,16 @@ vip_mesos_master_ip: "{{master_vip}}"
 
 vip_swarm_master_ip: "{{master_vip}}"
 vip_swarm_master_port: 2375
+
+
 ###############################################################
 # HAproxy
 ###############################################################
+
+# HAProxy is always between master component clients and servers.  The
+# following variables control details of its configuration.  There is
+# no known reason to vary any of them.
+
 haproxy_image: haproxy:1.5
 haproxy_stats_port: 9000
 traffic_type: tcp
@@ -61,9 +78,9 @@ lb_mesos: false
 
 kubernetes_deploy: True
 
-# Another boolean.  Set to True iff you want Kubernetes installed for
-# Mesos.  What happens if this is inconsistent with kubernetes_deploy
-# and/or mesos_depoy?
+# Another boolean.  Controls whether Kubernetes is deployed as a Mesos
+# framework.  Should be set consistently with other relevant
+# settings.
 
 kubernetes_on_mesos_deploy: True
 
@@ -99,6 +116,7 @@ pod_subnet: "172.17.0.0/16"
 k8s_hyperkube_image: gcr.io/google_containers/hyperkube-amd64
 k8s_hyperkube_version: v1.3.0
 
+
 ################################################################
 # Etcd
 ################################################################
@@ -108,11 +126,6 @@ etcd_port: 4001
 etcd_advertise_peer_port: 2380
 etcd_listen_client_port: 2379
 
-################################################################
-# UCARP
-################################################################
-
-dev: "{{network_interface}}"
 
 ################################################################
 # Remote ABAC
@@ -122,6 +135,7 @@ rabac_image: openradiant/remoteabac
 rabac_port: 8888
 rabac_policy_file: abac-policy
 rabac_cn: remoteabac
+
 
 ################################################################
 # Zookeeper
@@ -149,11 +163,14 @@ mesos_roles:
 mesos_slaves_resources: "cpus(swarm):2;cpus(kube):2;mem(swarm):4096;mem(kube):4096;disk(swarm):204800;disk(kube):204800;ports(swarm):[15000-25000];ports(kube):[55000-65000]"
 mesos_allocation_interval: 500ms
 
+
 ################################################################
 # Docker
 ################################################################
+
 docker_package: docker-engine=1.11.2-0~trusty
 docker_engine_port: 2375
+
 
 ################################################################
 # Swarm
@@ -172,6 +189,7 @@ swarm_mesos_refuse_seconds: 0.1s
 swarm_mesos_tasktimeout: 10m
 swarm_mesos_offertimeout: 10000m
 
+
 ###############################################################
 # Networking
 ################################################################
@@ -186,13 +204,16 @@ network_kind: bridge
 
 flannel_version: "0.5.5"
 
+
 ###############################################################
 # Infrastructure docker registry (used to deploy radiant components)
 ################################################################
+
 # possible values: v1 or v2
 infrastructure_docker_registry_type: v2
 # use 'always' with v2 and 'missing' with v1
 image_pull_type: always
+
 
 ###############################################################
 # Leper Outcast Unclean
