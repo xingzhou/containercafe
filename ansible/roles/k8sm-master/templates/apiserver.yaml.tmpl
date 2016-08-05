@@ -1,3 +1,4 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 apiVersion: v1
 kind: Pod
 metadata:
@@ -23,8 +24,9 @@ spec:
     - --service-cluster-ip-range={{ k8s_service_ip_range }}
     - --secure-port={{ k8s_apiserver_sport }}
     - --insecure-port={{ k8s_apiserver_port }}
+    {%if kubernetes_on_mesos_deploy%}
     - --cloud-provider=mesos
-    - --cloud-config={{ k8s_etc_dir }}/mesos-cloud.conf
+    - --cloud-config={{k8s_etc_dir}}/mesos-cloud.conf{%endif%}
     - --advertise-address={{ hostvars[inventory_hostname]['ansible_' ~ network_interface]['ipv4']['address'] }}
     - --tls-cert-file={{ k8s_cert_dir }}/{{ k8s_apiserver_cn }}.pem
     - --tls-private-key-file={{ k8s_cert_dir }}/{{ k8s_apiserver_cn }}-key.pem
@@ -32,7 +34,7 @@ spec:
     - --authorization-mode=Webhook
     - --authorization-webhook-config-file={{ k8s_etc_dir }}/webhook-config
     - --admission-control=LimitRanger,NamespaceLifecycle,ResourceQuota
-    - --v=0
+    - --v=2
     ports:
     - containerPort: {{ k8s_apiserver_sport }}
       hostPort: {{ k8s_apiserver_sport }}

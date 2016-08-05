@@ -4,8 +4,6 @@ metadata:
   name: kube-web-ms
   labels:
     app: web-ms-demo
-  annotations:
-    containers-annotations.alpha.kubernetes.io: "{ \"com.ibm.radiant.tenant.0\": \"stest1-default\",  \"OriginalName\": \"kube-web-server\" }"
 spec:
   containers:
     - name: kube-web-server
