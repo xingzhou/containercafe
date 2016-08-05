@@ -337,15 +337,18 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 		// convert the interface{} to map
 		metam :=meta.(map[string]interface{})
 		annot := metam["annotations"]
+		var annotm map[string]interface{}
 		if annot == nil {
-			var annotm map[string]int
+			Log.Printf("*** ANNOT: %+v", annot)
 			metam["annotations"] = annotm
 			// annot = metam["annotations"]
-		}	
+		} else {
 			Log.Printf("*** ANNOT: %+v", annot)
 			// convert the interface{} to map
-			annotm :=annot.(map[string]interface{})
-			if annotm[annot_label]=="" || annotm[annot_label]==nil{
+			annotm =annot.(map[string]interface{})
+		}	
+
+		if annotm[annot_label]=="" || annotm[annot_label]==nil{
 				Log.Printf("Annotation label does not exist")
 			} else {
 				Log.Printf("Annotation label %v already exists: %v", annot_label, annotm[annot_label])
