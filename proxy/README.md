@@ -17,7 +17,7 @@ The steps below work best with native docker [for Mac, Unix or Windows](http://w
 It would also work with `docker-machine`, but it requires additional steps. Look
 for /[DOCKER MACHINE] tag.
 
-### Step 1: Get proxy code and run it
+### Step 1: Get proxy code and run it [*This will be done by ansible install script*]
 If you have not done this already, clone the repository:
 
 ```
@@ -26,15 +26,23 @@ git clone git@github.ibm.com:alchemy-containers/openradiant.git
 git clone https://github.ibm.com/alchemy-containers/openradiant.git
 ```
 
-#### Run proxy as a container
-Then build and deploy it:
+#### Run proxy as a container [*This will be done by ansible install script*]
+Proxy service will be installed as a container on your default docker host.
+When Then build and deploy it:
 ```
 cd openradiant/proxy
 ./builddocker.sh
 ./rundocker.sh
 ```
 
-This will start the Proxy as a container named `hjproxy`, running in the current terminal.
+This will start the Proxy as a container named `hjproxy`, running in the current
+terminal, on port specified in [Dockerfile](dockerize/Dockerfile) e.g:
+```
+EXPOSE 8087
+CMD ["/hijack/bin/hijack", "8087"]
+```
+
+
 If you want to run the Proxy as background container (daemon), use the `-d` flag:
 ```
 ./rundocker.sh -d
@@ -83,13 +91,15 @@ At the bottom of the output the script displays the docker environment setup for
 the newly created tenant, including the location of the certs. Here is the sample
 output:
 ```
-Execute the following:
+# Setup docker environment:
 export DOCKER_HOST=localhost:8087
 export DOCKER_TLS_VERIFY=1
-export DOCKER_CONFIG=dockerize/OpenRadiant/1z5AmY6uDzqBT65mkPtffEhOutcxs3sghn9S9LrXfAOztCpR
-export DOCKER_CERT_PATH=dockerize/OpenRadiant/1z5AmY6uDzqBT65mkPtffEhOutcxs3sghn9S9LrXfAOztCpR
+export DOCKER_CERT_PATH=dockerize/OpenRadiant/4cBnDldoVTjIy1FGuRhayOl7EBRe1kbfAyRDwy7FxiiIqMSy
+
+# Setup kubernetes environment:
+export KUBECONFIG=dockerize/OpenRadiant/4cBnDldoVTjIy1FGuRhayOl7EBRe1kbfAyRDwy7FxiiIqMSy/kube-config
 ```
-Copy the last four lines and paste in a new terminal. Make sure you are in
+Copy and paste these commands in a new terminal. Make sure you are in
 `openradiant/proxy` directory.
 
 Now you should be able to execute commands against OpenRadiant account that you
@@ -99,12 +109,18 @@ just created:
 docker ps
 docker run -d --name test --net none -m 128m mrsabath/web-ms
 docker inspect test
+
+kubectl get pods
+kubectl create -f web.yaml
 ```
-To run the proxy against a different OpenRadiant deployment or cluster, change
-the IP of the TARGET_SERVER value to this new location in `make_TLS_certs.sh` script.
+To run the proxy against a different OpenRadiant shard, pass the IP of this shard
+as additional parameter of the script `make_TLS_certs`. E.g:
+```
+docker exec hjproxy /hijack/make_TLS_certs.sh test1 92.168.10.11
+```
 By default it is set to the local server running on `radiant2` in vagrant:
-`TARGET_SERVER="192.168.10.2"`, then rebuild and redeploy the Proxy.
-The newly created tenant will be pointing at the new location.
+`TARGET_SERVER="192.168.10.2"`
+
 You can also manually change the values in "/hijack/creds.json" file that lists
 all the valid tenants.  
 To modify the value in the running container:
