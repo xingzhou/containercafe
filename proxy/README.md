@@ -1,8 +1,10 @@
 # OpenRadiant Proxy
-Proxy intercepts the communication between the clients (Docker or Kubernetes) and
-the OpenRadiant cluster, using HTTP session hijacking. It validates the tenant
-and provided TLS certificates. It also redirects to proper shard when cluster
-sharing is used.
+Proxy is the component of OpenRadiant that intercepts the communication between
+the clients (Docker or Kubernetes) and the OpenRadiant cluster, using HTTP session
+hijacking. It validates the tenant and provided TLS certificates.
+It also redirects to proper shard when cluster sharing is used.
+
+More detailed documentation about proxy is available [here](../docs/proxy.md)
 
 ## Proxy Environment Setup and Development
 Steps below explain the basic configuration and setup to run Proxy. This setup
@@ -15,7 +17,7 @@ The steps below work best with native docker [for Mac, Unix or Windows](http://w
 It would also work with `docker-machine`, but it requires additional steps. Look
 for /[DOCKER MACHINE] tag.
 
-### Step 1: Get proxy code
+### Step 1: Get proxy code and run it
 If you have not done this already, clone the repository:
 
 ```
@@ -23,6 +25,8 @@ git clone git@github.ibm.com:alchemy-containers/openradiant.git
 # or
 git clone https://github.ibm.com/alchemy-containers/openradiant.git
 ```
+
+#### Run proxy as a container
 Then build and deploy it:
 ```
 cd openradiant/proxy
@@ -35,12 +39,13 @@ If you want to run the Proxy as background container (daemon), use the `-d` flag
 ```
 ./rundocker.sh -d
 ```
-The Proxy container can be seen along with its logs:
+The Proxy container can be seen there along with its logs:
 ```
 docker ps
 docker logs -f hjproxy
 ```
 
+#### Run proxy as a script
 If you don't want to run the Proxy as a container, you can run directly as GoLang
 application. This requires Go libraries installed, proxy code compiled and added
 to go path.
@@ -50,6 +55,13 @@ Setup the environment and start the application:
 source ./set_local_env.sh
 ./start_proxy.sh
 ```
+NOTE: There is a problem when running the proxy as a script on mac. Mac implements
+their own native SSL libraries for curl, therefore passing certs that are not
+in the keychain is a bit problematic. Install curl via Homebrew:
+`brew install curl`, keep the native curl, update your PATH to point at the new
+curl executable location. Now you should be able to run the scripts that invoke
+curl commands with certs.
+
 
 
 ### Step 2: Setting up the tenant
