@@ -144,10 +144,11 @@ Following are the six with no meaningful default.
 * `cluster_name`: this identifies the cluster being processed, as
   discussed above.
 
-* `envs`: this identifies the parent directory under which the
-  environment- and cluster-specific files are found.  The settings for
-  the environment named `A-B` are found in `{{envs}}/A-B/defaults.yml`
-  (if relative, the base is the filename of the playbook).
+* `envs`: an absolute or relative pathname for the directory under
+  which the environment- and cluster-specific files are found.  If
+  relative then it is interpreted relative to the directory containing
+  the shard playbook.  The settings for the environment named `A-B`
+  are found in `{{envs}}/A-B/defaults.yml`.
 
 * `network_kind`: this is the name of the network plugin to use.  This
   must be supplied on the Ansible command line (because an Ansible
@@ -156,8 +157,8 @@ Following are the six with no meaningful default.
   that reads this variable's setting according to our conventions and
   then invokes the playbook.
 
-* `master_vip`: this identifies the virtual IP (VIP) for most of the
-  master components.
+* `master_vip`: this identifies the virtual IP (VIP) address for most
+  of the master components.
 
 * `master_vip_net` and `master_vip_net_prefix_len`: these two
   variables identify the subnet
