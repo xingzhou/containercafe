@@ -20,7 +20,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 		return
 	}
 
-	Log.Printf("TLS container(s) found in request: %v", len(r.TLS.PeerCertificates))	
+	Log.Printf("Total of TLS certificate(s) found in request: %v", len(r.TLS.PeerCertificates))	
 	cn := ""
 
 	for _, cert := range r.TLS.PeerCertificates {

@@ -312,6 +312,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 	}
 	if (err != nil) {
 		Log.Printf("Error in redirection, will abort req_id=%s err=%v\n", req_id, err)
+		ErrorHandlerWithMsg(w, r, 500, err.Error())
 		return
 	}
 
