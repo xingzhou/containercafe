@@ -109,7 +109,7 @@ letters, numbers, and the hyphen ('-').
 To support the structure of environments and shards, an environment's
 name must have the form
 `{{environment_role}}-{{environment_location}}` and a cluster name
-must have the form ``{{environment_name}}-{{cluster_short_name}}`
+must have the form `{{environment_name}}-{{cluster_short_name}}`
 (i.e.,
 `{{environment_role}}-{{environment_location}}-{{cluster_short_name}}`).
 There may be no dash in the `environment_kind` nor the
@@ -185,9 +185,10 @@ variables.
   explicitly loads this, after the previous file --- so its settings
   override the others.
 
-The settings for the master components VIP should appear in the
-cluster-specific file.  The `cluster_name`, `envs`, and `network_kind`
-should be supplied on the command line invoking the playbook.
+The settings for the master components VIP can be in the environment-
+and/or cluster-specific variables files.  The `cluster_name`, `envs`,
+and `network_kind` must be supplied on the command line invoking the
+playbook.
 
 
 ### Secondary Ansible Variables
@@ -220,7 +221,20 @@ developer.
 
 ## Networking Plugins
 
-A networking plugin named `fred` supplies the following Ansible roles.
+As noted above, OpenRadiant includes the following networking plugins.
+
+* `bridge`: this uses Docker bridge networking and thus is not really
+  functional when there are multiple worker nodes in a shard.
+
+* `flannel`: this uses Flannel networking with its `host-gw` backend.
+  This supports multiple worker nodes and uses ordinary IP routing and
+  connectivity.  It does not support the Kuernetes API for network
+  filtering nor any implicit network filtering for containers created
+  through the DOcker API.
+
+To create a networking plugin, the developer needs to define three
+Ansible roles.  A networking plugin named `fred` supplies the
+following Ansible roles.
 
 * `fred-variables`: This role is invoked on localhost and on all
   cluster machines after the global default settings and environment-
@@ -231,7 +245,7 @@ A networking plugin named `fred` supplies the following Ansible roles.
   machines.
 
 * `fred-remote-prep`: This role is invoked on all the cluster
-  machines, after the local prep and after the deployment of etcd
-  and/or ZooKeeper, before the deployment of higher level frameworks
-  such as Mesos or Kubernetes.
+  machines, after the local prep and after the deployment of Docker
+  and etcd and/or ZooKeeper, before the deployment of higher level
+  frameworks such as Mesos or Kubernetes.
 
