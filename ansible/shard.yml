@@ -12,6 +12,10 @@
     - localhost
 
   pre_tasks:
+  - name: derive kubernetes_on_mesos_deploy
+    set_fact:
+      kubernetes_on_mesos_deploy: {{ kubernetes_deploy and mesos_deploy }}
+
   - name: Set secondary variables of networking to their initial values
     set_fact:
       k8s_kubelet_network_args: []

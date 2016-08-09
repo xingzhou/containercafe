@@ -78,12 +78,6 @@ lb_mesos: false
 
 kubernetes_deploy: True
 
-# Another boolean.  Controls whether Kubernetes is deployed as a Mesos
-# framework.  Should be set consistently with other relevant
-# settings.
-
-kubernetes_on_mesos_deploy: True
-
 kube_image: openradiant/km
 kube_podmaster_image: gcr.io/google_containers/podmaster:1.1
 kube_infra_image: gcr.io/google_containers/pause
