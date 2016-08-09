@@ -52,7 +52,7 @@ Deploy OpenRadiant:
 cd ansible
 export ANSIBLE_INVENTORY=../examples/envs/dev-vbox/radiant01.hosts
 export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY
-ansible-playbook shard.yml -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge
+ansible-playbook -v shard.yml -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge
 ```
 
 Now you can open an SSH connection to the master node:
