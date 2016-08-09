@@ -12,10 +12,10 @@
     - localhost
 
   pre_tasks:
-  - name: check for disallowed combination
-    fail:
-      msg: Mesos is currently required when deploying Swarm
-      when: swarm_deploy and not mesos_deploy
+#  - name: check for disallowed combination
+#    fail:
+#      msg: Mesos is currently required when deploying Swarm
+#      when: swarm_deploy and not mesos_deploy
 
   - name: derive kubernetes_on_mesos_deploy
     set_fact:
