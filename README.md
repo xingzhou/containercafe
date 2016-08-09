@@ -31,6 +31,7 @@ available in all combinations.
 * [Communication](#communication)
 * [Tiny Example Solution](examples/tiny-example.md)
 * [Proxy documentation](proxy/README.md)
+* [Mesos clues](mesos-clues.md)
 * [Learn concepts and commands](#learn-concepts-and-commands)
 * [License](#license)
 * [Issues](#issues)
