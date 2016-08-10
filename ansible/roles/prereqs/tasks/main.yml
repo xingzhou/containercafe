@@ -71,6 +71,7 @@
   pip: name={{ item }} state=present
   with_items:
      - docker-py
+     - netaddr
 
 - name: enable ufw logging
   ufw: logging=on
