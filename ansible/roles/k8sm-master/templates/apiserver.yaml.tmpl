@@ -24,7 +24,7 @@ spec:
     - --service-cluster-ip-range={{ k8s_service_ip_range }}
     - --secure-port={{ k8s_apiserver_sport }}
     - --insecure-port={{ k8s_apiserver_port }}
-    {%if kubernetes_on_mesos_deploy%}
+    {%if kubernetes_on_mesos_deploy==false%}
     - --cloud-provider=mesos
     - --cloud-config={{k8s_etc_dir}}/mesos-cloud.conf{%endif%}
     - --advertise-address={{ hostvars[inventory_hostname]['ansible_' ~ network_interface]['ipv4']['address'] }}
