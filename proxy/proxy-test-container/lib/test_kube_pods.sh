@@ -39,7 +39,8 @@ PROXY_LOC="$3"
 DOCKER_CERT_PATH="../certs/kube"
 space="f7f413cb-a678-412d-b024-8e17e28bcb88"
 user="d7eae25d39f061dd40937d3839b96fc34d4401391823160f"
-KUBE_PATH="kube/kubectl"
+PLATFORM=`uname -s | tr '[:upper:]' '[:lower:]'`
+KUBE_PATH="kube/$PLATFORM/kubectl"
 
 YAML_PATH_A="../conf/kube/$TENANT_ID-web-test"
 YAML_PATH_B=".yaml"
