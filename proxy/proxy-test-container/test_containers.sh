@@ -108,7 +108,7 @@ done
 TEST_COUNT=0
 SUCCESS_COUNT=0
 date=$( date +%F )
-time=$( date +%T )
+time=$( date +%H-%M-%S )
 timestamp="$date""_""$time"
 RESULTS_PATH="logs/""$TENANT_ID""_test_swarm_results_""$timestamp"".log"
 TEST_TYPE="swarm"

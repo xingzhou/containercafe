@@ -22,7 +22,7 @@ fi
 TEST_COUNT=0
 SUCCESS_COUNT=0
 date=$( date +%F )
-time=$( date +%T )
+time=$( date +%H-%M-%S )
 timestamp="$date""_""$time"
 
 TENANT_ID="$2"
