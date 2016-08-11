@@ -79,7 +79,7 @@
 
 - name: "Copy mesos-cloud config"
   template: src=mesos-cloud.conf.tmpl dest={{ k8s_etc_dir }}/mesos-cloud.conf mode=0644
-  when: kubernetes_on_mesos_deploy
+  when: kubernetes_on_mesos_deploy|bool
 
 - name: "Copy apiserver yaml file to {{ k8s_kubelet_manifests_dir }}"
   template: src={{ k8s_apiserver_cn }}.yaml.tmpl dest={{ k8s_kubelet_manifests_dir }}/{{ k8s_apiserver_cn }}.yaml mode=0644
