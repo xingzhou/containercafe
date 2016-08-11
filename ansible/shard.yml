@@ -15,11 +15,11 @@
   - name: check for disallowed combination
     fail:
       msg: Mesos is currently required when deploying Swarm
-    when: "{{swarm_deploy and not mesos_deploy}}"
+    when: "{{swarm_deploy|bool and not mesos_deploy|bool}}"
 
   - name: derive kubernetes_on_mesos_deploy
     set_fact:
-      kubernetes_on_mesos_deploy: "{{ kubernetes_deploy and mesos_deploy }}"
+      kubernetes_on_mesos_deploy: "{{ kubernetes_deploy|bool and mesos_deploy|bool }}"
 
   - name: Set secondary variables of networking to their initial values
     set_fact:
@@ -33,13 +33,13 @@
   - name: Set etcd_deploy to True if other settings imply deploying etcd
     set_fact:
       etcd_deploy: True
-    when: kubernetes_deploy
+    when: kubernetes_deploy|bool
 
 - hosts: localhost
   tasks:
   - fail:
       msg: ha_deploy must be True when there are multiple hosts in the mesos_master-{{ cluster_name }} group in your Ansible inventory
-    when: groups['mesos_master-' ~ cluster_name]|length > 1 and not ha_deploy
+    when: groups['mesos_master-' ~ cluster_name]|length > 1 and not ha_deploy|bool
 
 - hosts: localhost
   roles:
@@ -58,12 +58,12 @@
 - hosts: zk-{{cluster_name}}
   become: yes
   roles:
-  - { role: zk, when: "mesos_deploy" }
+  - { role: zk, when: "mesos_deploy|bool" }
 
 - hosts: etcd-{{cluster_name}}
   become: yes
   roles:
-  - { role: etcd, when: "etcd_deploy" }
+  - { role: etcd, when: "etcd_deploy|bool" }
 
 - hosts: cluster-{{cluster_name}}
   become: yes
@@ -73,13 +73,13 @@
 - hosts: mesos_master-{{cluster_name}}
   become: yes
   roles:
-  - { role: mesos-master, when: "mesos_deploy" }
+  - { role: mesos-master, when: "mesos_deploy|bool" }
 
 - hosts: lb-{{cluster_name}}
   become: yes
   roles:
   - lb
-  - { role: vip, when: "groups['mesos_master-' ~ cluster_name]|length > 1 or ha_deploy" }
+  - { role: vip, when: "groups['mesos_master-' ~ cluster_name]|length > 1 or ha_deploy|bool" }
 
 - hosts: k8s_auth-{{cluster_name}}
   become: yes
@@ -89,19 +89,19 @@
 - hosts: k8s_master-{{cluster_name}}
   become: yes
   roles:
-  - { role: k8sm-master, when: "kubernetes_deploy" }
+  - { role: k8sm-master, when: "kubernetes_deploy|bool" }
 
 - hosts: swarm_master-{{cluster_name}}
   become: yes
   roles:
-  - { role: swarm-master, when: "swarm_deploy" }
+  - { role: swarm-master, when: "swarm_deploy|bool" }
 
 - hosts: workers-{{cluster_name}}
   become: yes
   roles:
-  - { role: mesos-worker, when: "mesos_deploy" }
-  - { role: k8sm-worker, when: "kubernetes_deploy" }
-  - { role: swarm-worker, when: "swarm_deploy" }
+  - { role: mesos-worker, when: "mesos_deploy|bool" }
+  - { role: k8sm-worker, when: "kubernetes_deploy|bool" }
+  - { role: swarm-worker, when: "swarm_deploy|bool" }
 
 - hosts: k8s_master-{{cluster_name}}
   become: yes
