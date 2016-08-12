@@ -137,6 +137,13 @@ docker exec hjproxy cat /hijack/creds.json
 **NOTE**: All default config options are defined in the [Dockerfile](dockerize/Dockerfile),
 and can be overridden using the docker -e option on [startup](rundocker.sh)
 
+## Running Test Scripts
+There are 2 type of tests:
+
+* test scripts for proxy running as a container [proxy-test-container/README.md](proxy-test-container/README.md)
+
+* test scripts for proxy running as a standalone script [proxy-test/README.md](proxy-test/README.md)
+
 
 ## Hints and Troubleshooting Errors
 
@@ -157,14 +164,3 @@ and can be overridden using the docker -e option on [startup](rundocker.sh)
   * `Could not read CA certificate "dockerize/OpenRadiant/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem": open dockerize/OpenRadiant/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem: no such file or directory`
   Are you sure you are running your docker commands from `openradiant/proxy/`
   directory?
-
-
-## Running Test Scripts
-
-* Test scripts are located in `proxy-test` folder, and should be run from this directory.
-
-* Execute `source setup_local.sh` or `source setup_CCSAPI.sh`. Former tests local file authentication, latter, CCSAPI authentication.
-
-* Run with the command `./test_containers.sh da07` (can also be run with no argument).
-
-* Results delineated in file `test_containers_results.txt`.
