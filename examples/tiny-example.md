@@ -60,11 +60,12 @@ Install ansible:
 pip install -r requirements.txt
 ```
 
-Ansible 1.9.6 is reccomended. If you have a different version and run into issues
-try the following:
+Ansible version 1.9.6 or the latest is reccomended. See
+[our Ansible documentation](../docs/ansible.md) for more details.  If
+you have a different version and run into issues try the following:
 
 ```bash
-pip install --upgrade ansible==1.9.6
+pip install --upgrade ansible
 ```
 
 Deploy OpenRadiant:
