@@ -21,10 +21,9 @@ proxy-test/test_containers_results.*
 proxy-test-container/lib/kube
 proxy-test-container/conf/kube/test*
 logs/*
-dockerize/*.pem
-dockerize/*.key
-dockerize/ca.srl
-dockerize/src/*
-dockerize/OpenRadiant/*
-admin-certs/ca.srl
-admin-certs/*.srl
+dockerize/*
+!dockerize/Dockerfile
+!dockerize/build.info
+!dockerize/updateEnv.sh
+admin-certs/*
+!admin-certs/*.cnf
