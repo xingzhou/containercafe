@@ -93,9 +93,10 @@ cd openradiant
 ```
 
 The controller machine must have Ansible installed, including its
-`netaddr` module.  See [our Ansible doc](docs/ansible.md) for details
-on Ansible versions.  One way to get these two installed is to use our
-`requirements.txt` file, as follows.
+`netaddr` module.  See
+[our Ansible doc](docs/ansible.md#ansible-versions-and-bugs-and-configuration)
+for details on Ansible versions.  One way to get these two installed
+is to use our `requirements.txt` file, as follows.
 
 ```bash
 pip install -r requirements.txt
