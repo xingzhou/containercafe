@@ -9,13 +9,13 @@ list of features:
 - [x] [Supports common certification](#central-multi-tenant-authentication-support), creates tenants and their TLS certificates
 - [x] Stateless microservice deployed as a container
 - [x] Handles re-direct to appropriate framework API handler
-- [] [Validates and filters the requests]()#request-validation-and-filtering-response-masquerading); Masquerades the internal information that should not be public
+- [] [Validates and filters the requests](#request-validation-and-filtering-response-masquerading); Masquerades the internal information that should not be public
 - [] Supports [sharding](#sharding-support)
 - [] Can execute quota validation across multiple frameworks and shards
 - [x] Executes annotation injections to support viewing K8s pods via Docker interface
 - [] API version mapping
 - [] API Extensions:
-  - [] Quota management
+  - [] [Quota management](#shared-quota-and-limits-management)
   - [] Health checking, status, HA and informational APIs
   - [] Metering and chargeback management
 - [] Prototyping new features (e.g. Powerstrip for Docker)
@@ -60,3 +60,10 @@ list of features:
   * Vanilla Kubernetes only shard
   * Kubernetes and Swarm on Mesos
   * Swarm or Swarm-Auth
+
+## Shared Quota and Limits Management
+* Single quota across multiple frameworks, shards, clusters
+* Keep track of used quota and limits
+  * Separate microservice
+  * Extension library (with common repository)
+* API Extensions for quota and limits management
