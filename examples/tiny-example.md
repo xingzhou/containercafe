@@ -61,8 +61,9 @@ pip install -r requirements.txt
 ```
 
 Ansible version 1.9.6 or the latest is reccomended. See
-[our Ansible documentation](../docs/ansible.md) for more details.  If
-you have a different version and run into issues try the following:
+[our Ansible documentation](../docs/ansible.md#ansible-versions-and-bugs-and-configuration)
+for more details.  If you have a different version and run into issues
+try the following:
 
 ```bash
 pip install --upgrade ansible
