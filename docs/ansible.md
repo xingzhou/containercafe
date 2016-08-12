@@ -45,6 +45,12 @@ Extending OpenRadiant with a network plugin that is not part of
 OpenRadiant also requires setting `roles_path` to include the roles
 directory(s) containing the network plugin.
 
+Some early versions of Ansible 2 have another bug, for which we have
+no work-around.  We suspect it is the 2.0.* versions.  The bug is in
+the docker module.  So we think Ansible versions in the 2.0.* range
+will work provided the `roles_path` workaround in used;
+versions 2.1.1.0 and greater work with no work-around needed.
+
 OpenRadiant includes an `ansible.cfg` that sets `roles_path` to the
 OpenRadiant roles directory and has some other settings whose purpose
 is speeding up the Ansible execution.  A deployer is free to use a
@@ -60,10 +66,30 @@ inventory.
 ## The Inventory Contract
 
 Because the playbooks support multiple environments and shards, the
-inventory contract applies to a given environment or shard.  Currently
-there are no playbooks for environments, only shards.  A shard is also
-known as a cluster.  The contract for a cluster specifies that certain
-inventory groups exist.  They are as follows.
+inventory contract applies to a given environment or shard.  A shard
+is also known as a cluster.
+
+To support the structure of environments and shards, an environment's
+name must have the form
+`{{environment_role}}-{{environment_location}}` and a shard (AKA cluster) name
+must have the form `{{environment_name}}-{{cluster_short_name}}`
+(i.e.,
+`{{environment_role}}-{{environment_location}}-{{cluster_short_name}}`).
+There may be no dash in the `environment_kind` nor the
+`environment_location`.  OpenRadiant presently leaves it up to you to
+decide how to choose the environment role and location names.  In the
+tiny example you find a cluster named `dev-vbox-radiant01`.
+
+Because a shard (cluster) name contributes to host names, to Ansible
+group names, and to various things in various compute provider clouds
+(all of which impose restrictions on the characters used), a cluster
+name should start with a lowercase letter and only contain lower case
+letters, numbers, and the hyphen ('-').
+
+### Shard Contract
+
+The contract for a shard specifies that certain inventory groups
+exist.  They are as follows.
 
 * `cluster-{{cluster_name}}`: all the machines in the cluster ---
   i.e., the union of the following groups
@@ -97,32 +123,47 @@ Except as noted above, you can put any number of machines in each of
 those groups.
 
 There are also some requirements on the provisioned machines.
+
 * They must run Ubuntu 14.04.
-* You must be able to `ssh -l root` from your controller machine to provisioned machines without supplying a password.
 
-Because a cluster name contributes to host names, to Ansible group
-names, and to various things in various compute provider clouds (all
-of which impose restrictions on the characters used), a cluster name
-should start with a lowercase letter and only contain lower case
-letters, numbers, and the hyphen ('-').
+* The Ansible inventory hostname of each machine must be an IPv4
+  address.
 
-To support the structure of environments and shards, an environment's
-name must have the form
-`{{environment_role}}-{{environment_location}}` and a cluster name
-must have the form `{{environment_name}}-{{cluster_short_name}}`
-(i.e.,
-`{{environment_role}}-{{environment_location}}-{{cluster_short_name}}`).
-There may be no dash in the `environment_kind` nor the
-`environment_location`.  OpenRadiant presently leaves it up to you to
-decide how to choose the environment role and location names.  In the
-tiny example you find a cluster named `dev-vbox-radiant01`.
+* They can send IP packets to each other using the IP address by which
+  they are known in the Ansible inventory.
+
+* You must be able to `ssh -l root` from your controller machine to
+  provisioned machines without supplying a password.
+
+
+### Environment Contract
+
+The contract for an environment includes, beyond the shards of that
+environment, the following inventory group.
+
+* `proxy-{{env_name}}`: where to run the API proxy for that environment
+
+Currently that inventory group must contain exactly one machine.  In
+the future we will support an HA cohort.
+
+The requirements on machines on that group are as follows.
+
+* They must run Ubuntu 14.04.
+
+* You must be able to `ssh -l root` from your controller machine to
+  provisioned machines without supplying a password.
+
+* The proxy machines must be able to open TCP connections into the
+  shards using the Ansible inventory hostnames (which are IPv4
+  addresses) for the shard machines.
 
 
 ## The Playbooks
 
 OpenRadiant currently includes no playbooks for provisioning machines,
 and one playbook for installing software one them.  That is
-`ansible/shard.yml`.
+`ansible/shard.yml`.  We are creating additional playbooks for use at
+the environment level.
 
 
 ## Ansible Variables
