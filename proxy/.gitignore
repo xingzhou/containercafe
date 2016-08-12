@@ -16,7 +16,9 @@ mk_user_cert.sh~*
 
 creds_original.json
 proxy-test/logs/*
+proxy-test/lib/kube
 proxy-test/test_containers_results.*
+proxy-test-container/lib/kube
 proxy-test-container/conf/kube/test*
 logs/*
 dockerize/*.pem
