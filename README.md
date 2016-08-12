@@ -24,6 +24,7 @@ OpenRadiant is a work in progress.  The above features are not yet
 available in all combinations.
 
 * [Architecture Overview](#architecture-overview)
+* [The installer machine](#the-installer-machine)
 * [Ansible Structure](docs/ansible.md)
 * [Code of Conduct](#code-of-conduct)
 * [Contributing to the project](#contributing-to-the-project)
@@ -58,6 +59,56 @@ Kubernetes and Swarm workload is dispatched to the worker nodes.  The
 control plane nodes run the Kubernetes, Swarm, and/or Mesos control
 planes in an HA configuration.  We use Mesos to coordinate resource
 allocation decisions between Kubernetes and Swarm.
+
+OpenRadiant includes Ansible-based installation technology to
+instantiate an OpenRadiant environment.  An installer machine acts as
+Ansible controller to install OpenRadiant in a target environment.
+The installation is parameterized by some Ansible variables files that
+describe the desired target environment.
+
+The Ansible playbooks strive to meet the Ansible ideal of achieving a
+prescribed desired state, and can thus be used to update as well as
+install.  However, there are limits to the space of initial states
+with which these playbooks can cope.
+
+
+### The installer machine
+
+Following are instructions on how to create a usable installer
+machine.  In the near future we hope to also provide a Docker image of
+a usable installer machine.
+
+All the controller machine really needs is to have a copy of
+OpenRadiant and be able to run Ansible commands using that.  The
+following shows ways to accomplish these using Linux shell commands.
+For other operating systems you could do something analogous.
+
+The controller machine must have git installed.
+
+Checkout this project:
+
+```bash
+git clone git@github.ibm.com:alchemy-containers/openradiant.git
+cd openradiant
+```
+
+The controller machine must have Ansible installed, including its
+`netaddr` module.  See
+[our Ansible doc](docs/ansible.md#ansible-versions-and-bugs-and-configuration)
+for details on Ansible versions.  One way to get these two installed
+is to use our `requirements.txt` file, as follows.
+
+```bash
+pip install -r requirements.txt
+```
+
+In order to use that method, the controller machine must have Python's
+`pip` installed.  One way to accomplish that is to install the
+`python-pip` package using your operating system's package manager.
+Another way is to use Python's `easy_install` to install `pip`.
+
+Another way to get the `netaddr` module is to install `python-netaddr`
+using the operating system's package manager.
 
 
 ### Code of Conduct
