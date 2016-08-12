@@ -40,7 +40,16 @@ DOCKER_CERT_PATH="../certs/kube"
 space="f7f413cb-a678-412d-b024-8e17e28bcb88"
 user="d7eae25d39f061dd40937d3839b96fc34d4401391823160f"
 PLATFORM=`uname -s | tr '[:upper:]' '[:lower:]'`
-KUBE_PATH="kube/$PLATFORM/kubectl"
+KUBE_PATH="kube/kubectl"
+
+if command -v kubectl >/dev/null 2>&1 ; then
+    KUBE_PATH="kubectl"
+elif [[ ! -f "$KUBE_PATH" ]]; then
+    mkdir -p $(dirname "$KUBE_PATH")
+    LATEST_KUBECLT=`curl -L https://storage.googleapis.com/kubernetes-release/release/stable.txt`
+    curl -sSLo "$KUBE_PATH" https://storage.googleapis.com/kubernetes-release/release/$LATEST_KUBECLT/bin/$PLATFORM/amd64/kubectl
+    chmod +x "$KUBE_PATH"
+fi
 
 YAML_PATH_A="../conf/kube/$TENANT_ID-web-test"
 YAML_PATH_B=".yaml"
