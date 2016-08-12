@@ -18,11 +18,11 @@ LABEL jenkins-build-number=${jenkins_build_number}
 RUN apt-get update && apt-get install -y wget curl
 RUN wget https://storage.googleapis.com/golang/go1.5.1.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.5.1.linux-amd64.tar.gz && rm -f go1.5.1.linux-amd64.tar.gz 
 
-ADD src/ /hijack/src/
-WORKDIR /hijack
-RUN export PATH=$PATH:/usr/local/go/bin && export GOPATH=/hijack && go build -o bin/hijack src/hijack/hijack.go
+ADD src/ /api-proxy/src/
+WORKDIR /api-proxy
+RUN export PATH=$PATH:/usr/local/go/bin && export GOPATH=/api-proxy && go build -o bin/api-proxy src/api-proxy/hijack.go
 
-ENV log_file_path="/tmp/feeds/logstash_hijack_proxy"
+ENV log_file_path="/tmp/feeds/logstash_api_proxy"
 ENV ccsapi_host="127.0.0.1:8081"
 ENV ccsapi_uri="/v3/admin/"
 ENV ccsapi_compute_node_header="X-Compute-Node"
@@ -68,12 +68,12 @@ ENV consul_port="8500"
 #ADD kadmin.pem /hijack/kadmin.pem
 #ADD creds.json /hijack/creds.json
 
-ADD make_TLS_certs.sh /hijack/make_TLS_certs.sh
-ADD mk_user_cert.sh /hijack/mk_user_cert.sh
-ADD mk_kubeconfig.sh /hijack/mk_kubeconfig.sh 
-ADD creds.json /hijack/creds.json
+ADD make_TLS_certs.sh /api-proxy/make_TLS_certs.sh
+ADD mk_user_cert.sh /api-proxy/mk_user_cert.sh
+ADD mk_kubeconfig.sh /api-proxy/mk_kubeconfig.sh 
+ADD creds.json /api-proxy/creds.json
 
-ADD build.info /hijack/build.info
+ADD build.info /api-proxy/build.info
 
 EXPOSE 8087
-CMD ["/hijack/bin/hijack", "8087"]
+CMD ["/api-proxy/bin/hijack", "8087"]
