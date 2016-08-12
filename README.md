@@ -24,6 +24,7 @@ OpenRadiant is a work in progress.  The above features are not yet
 available in all combinations.
 
 * [Architecture Overview](#architecture-overview)
+* [The installer machine](#the-installer-machine)
 * [Ansible Structure](docs/ansible.md)
 * [Code of Conduct](#code-of-conduct)
 * [Contributing to the project](#contributing-to-the-project)
