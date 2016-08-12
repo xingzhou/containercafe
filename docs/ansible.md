@@ -47,7 +47,7 @@ directory(s) containing the network plugin.
 
 Some early versions of Ansible 2 have another bug, for which we have
 no work-around.  We suspect it is the 2.0.* versions.  The bug is in
-the docker module.  So we think Ansible versions in the 2.0.* range
+the docker module.  So we think Ansible versions in the 2.1.0.* range
 will work provided the `roles_path` workaround in used;
 versions 2.1.1.0 and greater work with no work-around needed.
 
