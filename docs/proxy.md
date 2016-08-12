@@ -22,6 +22,16 @@ list of features:
 
 ## Overview of OpenRadiant Proxy
 ![Image of Proxy](media/2016-07.OpenRadiantProxy.png)
+OpenRadiant administrator creates TLS certificate and key for each new OpenRadiant
+user and makes them available to the user. User configures the `kubectl` and `docker`
+clients with the provided TLS certificates and the IP address of the proxy.
+Each user request received by proxy is redirected to specific handler based on
+request URL. Provided TLS certificates are validated and matched with the authentication
+module, FileAuth by default. If authentication is successful, the request is
+redirected to appropriate shard and port. There could be one or many shards
+managed by a single proxy. 
+
+
 
 ## OpenRadiant Proxy Details
 ![Image of Proxy details](media/2016-05.Proxy-details.png)
