@@ -29,4 +29,4 @@
       when: hapConfig.changed
 
     - name: copy HTTP start/stop scripts (for testing purposes only)
-      copy: src=../files/HTTP-actions.sh dest=/opt/HTTP-actions.sh owner={{ansible_ssh_user}} mode=0766
+      copy: src=../files/HTTP-actions.sh dest=/opt/HTTP-actions.sh owner={{ansible_user_id}} mode=0766

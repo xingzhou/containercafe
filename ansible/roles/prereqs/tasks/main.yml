@@ -1,5 +1,9 @@
 ---
 
+- debug: var=ansible_ssh_user
+- debug: var=ansible_user
+- debug: var=ansible_user_id
+
 - include: setup_repos.yml
   when: use_private_mirrors is defined and use_private_mirrors
 
@@ -52,7 +56,7 @@
   register: docker_installed
 
 - name: add the ssh user to the docker group
-  user: name={{ansible_ssh_user}} groups=docker append=yes
+  user: name={{ansible_user_id}} groups=docker append=yes
 
 # Allow insecure infrastrucure registry for the env.
 - name: ensure DOCKER_OPTS set in /etc/default/docker
