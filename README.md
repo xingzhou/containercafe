@@ -24,13 +24,14 @@ OpenRadiant is a work in progress.  The above features are not yet
 available in all combinations.
 
 * [Architecture Overview](#architecture-overview)
-* [The installer machine](#the-installer-machine)
+* [Tiny Example Solution](examples/tiny-example.md)
 * [Ansible Structure](docs/ansible.md)
+* [The installer machine](#the-installer-machine)
+* [Installing OpenRadiant](#installing-openradiant)
 * [Code of Conduct](#code-of-conduct)
 * [Contributing to the project](#contributing-to-the-project)
 * [Maintainers](#maintainers)
 * [Communication](#communication)
-* [Tiny Example Solution](examples/tiny-example.md)
 * [Proxy documentation](proxy/README.md)
 * [Mesos clues](mesos-clues.md)
 * [Learn concepts and commands](#learn-concepts-and-commands)
@@ -109,6 +110,25 @@ Another way is to use Python's `easy_install` to install `pip`.
 
 Another way to get the `netaddr` module is to install `python-netaddr`
 using the operating system's package manager.
+
+
+### Installing OpenRadiant
+
+To create/update an OpenRadiant environment, ...
+
+To create/update an OpenRadiant shard, invoke the `ansible/shard.yml`
+playbook.  Following is an example invocation.
+
+```bash
+cd ansible
+ansible-playbook -v shard.yml -e cluster_name=${shard_name} -e envs=${envs} -e network_kind=flannel
+```
+
+The shard name, AKA cluster name, is explained in
+[the inventory contract doc](docs/ansible.md#the-inventory-contract)
+and this variable must be defined in the Ansible invocation.  Two
+other variables must also be defined, as mentioned in that document:
+`envs` and `network_kind`.
 
 
 ### Code of Conduct
