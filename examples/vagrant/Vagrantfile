@@ -10,16 +10,6 @@ apt-get -qq update
 apt-get -qq -y install ansible
 SCRIPT
 
-$install_docker = <<SCRIPT
-apt-get -qq update
-apt-get -qq -y install apt-transport-https ca-certificates
-apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" > /etc/apt/sources.list.d/docker.list
-apt-get -qq update
-apt-get -qq -y install linux-image-extra-$(uname -r) apparmor docker-engine
-usermod -aG docker vagrant
-SCRIPT
-
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty64"
   config.ssh.insert_key = false
@@ -57,7 +47,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       ansible.vm.provision "shell", inline: "chmod 600 /home/vagrant/.vagrant.d/insecure_private_key"
       ansible.vm.provision "shell", inline: $install_ansible
       ansible.vm.provision "shell", privileged: false, inline: "source ~/.profile && [ -z \"$ANSIBLE_INVENTORY\" ] && echo \"export ANSIBLE_INVENTORY=/vagrant/examples/envs/dev-vbox/radiant01.hosts\" >> ~/.profile"
-      ansible.vm.provision "shell", privileged: false, inline: "source ~/.profile && [ -z \"$ANSIBLE_LIBRARY\" ] && echo \"export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY\" >> ~/.profile"
     
       if name == 'example'
         ansible.vm.provision "shell", privileged: false, inline: "cd /vagrant/ansible && ansible-playbook -v shard.yml -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
@@ -73,15 +62,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define 'proxy', autostart: false do |proxy|
     proxy.vm.network "private_network", ip: "192.168.9.252"
     proxy.vm.synced_folder ".", "/vagrant", disabled: true
-    proxy.vm.synced_folder "../../ansible", "/vagrant/ansible", mount_options: ["dmode=775,fmode=664"]
-    proxy.vm.synced_folder "../../proxy", "/vagrant/proxy", mount_options: ["dmode=775,fmode=764"]
+    proxy.vm.synced_folder "../../ansible", "/openradiant/ansible", mount_options: ["dmode=775,fmode=664"], owner: "vagrant", :group => "vagrant"
+    proxy.vm.synced_folder "../../proxy", "/openradiant/proxy", mount_options: ["dmode=775,fmode=764"], owner: "vagrant", :group => "vagrant"
     
-    proxy.vm.provision "shell", inline: $install_docker
-    proxy.vm.provision "shell", inline: "cd /vagrant/proxy && ./builddocker.sh && ./rundocker.sh -d"
-    proxy.vm.provision "shell", privileged: false, inline: "ln -s /vagrant/proxy"
+    proxy.vm.provision "docker", images: [ "ubuntu" ]
+    
+    # with (privileged: false) the commands are runned from vagrant user, .openradiant will be in vagrant's home directory
+    proxy.vm.provision "shell", privileged: false, inline: "ln -s /openradiant/proxy"
+    proxy.vm.provision "shell", privileged: false, inline: "cd /openradiant/proxy && sudo ./builddocker.sh"
+    proxy.vm.provision "shell", privileged: false, inline: "cd /openradiant/proxy && sudo ./rundocker.sh dev-vbox -d", run: "always"
     
     proxy.vm.provider "virtualbox" do |virtualbox|
-      virtualbox.name = "hjproxy"
+      virtualbox.name = "api-proxy"
     end
   end
 end
