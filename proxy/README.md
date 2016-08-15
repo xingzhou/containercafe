@@ -28,29 +28,37 @@ git clone https://github.ibm.com/alchemy-containers/openradiant.git
 
 #### Run proxy as a container [*This will be done by ansible install script*]
 Proxy service will be installed as a container on your default docker host.
-When Then build and deploy it:
+When Then build and deploy it. When starting the proxy, provide the environment
+name e.g. _dev-vbox_:
 ```
 cd openradiant/proxy
 ./builddocker.sh
-./rundocker.sh
+./rundocker.sh <env_name>
 ```
 
-This will start the Proxy as a container named `hjproxy`, running in the current
+This will start the Proxy as a container named `api-proxy`, running in the current
 terminal, on port specified in [Dockerfile](dockerize/Dockerfile) e.g:
 ```
 EXPOSE 8087
-CMD ["/hijack/bin/hijack", "8087"]
+CMD ["/api-proxy/bin/api-proxy", "8087"]
 ```
 
+The Proxy container mounts the volume to the following local location:
+```
+~/.openradiant/envs/<env_name/
+e.g:
+~/.openradiant/envs/dev-vbox/
+```
+And they are mounted locally to `/opt/tls_certs/` from the container.
 
 If you want to run the Proxy as background container (daemon), use the `-d` flag:
 ```
-./rundocker.sh -d
+./rundocker.sh <env_name> -d
 ```
 The Proxy container can be seen there along with its logs:
 ```
 docker ps
-docker logs -f hjproxy
+docker logs -f api-proxy
 ```
 
 #### Run proxy as a script
@@ -75,10 +83,12 @@ curl commands with certs.
 ### Step 2: Setting up the tenant
 From another terminal go back to the proxy directory and then execute the script
 to create TLS certificates and API key for the given tenant. The example is
-using tenant `test1`
+using tenant `test1`. This script also requires the name and the IP of the shard
+E.g.
 ```
 docker ps
-docker exec hjproxy /hijack/make_TLS_certs.sh test1
+docker exec api-proxy /api-proxy/make_TLS_certs.sh <tenant> <shard_name> <shared_ip>
+docker exec api-proxy /api-proxy/make_TLS_certs.sh test1 radiant01 192.168.10.2
 ```
 
 This command will display the details about the newly created TLS certs, including
@@ -94,12 +104,13 @@ output:
 # Setup docker environment:
 export DOCKER_HOST=localhost:8087
 export DOCKER_TLS_VERIFY=1
-export DOCKER_CERT_PATH=dockerize/OpenRadiant/4cBnDldoVTjIy1FGuRhayOl7EBRe1kbfAyRDwy7FxiiIqMSy
+export DOCKER_CERT_PATH=~/.openradiant/envs/dev-vbox/radiant01/ITNqyoU6Xe6ttgq7yQNwOeaQm6Ms8vauJqEQclghh3sdzDpg
 
 # Setup kubernetes environment:
-export KUBECONFIG=dockerize/OpenRadiant/4cBnDldoVTjIy1FGuRhayOl7EBRe1kbfAyRDwy7FxiiIqMSy/kube-config
+export KUBECONFIG=export DOCKER_CERT_PATH=~/.openradiant/envs/dev-vbox/radiant01/ITNqyoU6Xe6ttgq7yQNwOeaQm6Ms8vauJqEQclghh3sdzDpg/kube-config
 ```
-Copy and paste these commands in a new terminal. Make sure you are in
+Copy and paste these commands in *a new terminal* (otherwise will no be able to
+  make anymore calls to proxy container). Make sure you are in
 `openradiant/proxy` directory.
 
 Now you should be able to execute commands against OpenRadiant account that you
@@ -116,21 +127,19 @@ kubectl create -f web.yaml
 To run the proxy against a different OpenRadiant shard, pass the IP of this shard
 as additional parameter of the script `make_TLS_certs`. E.g:
 ```
-docker exec hjproxy /hijack/make_TLS_certs.sh test1 92.168.10.11
+docker exec api-proxy /api-proxy/make_TLS_certs.sh test2 radiant02 92.168.10.11
 ```
-By default it is set to the local server running on `radiant2` in vagrant:
-`TARGET_SERVER="192.168.10.2"`
 
-You can also manually change the values in "/hijack/creds.json" file that lists
+You can also manually change the values in "/api-proxy/creds.json" file that lists
 all the valid tenants.  
 To modify the value in the running container:
 ```
-docker exec -it hjproxy /bin/bash
+docker exec -it api-proxy /bin/bash
 ```
 
 To view the content of the current authorization file:
 ```
-docker exec hjproxy cat /hijack/creds.json
+docker exec api-proxy cat /api-proxy/creds.json
 ```
 
 
