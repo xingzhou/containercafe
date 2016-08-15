@@ -35,7 +35,8 @@ mkdir -p $ACERTS
 cp -f $CERT_MASTER/ca* $ACERTS
 cp -f $CERT_MASTER/admin-key.pem $ACERTS/kadmin.key
 cp -f $CERT_MASTER/admin.pem $ACERTS/kadmin.pem
-cp -f $CERT_MASTER/api-proxy-openssl.cnf $ACERTS/api-proxy-openssl.cnf
+
+cp -f ../ansible/roles/keygen/files/api-proxy-openssl.cnf $ACERTS/api-proxy-openssl.cnf
 
 # generate all proxy certs
 ./gen_server_certs.sh $ACERTS
