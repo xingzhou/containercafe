@@ -26,7 +26,7 @@ CERT_MASTER=../ansible/certs/dev-vbox-radiant01
 CERTS=~/.openradiant/envs/$env_name
 ACERTS=$CERTS/admin-certs
 if [ ! -d "$CERT_MASTER" ]; then
-  echo "missing $CERTS directory"
+  echo "missing $CERT_MASTER directory. Execute ansible scripts first"
   exit 99
 fi
 
