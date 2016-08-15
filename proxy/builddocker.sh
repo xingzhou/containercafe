@@ -1,5 +1,5 @@
 #!/bin/bash
-set -v
+# set -v
 # copy src into dockerize directory so it can be build by Dockerfile
 cp -r src dockerize
 
