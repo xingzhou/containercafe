@@ -28,7 +28,7 @@ git clone https://github.ibm.com/alchemy-containers/openradiant.git
 
 #### Run proxy as a container [*This will be done by ansible install script*]
 Proxy service will be installed as a container on your default docker host.
-When Then build and deploy it. When starting the proxy, provide the environment
+Build the image and deploy it. When starting the proxy, provide the environment
 name e.g. _dev-vbox_:
 ```
 cd openradiant/proxy
