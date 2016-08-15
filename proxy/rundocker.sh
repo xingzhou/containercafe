@@ -1,5 +1,5 @@
 #!/bin/bash
-set -v
+#set -v
 
 # Help menu
 helpme()
