@@ -1,5 +1,20 @@
 #!/bin/bash
 
+function create_log_file() {
+    RESULTS_PATH="$1"
+
+	if [ -f $RESULTS_PATH ]; then
+		rm $RESULTS_PATH
+	fi
+	touch $RESULTS_PATH
+
+	echo "DOCKER_HOST=$DOCKER_HOST" >> $RESULTS_PATH
+    echo "DOCKER_TLS_VERIFY=$DOCKER_TLS_VERIFY" >> $RESULTS_PATH
+    echo "DOCKER_CERT_PATH=$DOCKER_CERT_PATH" >> $RESULTS_PATH
+    echo "KUBECONFIG=$KUBECONFIG" >> $RESULTS_PATH
+    echo "" >> $RESULTS_PATH
+}
+
 function proxy_location() {
 	PROXY_LOC="$1"
 	RESULTS_PATH="$2"

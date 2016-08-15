@@ -101,6 +101,9 @@ while test $# -gt 0; do
 			fi 
 			shift 
 			;;
+        *)
+            shift
+            ;;
 	esac
 done 
 
@@ -109,8 +112,10 @@ TEST_COUNT=0
 SUCCESS_COUNT=0
 date=$( date +%F )
 time=$( date +%H-%M-%S )
-timestamp="$date""_""$time"
-RESULTS_PATH="logs/""$TENANT_ID""_test_swarm_results_""$timestamp"".log"
+if [[ "$LOG_SUFFIX" == "" ]]; then 
+	LOG_SUFFIX="$date""_""$time"
+fi 
+RESULTS_PATH="logs/""$TENANT_ID""_test_swarm_results_""$LOG_SUFFIX"".log"
 TEST_TYPE="swarm"
 
 # create logs directory 
@@ -152,6 +157,11 @@ case "$PROXY_LOC" in
 		eval "export DOCKER_TLS_VERIFY=1"
 		eval "export DOCKER_CERT_PATH=certs/dev-mon01"
 		eval "export DOCKER_CONFIG=certs/dev-mon01"
+		CMD_PREFIX="\"\""
+		;;
+    *)
+		eval "export DOCKER_HOST=$PROXY_LOC"
+		eval "export DOCKER_TLS_VERIFY=1"
 		CMD_PREFIX="\"\""
 		;;
 esac 
@@ -412,12 +422,8 @@ function test_network_inspect() {
 
 
 function main() {
-	if [ -f $RESULTS_PATH ]; then
-		rm $RESULTS_PATH
-	fi
-	touch $RESULTS_PATH
-
-	 
+	create_log_file $RESULTS_PATH
+    
 	NONET_COUNTER=1
 	while [  $NONET_COUNTER -le $NUM_NO_NET_CONTAINERS ]; do
 		test_ps 0 

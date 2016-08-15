@@ -23,20 +23,18 @@ TEST_COUNT=0
 SUCCESS_COUNT=0
 date=$( date +%F )
 time=$( date +%H-%M-%S )
-timestamp="$date""_""$time"
+if [[ "$LOG_SUFFIX" == "" ]]; then 
+	LOG_SUFFIX="$date""_""$time"
+fi 
 
 TENANT_ID="$2"
-RESULTS_PATH="../logs/""$TENANT_ID""_test_kube_pods_results_""$timestamp"".log"
-
-
+RESULTS_PATH="../logs/""$TENANT_ID""_test_kube_pods_results_""$LOG_SUFFIX"".log"
 
 NUM_PODS=$1
 TEST_TYPE="kube"
 
 PROXY_LOC="$3"
 
-
-DOCKER_CERT_PATH="../certs/kube"
 space="f7f413cb-a678-412d-b024-8e17e28bcb88"
 user="d7eae25d39f061dd40937d3839b96fc34d4401391823160f"
 PLATFORM=`uname -s | tr '[:upper:]' '[:lower:]'`
@@ -54,7 +52,6 @@ fi
 YAML_PATH_A="../conf/kube/$TENANT_ID-web-test"
 YAML_PATH_B=".yaml"
 KUBE_NAME="$TENANT_ID-kube-web-test"
-
 
 function setup_env() {
 	if [[ $KUBECONFIG == "" ]]; then 
@@ -170,15 +167,11 @@ function test_delete_pod() {
 
 
 function main() {
-	if [ -f $RESULTS_PATH ]; then 
-		rm $RESULTS_PATH
-	fi
-	touch $RESULTS_PATH
-
 	setup_env
+    
+    create_log_file $RESULTS_PATH
 
 	proxy_location "$PROXY_LOC" $RESULTS_PATH
-
 
 	test_get_pods 0 
 
