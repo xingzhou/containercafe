@@ -14,7 +14,7 @@ Where:
 HELPMEHELPME
 }
 
-if [[ "$1" == "" ]] ; then
+if [[ "$1" == "" || "$1" == "-d" ]] ; then
 	echo 'env_name must be set'
 	helpme
 	exit 1
