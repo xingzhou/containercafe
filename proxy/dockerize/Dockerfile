@@ -16,7 +16,7 @@ LABEL git-commit-id=${git_commit_id} \
 #install docker
 #RUN apt-get update && apt-get install -y golang
 RUN apt-get update && apt-get install -y wget curl
-RUN wget https://storage.googleapis.com/golang/go1.5.1.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.5.1.linux-amd64.tar.gz && rm -f go1.5.1.linux-amd64.tar.gz 
+RUN wget --quiet https://storage.googleapis.com/golang/go1.5.1.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.5.1.linux-amd64.tar.gz && rm -f go1.5.1.linux-amd64.tar.gz 
 
 ADD src/ /api-proxy/src/
 WORKDIR /api-proxy
