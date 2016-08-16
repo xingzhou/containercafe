@@ -12,7 +12,7 @@ The inventory file is a way to instruct ansible on where to deploy the various O
 Since OpenRadiant allows for a modular where you can pick and chose which/where the components can be deployed, the inventory file have several groups where some of them default to the value of others.
 This file should be modified by adding the specific IP addresses for the machines you wish OpenRadiant to be deployed on.
 
-You can also use your own inventory file (as long as you preserve the group_names), simply let  ANSIBLE_INVENTORY point to the path of your inventory file instead. In the case where you are using a dynamic inventory, or multiple files, you need to make sure to configure ansible accordingly
+You can also use your own inventory file (as long as you preserve the group_names), simply let  ANSIBLE_INVENTORY point to the path of your inventory file instead. In the case where you are using a dynamic inventory, or multiple files, you need to make sure to configure ansible accordingly.
 
 E.g. in the tiny example, use: export ANSIBLE_INVENTORY=../path/to/your/inventory
 
@@ -21,7 +21,7 @@ For detailed information about the ansible inventory, check [our Ansible doc](..
 ####User SSH info
 
 Ansible needs the ability to ssh into the machines where OpenRadiant will be deployed. You have to make sure that the ssh keys, file permissions, etc. are properly configured on your machines.
-You also need to make sure that the ansible configuration in [openradiant/examples/envs/dev-vbox/defaults.yml](envs/dev-vbox/defaults.yml) corresponds to your environment (your ssh user and ssh key location)
+You also need to make sure that the ansible configuration in [openradiant/examples/envs/dev-vbox/defaults.yml](envs/dev-vbox/defaults.yml) corresponds to your environment (your ssh user and ssh key location).
 
 ####Environment specific variables
 
