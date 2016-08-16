@@ -8,11 +8,11 @@ The following is a quick list of things to consider when deploying OpenRandiant 
 
 ####Inventory
 
-The inventory file is a way to instruct ansible on where to deploy the various OpenRadiant components. In our tiny example this file is located at: openradiant/examples/envs/dev-vbox/radiant01.hosts
+The inventory file is a way to instruct ansible on where to deploy the various OpenRadiant components. In our tiny example this file is located at: [openradiant/examples/envs/dev-vbox/radiant01.hosts](envs/dev-vbox/radiant01.hosts)
 Since OpenRadiant allows for a modular where you can pick and chose which/where the components can be deployed, the inventory file have several groups where some of them default to the value of others.
 This file should be modified by adding the specific IP addresses for the machines you wish OpenRadiant to be deployed on.
 
-You can also use your own inventory file (as long as you preserve the group_names), simply let  ANSIBLE_INVENTORY point to the path of your inventory file instead.
+You can also use your own inventory file (as long as you preserve the group_names), simply let  ANSIBLE_INVENTORY point to the path of your inventory file instead. In the case where you are using a dynamic inventory, or multiple files, you need to make sure to configure ansible accordingly
 
 E.g. in the tiny example, use: export ANSIBLE_INVENTORY=../path/to/your/inventory
 
