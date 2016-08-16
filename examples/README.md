@@ -1,6 +1,6 @@
 ##Overview
 
-OpenRadiant can be deployed in different environments. the tiny example is a vagrant based environment that can get you started on your local machines with just a couple of commands.
+OpenRadiant can be deployed in different environments. the [tiny-example](tiny-example.md) is a vagrant based environment that can get you started on your local machines with just a couple of commands.
 If you wish to use OpenRadiant in a different environment, there are a few changes that you need to make in order to customize the deployment to you environment.
 
 
