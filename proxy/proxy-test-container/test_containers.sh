@@ -110,12 +110,18 @@ done
 
 TEST_COUNT=0
 SUCCESS_COUNT=0
-date=$( date +%F )
-time=$( date +%H-%M-%S )
-if [[ "$LOG_SUFFIX" == "" ]]; then 
-	LOG_SUFFIX="$date""_""$time"
-fi 
-RESULTS_PATH="logs/""$TENANT_ID""_test_swarm_results_""$LOG_SUFFIX"".log"
+if [[ -z "$LOGS_DIR" ]]; then
+	LOGS_DIR="logs"
+fi
+if [[ -z "$LOG_SUFFIX" ]]; then 
+	LOG_SUFFIX="$( date +%F )_$( date +%H-%M-%S )"
+fi
+if [[ ! -z "$LOG_PREFIX" ]]; then 
+	SEPARATOR="_"
+else
+    SEPARATOR=""
+fi
+RESULTS_PATH="${LOGS_DIR}/${LOG_PREFIX}${SEPARATOR}${TENANT_ID}_test_swarm_results_${LOG_SUFFIX}.log"
 TEST_TYPE="swarm"
 
 # create logs directory 

@@ -19,16 +19,21 @@ if [[ "$1" == "-?" || "$1" == "-h" || "$1" == "--help" || "$1" == "help" ]]; the
 	exit 1
 fi
 
+TENANT_ID="$2"
 TEST_COUNT=0
 SUCCESS_COUNT=0
-date=$( date +%F )
-time=$( date +%H-%M-%S )
-if [[ "$LOG_SUFFIX" == "" ]]; then 
-	LOG_SUFFIX="$date""_""$time"
-fi 
-
-TENANT_ID="$2"
-RESULTS_PATH="../logs/""$TENANT_ID""_test_kube_pods_results_""$LOG_SUFFIX"".log"
+if [[ -z "$LOGS_DIR" ]]; then
+	LOGS_DIR="../logs"
+fi
+if [[ -z "$LOG_SUFFIX" ]]; then 
+	LOG_SUFFIX="$( date +%F )_$( date +%H-%M-%S )"
+fi
+if [[ ! -z "$LOG_PREFIX" ]]; then 
+	SEPARATOR="_"
+else
+    SEPARATOR=""
+fi
+RESULTS_PATH="${LOGS_DIR}/${LOG_PREFIX}${SEPARATOR}${TENANT_ID}_test_kube_pods_results_${LOG_SUFFIX}.log"
 
 NUM_PODS=$1
 TEST_TYPE="kube"
