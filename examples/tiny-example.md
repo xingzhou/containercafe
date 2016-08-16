@@ -74,7 +74,6 @@ Deploy OpenRadiant:
 ```bash
 cd ansible
 export ANSIBLE_INVENTORY=../examples/envs/dev-vbox/radiant01.hosts
-export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY
 ansible-playbook -v shard.yml -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge
 ```
 
