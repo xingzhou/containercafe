@@ -62,7 +62,7 @@ if command -v python >/dev/null 2>&1 ; then
 elif command -v python3 >/dev/null 2>&1 ; then
     DIR=`dirname $(python3 -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' $0)`
 elif command -v greadlink >/dev/null 2>&1 ; then
-    DIR=`dirname "$(readlink -f "$0")"`
+    DIR=`dirname "$(greadlink -f "$0")"`
 elif command -v readlink >/dev/null 2>&1 ; then
     DIR=`dirname "$(readlink -f "$0")"`
 fi
