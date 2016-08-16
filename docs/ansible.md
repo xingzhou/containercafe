@@ -57,7 +57,7 @@ bugs and configuration.
 | 1.9.5, 1.9.6 | Yes | No  |
 | 2.0.*        | No  (due to bug in `docker` module) | |
 | 2.1.0.*      | Yes | Yes |
-| 2.1.1.*      | Yes | No  |
+| >= 2.1.1.0   | Yes | No  |
 
 OpenRadiant includes an `ansible.cfg` that sets `roles_path` to the
 OpenRadiant roles directory and has some other settings whose purpose
