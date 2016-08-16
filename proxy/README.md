@@ -107,7 +107,7 @@ export DOCKER_TLS_VERIFY=1
 export DOCKER_CERT_PATH=~/.openradiant/envs/dev-vbox/radiant01/ITNqyoU6Xe6ttgq7yQNwOeaQm6Ms8vauJqEQclghh3sdzDpg
 
 # Setup kubernetes environment:
-export KUBECONFIG=export DOCKER_CERT_PATH=~/.openradiant/envs/dev-vbox/radiant01/ITNqyoU6Xe6ttgq7yQNwOeaQm6Ms8vauJqEQclghh3sdzDpg/kube-config
+export KUBECONFIG=~/.openradiant/envs/dev-vbox/radiant01/ITNqyoU6Xe6ttgq7yQNwOeaQm6Ms8vauJqEQclghh3sdzDpg/kube-config
 ```
 Copy and paste these commands in *a new terminal* (otherwise will no be able to
   make anymore calls to proxy container). Make sure you are in
