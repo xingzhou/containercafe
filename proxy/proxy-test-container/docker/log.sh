@@ -44,8 +44,9 @@ if [[ -z "$LOG_TAG" && $LATEST -eq 0 ]]; then
 fi
 
 # If --latest get the latest log tag
+LOGS_DIR=`docker inspect -f "{{ .Config.Env }}" api-proxy-tests | grep -oP "(?<=LOGS_DIR\=)([^\s\]]+)"`
 if [[ $LATEST -eq 1 ]]; then
-    LOG_TAG=`docker run -v api-proxy-tests-logs:/tests/logs api-proxy-tests --list-logs | tail -n 1`
+    LOG_TAG=`docker run -v api-proxy-tests-logs:"$LOGS_DIR" api-proxy-tests --list-logs | tail -n 1`
 fi
 
 # If LOG_TAG is empty there aren't any logs
@@ -55,4 +56,4 @@ if [[ -z "$LOG_TAG" ]]; then
 fi
 
 # Print the log with tag LOG_TAG
-docker run -v api-proxy-tests-logs:/tests/logs api-proxy-tests -s "$LOG_TAG"
+docker run -v api-proxy-tests-logs:"$LOGS_DIR" api-proxy-tests -s "$LOG_TAG"

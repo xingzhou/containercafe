@@ -10,7 +10,9 @@ ARG docker_version=1.12.0
 ARG env_name=dev-vbox
 
 # set the environment
-ENV ENV_NAME=${env_name}
+ENV ENV_NAME=${env_name} \
+    LOGS_DIR=/tests/logs \
+    CERTS_DIR=/tests/certs
 
 # Install curl, kubectl and docker
 RUN apt-get -qq update \
