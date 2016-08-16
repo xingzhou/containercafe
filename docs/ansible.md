@@ -73,6 +73,20 @@ inventory.
 
 ## The inventory contract
 
+Installing OpenRadiant is factored into two orthogonal phases:
+provisioning machines and deploying software on them.  Any acceptable
+technique for provisioning works with all the software deployment
+playbooks.  What enables this orthogonality is a contract between the
+two phases.  The contract concerns "groups" in the Ansible inventory.
+OpenRadiant does not care how your inventory is
+produced/stored/written.  You could keep one big `/etc/ansible/hosts`
+file.  you could keep many files in an `/etc/ansible/hosts/`
+directory.  You could keep various inventory files in various places
+and pass the relevant one via the `-i` argument or the
+`ANSIBLE_INVENTORY` environment variable.  You could use an Ansible
+dynamic inventory.  All that matters is what groups exist and what
+machines are in them.
+
 Because the playbooks support multiple environments and shards, the
 inventory contract applies to a given environment or shard.  A shard
 is also known as a cluster.
@@ -94,7 +108,7 @@ group names, and to various things in various compute provider clouds
 name should start with a lowercase letter and only contain lower case
 letters, numbers, and the hyphen ('-').
 
-### Shard contract
+### The inventory contract for a shard
 
 The contract for a shard specifies that certain inventory groups
 exist.  They are as follows.
@@ -144,7 +158,7 @@ There are also some requirements on the provisioned machines.
   provisioned machines without supplying a password.
 
 
-### Environment contract
+### The inventory contract for an environment
 
 The contract for an environment includes, beyond the shards of that
 environment, the following inventory group.
@@ -188,8 +202,8 @@ Six have no meaningful defaults.  The others are defined by defaults
 in `ansible/group_vars/all` and can be overridden by settings in an
 environment-specific file and a cluster-specific file.  These are the
 most important of those variables: `kubernetes_deploy`,
-`swarm_deploy`, `mesos_deploy`, and `ha_deploy`; see
-`ansible/group_vars/all` for their definitions and defaults.
+`swarm_deploy`, `mesos_deploy`, `ha_deploy`, and `network_interface`;
+see `ansible/group_vars/all` for their definitions and defaults.
 
 Following are the six with no meaningful default.
 

@@ -24,7 +24,7 @@ OpenRadiant is a work in progress.  The above features are not yet
 available in all combinations.
 
 * [Architecture Overview](#architecture-overview)
-* [Tiny Example Solution](examples/tiny-example.md)
+* [Tiny Example](examples/tiny-example.md)
 * [Ansible Principles](#ansible-principles)
 * [The installer machine](#the-installer-machine)
 * [Installing OpenRadiant](#installing-openradiant)
