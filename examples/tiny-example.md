@@ -14,7 +14,7 @@ at least Vagrant 1.8.4 and VirtualBox 5.0.24.
 This example shows just one way to provision machines for use with
 OpenRadiant.  In general, you can use OpenRadiant with any
 provisioning technology you like.  See
-[the inventory contract](docs/ansible.md#the-inventory-contract) for
+[the inventory contract](../docs/ansible.md#the-inventory-contract) for
 the key idea.
 
 Checkout this project:
