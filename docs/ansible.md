@@ -154,8 +154,13 @@ There are also some requirements on the provisioned machines.
 * They can send IP packets to each other using the IP address by which
   they are known in the Ansible inventory.
 
-* You must be able to `ssh -l root` from your controller machine to
-  provisioned machines without supplying a password.
+* You (the user running the Ansible playbook) must be able to `ssh`
+  from the Ansible controller machine to the configured user on the
+  provisioned machines, and that user must be able to `sudo` to
+  `root`, without supplying a password.  The configured user is the
+  remote uer determined by the usual Ansible rules --- including the
+  settings (if any) of the `ansible_ssh_user`, `ansible_user`, and
+  `remote_user` Ansible variable(s).
 
 
 ### The inventory contract for an environment
@@ -172,8 +177,13 @@ The requirements on machines on that group are as follows.
 
 * They must run Ubuntu 14.04.
 
-* You must be able to `ssh -l root` from your controller machine to
-  provisioned machines without supplying a password.
+* You (the user running the Ansible playbook) must be able to `ssh`
+  from the Ansible controller machine to the configured user on the
+  provisioned machines, and that user must be able to `sudo` to
+  `root`, without supplying a password.  The configured user is the
+  remote user determined by the usual Ansible rules --- including the
+  settings (if any) of the `ansible_ssh_user`, `ansible_user`, and
+  `remote_user` Ansible variable(s).
 
 * The proxy machines must be able to open TCP connections into the
   shards using the Ansible inventory hostnames (which are IPv4
