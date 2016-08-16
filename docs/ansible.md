@@ -80,7 +80,7 @@ playbooks.  What enables this orthogonality is a contract between the
 two phases.  The contract concerns "groups" in the Ansible inventory.
 OpenRadiant does not care how your inventory is
 produced/stored/written.  You could keep one big `/etc/ansible/hosts`
-file.  you could keep many files in an `/etc/ansible/hosts/`
+file.  You could keep many files in an `/etc/ansible/hosts/`
 directory.  You could keep various inventory files in various places
 and pass the relevant one via the `-i` argument or the
 `ANSIBLE_INVENTORY` environment variable.  You could use an Ansible
