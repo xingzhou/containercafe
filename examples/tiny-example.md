@@ -94,7 +94,14 @@ machines and get them in the Ansible inventory; see
 [the OpenRadiant Ansible doc](../docs/ansible.md) for the full story.
 
 
+
 ### Run the example
+Now you have a choice to run the example with or without the proxy.
+Proxy enables multi-tenancy, multi-sharding and many other [features](../docs/proxy.md).
+
+To run the example with proxy, please follow [these steps here](../proxy/README.md#run-proxy-as-a-container),
+or you can continue with the steps below without the proxy.
+
 
 Now you can open an SSH connection to the master node:
 ```bash

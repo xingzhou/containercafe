@@ -17,7 +17,8 @@ The steps below work best with native docker [for Mac, Unix or Windows](http://w
 It would also work with `docker-machine`, but it requires additional steps. Look
 for /[DOCKER MACHINE] tag.
 
-### Step 1: Get proxy code and run it [*This will be done by ansible install script*]
+### Step 1: Get proxy code and run it
+[*This will be done by ansible install script*]
 If you have not done this already, clone the repository:
 
 ```
@@ -26,7 +27,8 @@ git clone git@github.ibm.com:alchemy-containers/openradiant.git
 git clone https://github.ibm.com/alchemy-containers/openradiant.git
 ```
 
-#### Run proxy as a container [*This will be done by ansible install script*]
+#### Run proxy as a container
+[*This will be done by ansible install script*]
 Proxy service will be installed as a container on your default docker host.
 Build the image and deploy it. When starting the proxy, provide the environment
 name e.g. _dev-vbox_:
