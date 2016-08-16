@@ -47,9 +47,17 @@ directory(s) containing the network plugin.
 
 Some early versions of Ansible 2 have another bug, for which we have
 no work-around.  We suspect it is the 2.0.* versions.  The bug is in
-the docker module.  So we think Ansible versions in the 2.1.0.* range
-will work provided the `roles_path` workaround in used;
-versions 2.1.1.0 and greater work with no work-around needed.
+the `docker` module.
+
+The following table summarizes what we know about Ansible versions and
+bugs and configuration.
+
+| Version | Usable? | Needs `roles_path` workaround? |
+|--------------|-----|-------------------------------|
+| 1.9.5, 1.9.6 | Yes | No  |
+| 2.0.*        | No  (due to bug in `docker` module) | |
+| 2.1.0.*      | Yes | Yes |
+| >= 2.1.1.0   | Yes | No  |
 
 OpenRadiant includes an `ansible.cfg` that sets `roles_path` to the
 OpenRadiant roles directory and has some other settings whose purpose
