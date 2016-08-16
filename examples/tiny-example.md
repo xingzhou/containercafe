@@ -1,14 +1,21 @@
 ## Tiny Example
 
-This produces a very simple demonstration cluster of two VirtualBox
+This produces a very simple demonstration shard of two VirtualBox
 VMs, one master and one worker.  They have Mesos installed, and
 Kubernetes and Swarm playing nicely together thanks to Mesos.  The
 networking is Docker bridge networking.  The Swarm master is modified
 for multi-tenant use.
 
-Install [git](https://git-scm.com/downloads), [Vagrant](https://www.vagrantup.com/) and
+Install [git](https://git-scm.com/downloads),
+[Vagrant](https://www.vagrantup.com/) and
 [VirtualBox](https://www.virtualbox.org/wiki/Downloads). You will need
 at least Vagrant 1.8.4 and VirtualBox 5.0.24.
+
+This example shows just one way to provision machines for use with
+OpenRadiant.  In general, you can use OpenRadiant with any
+provisioning technology you like.  See
+[the inventory contract](docs/ansible.md#the-inventory-contract) for
+the key idea.
 
 Checkout this project:
 
@@ -69,6 +76,11 @@ try the following:
 pip install --upgrade ansible
 ```
 
+The above is just one way to prepare a machine to do OpenRadiant
+installation.  See
+[the installer machine](../README.md#the-installer-machine) for the
+general story.
+
 Deploy OpenRadiant:
 
 ```bash
@@ -76,6 +88,11 @@ cd ansible
 export ANSIBLE_INVENTORY=../examples/envs/dev-vbox/radiant01.hosts
 ansible-playbook -v shard.yml -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge
 ```
+
+Again, remember that this is just one example of how to provision
+machines and get them in the Ansible inventory; see
+[the OpenRadiant Ansible doc](../docs/ansible.md) for the full story.
+
 
 ### Run the example
 
@@ -183,5 +200,12 @@ When prompt for the user_namer:password  use  vagrant:radiantHA
 
 To setup Proxy, follow the steps in [Proxy Setup](#proxy-setup)
 
+
+### To view the Mesos web UI
+
+On your local browser visit http://192.168.0.2:5050/
+
+
 ### Proxy Setup
+
 For details, please follow [Proxy documentation](../proxy/README.md)
