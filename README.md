@@ -25,7 +25,7 @@ available in all combinations.
 
 * [Architecture Overview](#architecture-overview)
 * [Tiny Example Solution](examples/tiny-example.md)
-* [Ansible Structure](docs/ansible.md)
+* [Ansible Principles](#ansible-principles)
 * [The installer machine](#the-installer-machine)
 * [Installing OpenRadiant](#installing-openradiant)
 * [Code of Conduct](#code-of-conduct)
@@ -71,6 +71,17 @@ The Ansible playbooks strive to meet the Ansible ideal of achieving a
 prescribed desired state, and can thus be used to update as well as
 install.  However, there are limits to the space of initial states
 with which these playbooks can cope.
+
+
+### Ansible principles
+
+The structure of the Ansible playbooks and roles, and the related
+conventions for how environments and shards are organized and how they
+are described by files, are important parts of OpenRadiant's
+modularity.  This includes the inventory contracts that establish the
+orthogonality between (a) how machines are provisioned and (b) how
+software is installed on them.  See [the Ansible doc](docs/ansible.md)
+for details.
 
 
 ### The installer machine

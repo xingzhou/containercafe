@@ -71,7 +71,7 @@ environment variable settings as appropriate for that dynamic
 inventory.
 
 
-## The Inventory Contract
+## The inventory contract
 
 Because the playbooks support multiple environments and shards, the
 inventory contract applies to a given environment or shard.  A shard
@@ -94,7 +94,7 @@ group names, and to various things in various compute provider clouds
 name should start with a lowercase letter and only contain lower case
 letters, numbers, and the hyphen ('-').
 
-### Shard Contract
+### Shard contract
 
 The contract for a shard specifies that certain inventory groups
 exist.  They are as follows.
@@ -144,7 +144,7 @@ There are also some requirements on the provisioned machines.
   provisioned machines without supplying a password.
 
 
-### Environment Contract
+### Environment contract
 
 The contract for an environment includes, beyond the shards of that
 environment, the following inventory group.
@@ -166,7 +166,7 @@ The requirements on machines on that group are as follows.
   addresses) for the shard machines.
 
 
-## The Playbooks
+## The playbooks
 
 OpenRadiant currently includes no playbooks for provisioning machines,
 and one playbook for installing software one them.  That is
@@ -174,7 +174,7 @@ and one playbook for installing software one them.  That is
 the environment level.
 
 
-## Ansible Variables
+## Ansible variables
 
 The playbooks that deploy software on machines are parameterized by a
 large collection of Ansible variables.  OpenRadiant introduces a
@@ -182,11 +182,14 @@ distinction between _primary_ variables, which a deployer may set, and
 _secondary_ variables, which are really just intermediates in the
 logic of the Ansible roles.
 
-### Primary Ansible Variables
+### Primary Ansible variables for the shard playbook
 
 Six have no meaningful defaults.  The others are defined by defaults
 in `ansible/group_vars/all` and can be overridden by settings in an
-environment-specific file and a cluster-specific file.
+environment-specific file and a cluster-specific file.  These are the
+most important of those variables: `kubernetes_deploy`,
+`swarm_deploy`, `mesos_deploy`, and `ha_deploy`; see
+`ansible/group_vars/all` for their definitions and defaults.
 
 Following are the six with no meaningful default.
 
@@ -241,7 +244,7 @@ and `network_kind` must be supplied on the command line invoking the
 playbook.
 
 
-### Secondary Ansible Variables
+### Secondary Ansible variables for the shard playbook
 
 These are of no interest to a deployer of OpenRadiant or a solution
 built on it.  These _are_ of interest to a developer of a solution
@@ -269,7 +272,12 @@ developer.
   application is deployed as usual in the `kube-system` namespace.
 
 
-## Networking Plugins
+### Primary Ansible variables for the enviornment playbooks
+
+* `env_name`: a string of the sort discussed above
+
+
+## Networking plugins
 
 As noted above, OpenRadiant includes the following networking plugins.
 
