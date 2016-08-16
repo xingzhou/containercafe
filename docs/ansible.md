@@ -53,7 +53,7 @@ The following table summarizes what we know about Ansible versions and
 bugs and configuration.
 
 | Version | Usable? | Needs `roles_path` workaround? |
-------------------------------------------------------
+|--------------|-----|-------------------------------|
 | 1.9.5, 1.9.6 | Yes | No  |
 | 2.0.*        | No  (due to bug in `docker` module) | |
 | 2.1.0.*      | Yes | Yes |
