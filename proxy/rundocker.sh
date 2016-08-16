@@ -49,12 +49,14 @@ CMD="docker rm -f api-proxy"
 echo $CMD
 $(echo $CMD)
 
-# start new container instance. Map the volume to CERTS
-CMD="docker run -v $CERTS:/opt/tls_certs -p 8087:8087 -e env_name=$env_name --name api-proxy api-proxy"
-
 # to run container as a daemon use `-d` flag:
+EXTRA_FLAGS=""
 if [ "$2" == "-d" ] ; then
-	CMD="docker run -d -v $CERTS:/opt/tls_certs -p 8087:8087 -e env_name=$env_name --name api-proxy api-proxy tail -f /dev/null"
+	EXTRA_FLAGS="-d"
 fi
+
+# start new container instance. Map the volume to CERTS
+CMD="docker run $EXTRA_FLAGS -v $CERTS:/opt/tls_certs -p 8087:8087 -e env_name=$env_name --name api-proxy api-proxy"
+
 echo $CMD
 $(echo $CMD)
