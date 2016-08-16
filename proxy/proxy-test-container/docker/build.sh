@@ -2,7 +2,7 @@
 
 helpme()
 {
-	cat <<HELPMEHELPME
+    cat <<HELPMEHELPME
 
 Syntax: ${0} -e <environment> -d <docker_version> -k <kubectl_version>
 

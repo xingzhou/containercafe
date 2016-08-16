@@ -2,7 +2,7 @@
 
 helpme()
 {
-	cat <<HELPMEHELPME
+    cat <<HELPMEHELPME
 
 Run tests: -l <proxy_location> -n <network_id> -k <test_kube?> -c <num_containers> -p <num_pods> -t <shard>:<tenant_id>:<api_key>
 * All flags are optional except for -t; default values are set.
@@ -34,21 +34,21 @@ RUN_TEST="$DIR/test_containers.sh"
 TENANTS=""
 
 if [ "$LOGS_DIR" = "" ] ; then
-	LOGS_DIR="$DIR/logs"
+    LOGS_DIR="$DIR/logs"
 fi
 
 if [ "$CERTS_DIR" = "" ] ; then
-	CERTS_DIR="$DIR/certs"
+    CERTS_DIR="$DIR/certs"
 fi
 
 if [ "$ENV_NAME" = "" ] ; then
-	ENV_NAME="dev-vbox"
+    ENV_NAME="dev-vbox"
 fi
 
 CERTS_DIR="$CERTS_DIR/$ENV_NAME"
 
 while test $# -gt 0; do
-	case "$1" in 
+    case "$1" in 
         ""|"-?"|"-h"|"--help"|"help")
             helpme
             exit 1
@@ -71,71 +71,71 @@ while test $# -gt 0; do
             done
             exit 0
             ;;
-		-l)
-			shift 
-			if test $# -gt 0; then 
-				RUN_TEST="$RUN_TEST -l $(echo "$1" | tr '[:upper:]' '[:lower:]')"
-			else
-				echo "Proxy location not specified"
-				exit 1
-			fi 
-			shift 
-			;;
-		-n)
-			shift
-			if test $# -gt 0; then 
-				RUN_TEST="$RUN_TEST -n $1"
-			else 
-				echo "No network id specified"
-				exit 1
-			fi 
-			shift
-			;; 
-		-t)
-			shift
-			if test $# -gt 0; then 
-				TENANTS="$TENANTS;$1"
-			else
-				echo "No tenant_id specified"
-			fi 
-			shift 
-			;;
-		-k)
-			shift 
-			if test $# -gt 0; then
-				RUN_TEST="$RUN_TEST -k $(echo "$1" | tr '[:upper:]' '[:lower:]')"
-			else
-				echo "Test kube flag not specified"
-			fi 
-			shift 
-			;; 
-		-c)
-			shift
-			if test $# -gt 0; then 
-				RUN_TEST="$RUN_TEST -c $1"
-			else
-				echo "Number of containers not specified"
-			fi 
-			shift
-			;;
-		-p)
-			shift
-			if test $# -gt 0; then 
-				RUN_TEST="$RUN_TEST -p $1"
-			else 
-				echo "Number of pods not specified"
-			fi 
-			shift 
-			;;
+        -l)
+            shift 
+            if test $# -gt 0; then 
+                RUN_TEST="$RUN_TEST -l $(echo "$1" | tr '[:upper:]' '[:lower:]')"
+            else
+                echo "Proxy location not specified"
+                exit 1
+            fi 
+            shift 
+            ;;
+        -n)
+            shift
+            if test $# -gt 0; then 
+                RUN_TEST="$RUN_TEST -n $1"
+            else 
+                echo "No network id specified"
+                exit 1
+            fi 
+            shift
+            ;; 
+        -t)
+            shift
+            if test $# -gt 0; then 
+                TENANTS="$TENANTS;$1"
+            else
+                echo "No tenant_id specified"
+            fi 
+            shift 
+            ;;
+        -k)
+            shift 
+            if test $# -gt 0; then
+                RUN_TEST="$RUN_TEST -k $(echo "$1" | tr '[:upper:]' '[:lower:]')"
+            else
+                echo "Test kube flag not specified"
+            fi 
+            shift 
+            ;; 
+        -c)
+            shift
+            if test $# -gt 0; then 
+                RUN_TEST="$RUN_TEST -c $1"
+            else
+                echo "Number of containers not specified"
+            fi 
+            shift
+            ;;
+        -p)
+            shift
+            if test $# -gt 0; then 
+                RUN_TEST="$RUN_TEST -p $1"
+            else 
+                echo "Number of pods not specified"
+            fi 
+            shift 
+            ;;
         *)
             shift
             ;;
-	esac
+    esac
 done
 
 if [ "$TENANTS" = "" ] ; then
     helpme
-	exit 1
+    exit 1
 fi
 
 export LOG_SUFFIX="$( date +%F )_$( date +%H-%M-%S )"

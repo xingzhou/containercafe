@@ -2,7 +2,7 @@
 
 helpme()
 {
-	cat <<HELPMEHELPME
+    cat <<HELPMEHELPME
 
 Syntax: ${0} -t <log_tag> --latest
 
@@ -13,7 +13,7 @@ LOG_TAG=""
 LATEST=0
 
 while test $# -gt 0; do
-	case "$1" in 
+    case "$1" in 
         ""|"-?"|"-h"|"--help"|"help")
             helpme
             exit 0
@@ -22,19 +22,19 @@ while test $# -gt 0; do
             shift
             LATEST=1
             ;;
-		-t)
-			shift
-			if test $# -gt 0; then 
-				LOG_TAG="$1"
-			else
-				echo "No log tag specified"
-			fi 
-			shift 
-			;;
+        -t)
+            shift
+            if test $# -gt 0; then 
+                LOG_TAG="$1"
+            else
+                echo "No log tag specified"
+            fi 
+            shift 
+            ;;
         *)
             shift
             ;;
-	esac
+    esac
 done
 
 # -t or --latest must be passed
