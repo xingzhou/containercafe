@@ -25,7 +25,7 @@ available in all combinations.
 
 * [Architecture Overview](#architecture-overview)
 * [Tiny Example Solution](examples/tiny-example.md)
-* [Ansible Principles](docs/ansible.md)
+* [Ansible Principles](#ansible-principles)
 * [The installer machine](#the-installer-machine)
 * [Installing OpenRadiant](#installing-openradiant)
 * [Code of Conduct](#code-of-conduct)
