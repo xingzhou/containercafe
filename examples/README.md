@@ -14,7 +14,7 @@ This file should be modified by adding the specific IP addresses for the machine
 
 You can also use your own inventory file (as long as you preserve the [group_names]), simply let  ANSIBLE_INVENTORY point to the path of your inventory file instead.
 E.g. in the tiny example, use: export ANSIBLE_INVENTORY=../path/to/your/inventory
-For detailed information about the ansible variables and the inventory, check [our Ansible doc](docs/ansible.md).
+For detailed information about the ansible variables and the inventory, check [our Ansible doc](../docs/ansible.md).
 
 ####User SSH info
 
