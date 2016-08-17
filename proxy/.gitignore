@@ -23,6 +23,7 @@ dockerize/*.pem
 dockerize/*.key
 dockerize/ca.srl
 dockerize/src/*
-dockerize/OpenRadiant/*
+dockerize/*.sh
+dockerize/*.json
 admin-certs/ca.srl
 admin-certs/*.srl
