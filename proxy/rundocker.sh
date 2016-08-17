@@ -30,17 +30,21 @@ if [ ! -d "$CERT_MASTER" ]; then
   exit 99
 fi
 
-mkdir -p $ACERTS
-
-cp -f $CERT_MASTER/ca* $ACERTS
-cp -f $CERT_MASTER/admin-key.pem $ACERTS/kadmin.key
-cp -f $CERT_MASTER/admin.pem $ACERTS/kadmin.pem
-
-cp -f ../ansible/roles/keygen/files/api-proxy-openssl.cnf $ACERTS/api-proxy-openssl.cnf
-
-# generate all proxy certs
-./gen_server_certs.sh $ACERTS
-
+if [ ! -d "$ACERTS" ]; then
+	mkdir -p $ACERTS
+	
+	cp -f $CERT_MASTER/ca* $ACERTS
+	cp -f $CERT_MASTER/admin-key.pem $ACERTS/kadmin.key
+	cp -f $CERT_MASTER/admin.pem $ACERTS/kadmin.pem
+	
+	cp -f ../ansible/roles/keygen/files/api-proxy-openssl.cnf $ACERTS/api-proxy-openssl.cnf
+	
+	# generate all proxy certs
+	./gen_server_certs.sh $ACERTS
+else
+	echo "WARNING: using the existing certs in $ACERTS"
+	echo "To recreate the certs, delete this directory"
+fi	
 
 #HOSTS=$(cat hosts)
 #echo $HOSTS
