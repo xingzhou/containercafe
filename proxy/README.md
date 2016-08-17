@@ -73,7 +73,8 @@ Setup the environment and start the application:
 source ./set_local_env.sh
 ./start_proxy.sh
 ```
-NOTE: There is a problem when running the proxy as a script on mac. Mac implements
+NOTE: There is a problem when running the proxy as a script on mac. (See the 
+[issue #212](/openradiant/issues/212) Mac implements
 their own native SSL libraries for curl, therefore passing certs that are not
 in the keychain is a bit problematic. Install curl via Homebrew:
 `brew install curl`, keep the native curl, update your PATH to point at the new
