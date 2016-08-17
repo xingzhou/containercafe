@@ -17,8 +17,8 @@ for full details.
 
 In our tiny example the Ansible inventory is in a file located at
 [openradiant/examples/envs/dev-vbox/radiant01.hosts](envs/dev-vbox/radiant01.hosts).
-In that file you will see all the required inventory groups (plus one
-that is not required).  In this example many of the groups have the
+In that file you will see all the required inventory groups (plus one, namely `hyperconverged_master-dev-vbox-radiant01`,
+that is not required, but added for clarity since some other groups inherit from it).  In this example many of the groups have the
 same membership, but you can have a different layout in your other
 deployments.  Identify machines by their IP addresses.  These
 addresses should be reachable from each other and also from the
