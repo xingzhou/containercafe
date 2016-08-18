@@ -7,7 +7,6 @@ function docker_image_env {
 tenants=()
 if [[ `echo "$CI" | tr '[:upper:]' '[:lower:]'` == "true" ]]; then
     IFS=$'\n' tenants=(`docker exec api-proxy cat /api-proxy/creds.json \
-        | tail -n +2 \
         | grep -oP "((?<=\"TLS_path\":\")|(?<=\"Space_id\":\"))[^\"]+" \
         | rev \
         | sed 'N;s/\(.*\)\n\([^/]*\)\(\/\)\([^/]*\)\(.*\)/t-\n\2\:\1\:\4/' \

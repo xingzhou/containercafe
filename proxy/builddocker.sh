@@ -4,7 +4,7 @@
 cp -r src dockerize
 
 # copy creds file and scripts to dockerize dir.
-cp creds.json dockerize/
+touch dockerize/creds.json
 cp make_TLS_certs.sh dockerize/
 cp mk_user_cert.sh dockerize/
 cp mk_kubeconfig.sh dockerize/

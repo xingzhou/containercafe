@@ -145,6 +145,11 @@ To view the content of the current authorization file:
 docker exec api-proxy cat /api-proxy/creds.json
 ```
 
+Every entry of the `creds.json` has this format:
+```
+{"Status":200, "Node":"192.168.10.2", "Docker_id":"", "Container":"", "Swarm_shard":true, "Tls_override":true, "Space_id":"sample_entry", "Reg_namespace":"swarm", "Apikey":"PV9S5hQARFmg0pVJwaPxbP588GdVKeYF1YGOePDvRNAGpyl4", "Orguuid":"orgname", "Userid":"userid", "Endpoint_type":"radiant", "TLS_path":"/opt/tls_certs/radiant01/PV9S5hQARFmg0pVJwaPxbP588GdVKeYF1YGOePDvRNAGpyl4"}
+```
+
 
 **NOTE**: All default config options are defined in the [Dockerfile](dockerize/Dockerfile),
 and can be overridden using the docker -e option on [startup](rundocker.sh)
