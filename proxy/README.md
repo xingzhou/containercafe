@@ -69,7 +69,7 @@ application. This requires Go libraries installed, proxy code compiled and added
 to go path.
 Review [Dockerfile](dockerize/Dockerfile) for more details.
 Setup the environment and start the application:
-```
+```bash
 source ./set_local_env.sh
 ./start_proxy.sh
 ```
@@ -103,7 +103,7 @@ You can create as many tenants as you like.
 At the bottom of the output the script displays the docker environment setup for
 the newly created tenant, including the location of the certs. Here is the sample
 output:
-```
+```bash
 # Setup docker environment:
 export DOCKER_HOST=localhost:8087
 export DOCKER_TLS_VERIFY=1
@@ -143,6 +143,11 @@ docker exec -it api-proxy /bin/bash
 To view the content of the current authorization file:
 ```
 docker exec api-proxy cat /api-proxy/creds.json
+```
+
+Every entry of the `creds.json` has this format:
+```json
+{"Status":200, "Node":"192.168.10.2", "Docker_id":"", "Container":"", "Swarm_shard":true, "Tls_override":true, "Space_id":"sample_entry", "Reg_namespace":"swarm", "Apikey":"PV9S5hQARFmg0pVJwaPxbP588GdVKeYF1YGOePDvRNAGpyl4", "Orguuid":"orgname", "Userid":"userid", "Endpoint_type":"radiant", "TLS_path":"/opt/tls_certs/radiant01/PV9S5hQARFmg0pVJwaPxbP588GdVKeYF1YGOePDvRNAGpyl4"}
 ```
 
 
