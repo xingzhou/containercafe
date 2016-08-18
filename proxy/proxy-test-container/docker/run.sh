@@ -16,4 +16,4 @@ fi
 CERTS_DIR=`docker_image_env CERTS_DIR`
 LOGS_DIR=`docker_image_env LOGS_DIR`
 
-docker run -v ~/.openradiant/envs:"$CERTS_DIR":ro -v api-proxy-tests-logs:"$LOGS_DIR" --net="host" api-proxy-tests "${tenants[@]}" "$@"
+docker run -v "$HOME/.openradiant/envs":"$CERTS_DIR":ro -v api-proxy-tests-logs:"$LOGS_DIR" --net="host" api-proxy-tests "${tenants[@]}" "$@"

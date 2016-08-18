@@ -1,7 +1,8 @@
 #!/bin/bash
 set -v
-PWD=`pwd`
-export GOPATH=$PWD:$GOPATH
-#export GOPATH=~/containers-hijack-proxy
+
+export GOPATH="$(pwd):$GOPATH"
+
 go build -o bin/hijack src/hijack/hijack.go
+
 ls -l bin
