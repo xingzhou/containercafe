@@ -1,15 +1,46 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 require 'fileutils'
+require 'pathname'
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
-CONFIG = File.expand_path("vagrant_config.rb")
+#Checking if a configuration file exists, if it does, then read its attribute values
+#Otherwise use default values
+pn = Pathname.new("../envs/dev-vbox/vagrant_config.rb")
+CONFIG = File.expand_path(pn)
 if File.exist?(CONFIG)
   require CONFIG
+  puts "Info: vagrant_config file is found, and will be used"
+  VM_COUNT=$vm_count
+  VM_MEMORY=$vm_memory
+  PROXY_NUM=$proxy_num
+  PROXY_VM_MEMORY=$proxy_vm_memory
+  INSTALLER_VM=$installer_num
+  INSTALLER_VM_MEMORY=$installer_vm_memory
+else
+  puts "Info: vagrant_config file is missing, vagrant will usedefault values"
+  VM_COUNT=2
+  VM_MEMORY=1536
+  PROXY_NUM=1
+  PROXY_VM_MEMORY=1024
+  INSTALLER_VM=1
+  INSTALLER_VM_MEMORY=1024
 end
 
-if $vm_memory < 1024
+puts "Info: vagrant will use the following configuration parameters:
+------------------------
+VM_COUNT=#{VM_COUNT}
+VM_MEMORY=#{VM_MEMORY}
+PROXY_NUM=#{PROXY_NUM}
+PROXY_VM_MEMORY=#{PROXY_VM_MEMORY}
+INSTALLER_VM=#{INSTALLER_VM}
+INSTALLER_VM_MEMORY=#{INSTALLER_VM_MEMORY}
+------------------------
+"
+
+#Checking if the allocated memory is enough, if not, warn the user.
+if VM_MEMORY < 1024
   puts "Warning: workers and master VMs have less than 1536 MB of memory"
 end
 
@@ -34,14 +65,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty64"
   config.ssh.insert_key = false
 
-  (1..$vm_count).each do |i|
+  (1..VM_COUNT).each do |i|
     config.vm.define "radiant#{i+1}" do |node|
       node.vm.network "private_network", ip: "192.168.10.#{i+1}"
       node.vm.hostname = "radiant#{i+1}"
 
       node.vm.provider "virtualbox" do |nodeopts|
         nodeopts.name = "radiant#{i+1}"
-        nodeopts.memory = $vm_memory
+        nodeopts.memory = VM_MEMORY
         nodeopts.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
         nodeopts.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
       end
@@ -76,7 +107,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       installer.vm.provider "virtualbox" do |installer_node|
         installer_node.name = name
-        installer_node.memory=$installer_vm_memory
+        installer_node.memory=INSTALLER_VM_MEMORY
       end
     end
   end
@@ -93,7 +124,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     proxy.vm.provider "virtualbox" do |proxy_node|
       proxy_node.name = "hjproxy"
-      proxy_node.memory=$proxy_vm_memory
+      proxy_node.memory=PROXY_VM_MEMORY
     end
   end
 end
