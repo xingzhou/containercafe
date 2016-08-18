@@ -14,22 +14,15 @@ cd ~/workspace/openradiant/proxy
 ## Step 2: Certificates for test tenants
 In every terminal, execute the script to create one test tenant:
 ```bash
-docker exec hjproxy /hijack/make_TLS_certs.sh test1
-docker exec hjproxy /hijack/make_TLS_certs.sh test2
-docker exec hjproxy /hijack/make_TLS_certs.sh test3
+docker exec api-proxy /api-proxy/make_TLS_certs.sh test1 radiant01 192.168.10.2
+docker exec api-proxy /api-proxy/make_TLS_certs.sh test2 radiant01 192.168.10.2
+docker exec api-proxy /api-proxy/make_TLS_certs.sh test3 radiant01 192.168.10.2
 ```
-If you are using multiple openradiant shards and your master cluster is different from
-default VIP: `192.168.10.2`, pass that VIP as the 2nd argument. For example, if address is
-`192.168.10.10`, execute:
-```bash
-docker exec hjproxy /hijack/make_TLS_certs.sh test1 192.168.10.10
-```
-Otherwise, the default address `192.168.10.2` will be used.
 
 This will create the certificates for this tenant and the configurations necessary to run the tests.
 To view all the accounts valid for this proxy:
 ```bash
-docker exec hjproxy cat /hijack/creds.json
+docker exec api-proxy cat /api-proxy/creds.json
 ```
 
 ## Step 3: Environment Variables
@@ -38,32 +31,14 @@ The certificate creation script will output few export statements. For example: 
 # Setup docker environment:
 export DOCKER_HOST=localhost:8087
 export DOCKER_TLS_VERIFY=1
-export DOCKER_CERT_PATH=dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I
+export DOCKER_CERT_PATH=~/.openradiant/envs/dev-vbox/radiant01/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I
 
 # Setup kubernetes environment:
-export KUBECONFIG=dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I/kube-config
+export KUBECONFIG=~/.openradiant/envs/dev-vbox/radiant01/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I/kube-config
 ```
 Copy and paste the first 2 lines into the test terminal.
-
-To run the test successfully, the relative paths needs to be converted to absolute paths.
-For the variable `DOCKER_CERT_PATH`, first execute <br />
-`pwd` <br />
-Copy the resulting path, and paste it before `dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I`
-The final command should look something like:
-
-```
-export DOCKER_CERT_PATH=/Users/atarng/workspace/openradiant/proxy/dockerize/OpenRadiant/dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I
-```
-Execute this command. <br />
-
-Same for Kubernetes. There will be something like: <br />
-`export KUBECONFIG=dockerize/OpenRadiant/dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I/kube-config`.
-
-Do the same copy and pasting of the path to the outer directory before the presented path. The final command will look something like
-```
-export KUBECONFIG=/Users/atarng/workspace/openradiant/proxy/dockerize/OpenRadiant/dockerize/OpenRadiant/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I/kube-config
-```
-Execute this command. <br />  
+To run the test successfully, `DOCKER_CERT_PATH` and `KUBECONFIG` must be absolute paths.
+ 
 
 
 Do this for all tenants in their respective terminals.
@@ -82,6 +57,7 @@ In each corresponding window, run the test script, `test_containers.sh`
  1. -k (test_kube): `true` or `false`. Default is true; kube tests will be run. <br />
  1. -c (num_containers): the total number of containers to be created, all without network. If no argument passed, default value is 5. <br />
  1. -p (num_pods): the total number of pods to be created. If no argument is passed, default value is 5. <br />
+ 1. -a (parallel): `true` or `false`. Default is false; tests will be run in parallel. <br />
 
 
 Suppose each test wants to examine a lifecycle of 3 containers and 3 pods.
@@ -98,14 +74,16 @@ Then, in each corresponding window, run:
 Both Docker Swarm & Kubernetes tests will be executed. Summaries of the test results can be found in the `logs` folder, under `<tenant_id>_test_kube_pods_results_<timestamp>.log` for the Kube tests, and `<tenant_id>test_swarm_results_<timestamp>.log` for the Swarm tests.
 
 Each line of the results file will look similar to this:
-`20160705.144709,1,test1,swarm,test1,Docker ps,PASS,OK`.
+`20160705.144709,PASS,1,test1,swarm,Test 1,docker ps,0,0,OK`.
 Each field is comma-seperated, and represents the following:
 
 1. Timestamp of when the command was executed. Read as: YYYYMMDD.HHMMSS.
-2. Execution time of the command, in seconds.
-3. Tenant_id
-4. Test type: either docker `swarm` or `kube`.
-5. Test number (sequential).
-6. Description of test run.
-7. Result: either `PASS` or `FAIL`.
-8. If test passed, will just be `OK`. Otherwise, if fail, further information on what went wrong (the error displayed to the user).
+2. Result: either `PASS` or `FAIL`.
+3. Execution time of the command, in seconds.
+4. `<tenant_id>`
+5. Test type: either docker `swarm` or `kube`.
+6. Test number (sequential).
+7. Description of test run.
+8. Result code of the command.
+9. Expected result code.
+10. If test passed, will just be `OK`. Otherwise, if fail, further information on what went wrong (the error displayed to the user).
