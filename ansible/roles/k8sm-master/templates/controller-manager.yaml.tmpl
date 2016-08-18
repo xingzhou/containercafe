@@ -15,6 +15,7 @@ spec:
     - controller-manager
     - --kubeconfig={{ k8s_etc_dir }}/{{ k8s_controller_manager_cn }}-kubeconfig
     - --service-account-private-key-file={{ k8s_etc_dir }}/{{ k8s_apiserver_cn }}-key.pem
+    - --root-ca-file={{ k8s_cert_dir }}/{{ ca_cert }}
     {% if kubernetes_on_mesos_deploy|bool %}
     - --cloud-provider=mesos
     - --cloud-config={{ k8s_etc_dir }}/mesos-cloud.conf
