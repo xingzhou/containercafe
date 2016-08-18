@@ -30,15 +30,31 @@ docker exec api-proxy cat /api-proxy/creds.json
 ```
 The certificate creation script will output few export statements. For example:
 ```bash
+Generating API key of length 48
+Generated API key: xoaI1UGKUA4neu6Tubv67nh7XSBmubuVYPrC3MA3E4WXETOX
+Creating certificates
+Generating RSA private key, 2048 bit long modulus
+.+++
+.........................................+++
+e is 65537 (0x10001)
+Signature ok
+subject=/CN=xoaI1UGKUA4neu6Tubv67nh7XSBmubuVYPrC3MA3E4WXETOX
+Getting CA Private Key
+Writing to creds.json
+Certificates created for Apikey xoaI1UGKUA4neu6Tubv67nh7XSBmubuVYPrC3MA3E4WXETOX
+Located at /opt/tls_certs/radiant01/xoaI1UGKUA4neu6Tubv67nh7XSBmubuVYPrC3MA3E4WXETOX
+
+NOTE: the following commands must be executed from openradiant/proxy directory
+
 # Setup docker environment:
 export DOCKER_HOST=localhost:8087
 export DOCKER_TLS_VERIFY=1
-export DOCKER_CERT_PATH=~/.openradiant/envs/dev-vbox/radiant01/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I
+export DOCKER_CERT_PATH=~/.openradiant/envs/dev-vbox/radiant01/xoaI1UGKUA4neu6Tubv67nh7XSBmubuVYPrC3MA3E4WXETOX
 
 # Setup kubernetes environment:
-export KUBECONFIG=~/.openradiant/envs/dev-vbox/radiant01/7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I/kube-config
+export KUBECONFIG=~/.openradiant/envs/dev-vbox/radiant01/xoaI1UGKUA4neu6Tubv67nh7XSBmubuVYPrC3MA3E4WXETOX/kube-config
 ```
-For each user you need to remember the API key (e.g. `7uJNzJqK5T33A4j9XkH6Fd1dQwCza0zHGHeFokmRJOWfz87I`).
+For each user you need to remember the API key (e.g. `xoaI1UGKUA4neu6Tubv67nh7XSBmubuVYPrC3MA3E4WXETOX`).
 
 ## Step 3: Run the tests
 
@@ -59,6 +75,9 @@ Then run:
                 -t radiant01:test2:JpjnQqnDQQCnNlc9bWJJoznhjr4awLdVe10B45LRCE31CqDh \
                 -t radiant01:test3:PBJ7ZKbi0hDSBFStFY5K9TnNdojEhUZ1goE1Swn3G6fle5iR
 ```
+
+#### Running on Continuous Integration (CI)
+When running on an environment with `CI=true` (e.g. Travis) `./docker/run.sh` can be invoked without any tenant, in this case it will run the tests for all the tenants. To override this behaviour al least one tenant must be provided.
 
 ## Step 4: Results
 
@@ -117,16 +136,17 @@ Otherwise it's possible to print a specific log identified by the log tag (the l
 ./docker/log.sh -t 2016-08-16_02-11-29
 ```
 
-Each line of the results file will look similar to this: 
-`20160705.144709,1,test1,swarm,test1,Docker ps,PASS,OK`. 
+Each line of the results file will look similar to this:
+`20160705.144709,PASS,1,test1,swarm,Test 1,docker ps,0,0,OK`.
 Each field is comma-seperated, and represents the following:
 
-1. Timestamp of when the command was executed. Read as: YYYYMMDD.HHMMSS. 
-2. Execution time of the command, in seconds. 
-3. Tenant_id 
-4. Test type: either docker `swarm` or `kube`. 
-5. Test number (sequential). 
-6. Description of test run. 
-7. Result: either `PASS` or `FAIL`. 
-8. If test passed, will just be `OK`. Otherwise, if fail, further information on what went wrong (the error displayed to the user).
-
+1. Timestamp of when the command was executed. Read as: YYYYMMDD.HHMMSS.
+2. Result: either `PASS` or `FAIL`.
+3. Execution time of the command, in seconds.
+4. `<tenant_id>`
+5. Test type: either docker `swarm` or `kube`.
+6. Test number (sequential).
+7. Description of test run.
+8. Result code of the command.
+9. Expected result code.
+10. If test passed, will just be `OK`. Otherwise, if fail, further information on what went wrong (the error displayed to the user).
