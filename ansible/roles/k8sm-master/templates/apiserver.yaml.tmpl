@@ -33,7 +33,7 @@ spec:
     - --client-ca-file={{ k8s_cert_dir }}/{{ ca_cert }}
     - --authorization-mode=Webhook
     - --authorization-webhook-config-file={{ k8s_etc_dir }}/webhook-config
-    - --admission-control=LimitRanger,NamespaceLifecycle,ResourceQuota
+    - --admission-control=LimitRanger,NamespaceLifecycle,ServiceAccount,ResourceQuota
     - --v=2
     ports:
     - containerPort: {{ k8s_apiserver_sport }}
