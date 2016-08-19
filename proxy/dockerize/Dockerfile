@@ -6,6 +6,7 @@ ARG git_remote_url=unknown
 ARG build_date=unknown
 ARG jenkins_build_id=unknown
 ARG jenkins_build_number=unknown
+ARG log_level=debug
 
 LABEL git-commit-id=${git_commit_id} \
       git-remote-url=${git_remote_url} \
@@ -44,7 +45,8 @@ ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
     registry_location="" \
     registry_admin_password= \
     consul_ip="" \
-    consul_port=""
+    consul_port="" \
+    log_level=${log_level}
 
 # copy all the scripts needed by proxy
 ADD make_TLS_certs.sh /api-proxy/make_TLS_certs.sh
