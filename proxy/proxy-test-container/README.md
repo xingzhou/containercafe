@@ -22,7 +22,7 @@ docker exec api-proxy /api-proxy/make_TLS_certs.sh test3 radiant01 192.168.10.2
 This will create the certificates for this tenant and the configurations necessary to run the tests.
 To view all the accounts valid for this proxy:
 ```bash
-docker exec api-proxy cat /api-proxy/creds.json
+docker exec api-proxy cat /opt/tls_certs/creds.json
 ```
 
 ## Step 3: Environment Variables

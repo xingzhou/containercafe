@@ -11,9 +11,6 @@ function build_proxy_image {
     # copy scripts into Dockerfile directory
     cp make_TLS_certs.sh mk_user_cert.sh mk_kubeconfig.sh "$context"
     
-    # create an empty creds.json if necessary
-    touch "$context/creds.json"
-    
     # build the docker image
     docker build -t "$name" "$context"
 }
