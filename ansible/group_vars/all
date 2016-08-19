@@ -78,6 +78,8 @@ lb_mesos: false
 
 kubernetes_deploy: True
 
+k8s_hyperkube_image: gcr.io/google_containers/hyperkube-amd64
+k8s_hyperkube_version: v1.3.5
 kube_image: openradiant/km
 kube_podmaster_image: gcr.io/google_containers/podmaster:1.1
 kube_infra_image: gcr.io/google_containers/pause
@@ -104,9 +106,6 @@ k8s_scheduler_port: 10251
 kubernetes_tunnel_to_apiserver: True
 
 pod_subnet: "172.17.0.0/16"
-
-k8s_hyperkube_image: gcr.io/google_containers/hyperkube-amd64
-k8s_hyperkube_version: v1.3.0
 
 
 ################################################################

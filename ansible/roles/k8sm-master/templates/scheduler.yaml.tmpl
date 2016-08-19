@@ -10,9 +10,9 @@ spec:
   - name: kube-{{ k8s_scheduler_cn }}
   {% if kubernetes_on_mesos_deploy|bool %}
     image: {{ kube_image }}
-  {%else%}
+  {% else %}
     image: {{k8s_hyperkube_image}}:{{k8s_hyperkube_version}}
-  {%endif%}
+  {% endif %}
     imagePullPolicy: Always
     command:
     {% if kubernetes_on_mesos_deploy|bool %}
