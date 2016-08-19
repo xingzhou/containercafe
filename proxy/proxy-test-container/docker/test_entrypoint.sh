@@ -40,7 +40,8 @@ if [ "$CERTS_DIR" = "" ] ; then
 fi
 
 if [ "$ENV_NAME" = "" ] ; then
-    ENV_NAME="dev-vbox"
+    echo "Environment name not found, please set a value for ENV_NAME"
+    exit 1
 fi
 
 CERTS_DIR="$CERTS_DIR/$ENV_NAME"
