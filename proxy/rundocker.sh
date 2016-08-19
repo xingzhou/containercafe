@@ -33,6 +33,7 @@ fi
 if [ ! -d "$ACERTS" ]; then
     mkdir -p "$ACERTS"
     
+    # copy the master certs
     cp -f "$CERT_MASTER/ca"* "$ACERTS"
     cp -f "$CERT_MASTER/admin-key.pem" "$ACERTS/kadmin.key"
     cp -f "$CERT_MASTER/admin.pem" "$ACERTS/kadmin.pem"
@@ -44,7 +45,10 @@ if [ ! -d "$ACERTS" ]; then
 else
     echo "WARNING: using the existing certs in $ACERTS"
     echo "To recreate the certs, delete this directory"
-fi    
+fi
+
+# create an empty creds.json if necessary
+touch "$CERTS/creds.json"
 
 # to run container as a daemon use `-d` flag:
 EXTRA_FLAGS=()

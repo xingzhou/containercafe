@@ -32,8 +32,6 @@ ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
     docker_api_ver="/v1.18" \
     tls_inbound="true" \
     tls_outbound="true" \
-# containers is started as:
-# docker run -v dockerize:/opt/tls_certs --name hjproxy -p 8087:8087 hijack
     ca_cert_file="/opt/tls_certs/admin-certs/ca.pem" \
     client_cert_file="/opt/tls_certs/admin-certs/hjclient.pem" \
     client_cert_file="/opt/tls_certs/admin-certs/hjclient.pem" \
@@ -42,7 +40,7 @@ ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
     server_key_file="/opt/tls_certs/admin-certs/hjserver.key" \
     kube_admin_key_file="/opt/tls_certs/admin-certs/kadmin.key" \
     kube_admin_cert_file="/opt/tls_certs/admin-certs/kadmin.pem" \
-    stub_auth_file="/api-proxy/creds.json" \
+    stub_auth_file="/opt/tls_certs/creds.json" \
     ccsapi_admin_user="" \
     ccsapi_admin_psswd="" \
     surrogate_ids="false" \
@@ -59,7 +57,6 @@ ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
 ADD make_TLS_certs.sh /api-proxy/make_TLS_certs.sh
 ADD mk_user_cert.sh /api-proxy/mk_user_cert.sh
 ADD mk_kubeconfig.sh /api-proxy/mk_kubeconfig.sh 
-ADD creds.json /api-proxy/creds.json
 
 ADD build.info /api-proxy/build.info
 

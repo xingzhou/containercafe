@@ -155,7 +155,7 @@ docker exec -it api-proxy /bin/bash
 
 To view the content of the current authorization file:
 ```
-docker exec api-proxy cat /api-proxy/creds.json
+docker exec api-proxy cat /opt/tls_certs/creds.json
 ```
 
 Every entry of the `creds.json` has this format:

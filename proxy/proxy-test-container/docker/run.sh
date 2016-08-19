@@ -1,23 +1,26 @@
 #!/bin/bash
 
 function main {
+    local CERTS_DIR=`docker_image_env api-proxy-tests CERTS_DIR`
+    local LOGS_DIR=`docker_image_env api-proxy-tests LOGS_DIR`
+    local ENV_NAME=`docker_image_env api-proxy-tests ENV_NAME`
+    local ENVS_DIR="$HOME/.openradiant/envs"
+
     local tenants=()
     if [[ `echo "$CI" | tr '[:upper:]' '[:lower:]'` == true && `check_for_tenants "$@"` == false ]]; then
-        IFS=$'\n' tenants=(`docker exec api-proxy cat /api-proxy/creds.json \
+        local CREDS_DIR="$ENVS_DIR/$ENV_NAME/creds.json"
+        IFS=$'\n' tenants=(`cat "$CREDS_DIR" \
             | grep -oP "((?<=\"TLS_path\":\")|(?<=\"Space_id\":\"))[^\"]+" \
             | rev \
             | sed 'N;s/\(.*\)\n\([^/]*\)\(\/\)\([^/]*\)\(.*\)/t-\n\2\:\1\:\4/' \
             | rev`)
     fi
 
-    local CERTS_DIR=`docker_image_env CERTS_DIR`
-    local LOGS_DIR=`docker_image_env LOGS_DIR`
-
-    docker run -v "$HOME/.openradiant/envs":"$CERTS_DIR":ro -v api-proxy-tests-logs:"$LOGS_DIR" --net="host" api-proxy-tests "${tenants[@]}" "$@"
+    docker run -v "$ENVS_DIR":"$CERTS_DIR":ro -v api-proxy-tests-logs:"$LOGS_DIR" --net="host" api-proxy-tests "${tenants[@]}" "$@"
 }
 
 function docker_image_env {
-    docker inspect -f "{{ .Config.Env }}" api-proxy-tests | grep -oP "(?<=$1\=)([^\s\]]+)"
+    docker inspect -f "{{ .Config.Env }}" "$1" | grep -oP "(?<=$2\=)([^\s\]]+)"
 }
 
 function check_for_tenants {
