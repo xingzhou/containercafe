@@ -29,7 +29,7 @@
 192.168.10.3
 
 # The following inventory group defines the full set of machines in
-# the shard.
+# the shard. By using the keyword 'children' we can aggregrate multiple groups
 
 [cluster-dev-vbox-radiant01:children]
 hyperconverged_master-dev-vbox-radiant01
