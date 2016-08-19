@@ -15,6 +15,7 @@ import (
 	"httphelper"
 	"conf"
 	"auth"
+//	"reflect"
 	"errors"
 )
 
@@ -298,100 +299,115 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	
 func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error) {
 	body, _ = ioutil.ReadAll(r.Body)
-	if r.Method == "POST" {
-		// convert the body to string 
-		bodystr := httphelper.PrettyJson(body)
-		Log.Printf("Original JSON: %s", bodystr)
-		
-		// the request to create POD looks as follow:
-		//	 {
-		//	  	"kind":"Pod",
-		//	  	"apiVersion:"v1",
-		//	  	"metadata":{
-		//	  		"name":"testtt1",
-		//	  		"namespace":"s21f85bc8-5a1a-403a-8a82-cdb757defd72-default",
-		//	  		"annotations":{
-		//	  			containers-annotations.alpha.kubernetes.io: "{ \"com.ibm.radiant.tenant.0\": \"stest1-default\",  \"OriginalName\": \"kube-web-server\" }"
-		//
-		// and the one to create a replication controller (group):
-		//  {
-		//  	"kind":"ReplicationController",
-		//  	"apiVersion":"v1",
-		//  	"metadata":{
-		//  		"name":"group3",
-		//  		"labels":{"run":"group3"},
-		//  		"annotations":{
-		//  			"containers-label.alpha.kubernetes.io: "{ \"com.ibm.radiant.tenant.0\": \"sf7f413cb-a678-412d-b024-8e17e28bcb88-default\" }"
-
-		// get the label names
-		auth_label := conf.GetSwarmAuthLabel()
-		annot_label := conf.GetAnnotationExtLabel()
-		
-		data := map[string]interface{}{}
-		json.Unmarshal(body, &data)
-		
-		meta :=  data["metadata"]
-		//Log.Printf("*** META: %+v", meta)
-		// convert the interface{} to map
-		metam :=meta.(map[string]interface{})
-		annot := metam["annotations"]
-		Log.Printf("***Original Annotations: %+v", annot)
-		var annotm map[string]interface{}
-		// annotations might not be provided in the yaml file:
-		if annot == nil {
-			annotm = make(map[string]interface{})
-			metam["annotations"] = annotm
-		} else {
-			// convert the existing annotation interface{} to map
-			annotm =annot.(map[string]interface{})
-		}	
-
-		if annotm[annot_label]=="" || annotm[annot_label]==nil{
-				Log.Printf("Annotation label does not exist")
-			} else {
-				Log.Printf("Annotation label %v already exists: %v", annot_label, annotm[annot_label])
-				err = errors.New("Illegal usage of label ")
-				return nil, err
-			}
-
-			// Get the container name from spec/containers
-			//	"spec": {
-			//		"containers": [
-			//			{
-			//				"image": "mrsabath/web-ms:v3",
-			//				"name": "kube-web-server",
-
-//			spec := data["spec"]
-//			Log.Printf("*** SPEC: %+v", spec)
-//			// convert the interface{} to map
-//			specm :=spec.(map[string]interface{})
-//			conts := specm["containers"]
-//			Log.Printf("*** CONTS: %+v", conts)
-//			//contsm :=conts.([]interface{})
-//			contsm := make([]interface{}, 1)
-//			for index,cont := range contsm {
-//				Log.Printf("*** CONT: %+v ", cont)
-//				Log.Printf("*** CONT: %+v, index %v, ", cont, index)
-//				//Log.Printf("*** CONT: %+v, index %v, name: %v", cont, index, cont["name"])
-//			}
-//		new_value := "{ \"" + auth_label+ "\": \""+ namespace + "\",  \"OriginalName\": \"kube-web-server\" }"
-
-		new_value := "{ \"" + auth_label+ "\": \""+ namespace + "\" }"
-		annotm[annot_label] = new_value
-
-		b, err := json.Marshal(data) 
-		if err != nil {
-	 		Log.Printf("Error marshaling the updated json: %v ", err)
-	 		return nil, err
-	 	}
-		bodystr = httphelper.PrettyJson(b)
-		Log.Println("Updated JSON: %s", bodystr)
-		return b, nil
-	} else {
+	if r.Method != "POST" {
 		// return the original body
 		return body, nil
 	}
+	// convert the body to string 
+	bodystr := httphelper.PrettyJson(body)
+	Log.Printf("Original JSON: %s", bodystr)
+	
+	// the request to create pod looks as follow:
+	//	 {
+	//	  	"kind":"Pod",
+	//	  	"apiVersion:"v1",
+	//	  	"metadata":{
+	//	  		"name":"testtt1",
+	//	  		"namespace":"s21f85bc8-5a1a-403a-8a82-cdb757defd72-default",
+	//	  		"annotations":{
+	//	  			containers-annotations.alpha.kubernetes.io: "{ \"com.ibm.radiant.tenant.0\": \"stest1-default\",  \"OriginalName\": \"kube-web-server\" }"
+	//
+	// and the one to create depoloyment (group):
+	//  	"kind": "Deployment",
+	//		"apiVersion": "extensions/v1beta1",
+	//		"metadata": {
+	//			"name": "k3",
+	//			"creationTimestamp": null,
+	//			"labels": {
+	//				"run": "k3"
+	//			}
+	//		},
+	//		"spec": {
+	//			"replicas": 1,
+	//			"selector": {
+	//				"matchLabels": {
+	//					"run": "k3"
+	//				}
+	//			},
+	//			"template": {
+	//				"metadata": {
+	//					"creationTimestamp": null,
+	//					"annotations":{
+	//	  					containers-annotations.alpha.kubernetes.io: "{ \"com.ibm.radiant.tenant.0\": \"stest1-default\",  \"OriginalName\": \"kube-web-server\" }"
+	//					"labels": {
+	//						"run": "k3"
+	//					}
+	//				},}}}
+
+	// get the label names
+	auth_label := conf.GetSwarmAuthLabel()
+	annot_label := conf.GetAnnotationExtLabel()
+	
+	// get the body of the request	
+	data := map[string]interface{}{}
+	json.Unmarshal(body, &data)
+	
+	// TODO the code below has to be revisited and simplified
+	// there should be a common method for injecting the annotations
+	// I just could get this working yet.... 
+	//		fmt.Println(reflect.TypeOf(data))
+	//		meta := inject_annotation(data["metadata"])
+		
+	// get request type
+	kind := data["kind"]
+	
+	var metam map[string]interface{}
+	if kind == "Pod" {
+		meta :=  data["metadata"]
+		// convert the interface{} to map
+		metam =meta.(map[string]interface{})
+	} else if kind == "Deployment" || kind == "ReplicaSet" || kind == "ReplicationController" || kind == "Job" {
+		spec := data["spec"]
+		specm := spec.(map[string]interface{})
+		templ := specm["template"]
+		templm := templ.(map[string]interface{})
+		meta :=  templm["metadata"]
+		metam =meta.(map[string]interface{})
+	}
+
+	annot := metam["annotations"]
+	//Log.Printf("Original Annotations: %+v", annot)
+	var annotm map[string]interface{}
+	// annotations might not be provided in the yaml file:
+	if annot == nil {
+		annotm = make(map[string]interface{})
+		metam["annotations"] = annotm
+	} else {
+		// convert the existing annotation interface{} to map
+		annotm =annot.(map[string]interface{})
+	}	
+	if annotm[annot_label]=="" || annotm[annot_label]==nil{
+		Log.Printf("Annotation label does not exist")
+	} else {
+		Log.Printf("Annotation label %v already exists: %v", annot_label, annotm[annot_label])
+		err = errors.New("Illegal usage of label ")
+		return nil, err
+	}
+
+	new_value := "{ \"" + auth_label+ "\": \""+ namespace + "\" }"
+	annotm[annot_label] = new_value
+	Log.Printf("Injecting annotation: %v with value: %v for kind: %v", annot_label, new_value, kind)
+
+	b, err := json.Marshal(data) 
+	if err != nil {
+ 		Log.Printf("Error marshaling the updated json: %v ", err)
+ 		return nil, err
+ 	}
+	bodystr = httphelper.PrettyJson(b)
+	Log.Println("Updated JSON: %s", bodystr)
+	return b, nil
 }	
+
 
 func kubeRewriteUri(reqUri string, namespace string) (redirectUri string){
 	sl := strings.Split(reqUri, "/")

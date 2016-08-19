@@ -73,7 +73,7 @@ Setup the environment and start the application:
 source ./set_local_env.sh
 ./start_proxy.sh
 ```
-NOTE: There is a problem when running the proxy as a script on mac. (See the 
+NOTE: There is a problem when running the proxy as a script on mac. (See the
 issue [#256](https://github.ibm.com/alchemy-containers/openradiant/issues/256) Mac implements
 their own native SSL libraries for curl, therefore passing certs that are not
 in the keychain is a bit problematic. Install curl via Homebrew:
@@ -113,19 +113,32 @@ export DOCKER_CERT_PATH=~/.openradiant/envs/dev-vbox/radiant01/ITNqyoU6Xe6ttgq7y
 export KUBECONFIG=~/.openradiant/envs/dev-vbox/radiant01/ITNqyoU6Xe6ttgq7yQNwOeaQm6Ms8vauJqEQclghh3sdzDpg/kube-config
 ```
 Copy and paste these commands in *a new terminal* (otherwise will no be able to
-  make anymore calls to proxy container). Make sure you are in
-`openradiant/proxy` directory.
+  make anymore calls to proxy container).
 
-Now you should be able to execute commands against OpenRadiant account that you
+Now you should be able to execute commands using OpenRadiant tenant that you
 just created:
 
 ```
 docker ps
+# create a new container:
 docker run -d --name test --net none -m 128m mrsabath/web-ms
 docker inspect test
 
 kubectl get pods
-kubectl create -f web.yaml
+# create a new pod
+# assuming you are in openradiant/proxy directory:
+kubectl create -f ../examples/apps/k8s/pod-web.yaml
+
+# create a new deployment:
+kubectl run k1 --image=busybox sleep 864000
+kubectl get deployment
+
+# now you should be able to list all your Kubernetes containers using docker command:
+docker ps
+
+# you can also try ReplicationController and ReplicaSet:
+kubectl create -f ../examples/apps/k8s/nginx-rc.yaml
+kubectl create -f ../examples/apps/k8s/frontend-rs.yaml
 ```
 To run the proxy against a different OpenRadiant shard, pass the IP of this shard
 as additional parameter of the script `make_TLS_certs`. E.g:
