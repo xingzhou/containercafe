@@ -11,6 +11,7 @@ pre-start script
           --allow-privileged=true \
           {% if use_kube_system_kubedns %} \
           --cluster-dns={{ k8s_service_ip_range|ipaddr('10')|ipaddr('address') }} \
+          --cluster-domain=cluster.local \
           {% endif %} \
           --config={{ k8s_kubelet_manifests_dir }} \
           --kubeconfig={{k8s_etc_dir}}/kubelet-kubeconfig \
