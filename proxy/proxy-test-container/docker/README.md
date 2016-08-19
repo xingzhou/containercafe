@@ -8,10 +8,11 @@ Note: Steps below detail multi-user testing. Testing can also be done with a sin
 Move to the proxy-test-container directory and run the build script
 ```bash
 cd ~/workspace/openradiant/proxy/proxy-test-container
-./docker/build.sh
+# dev-vbox is the env name for the tiny example
+./docker/build.sh -e dev-vbox
 ```
 
-The build script has 3 possible flags (all optional):
+The build script has 3 possible flags (`-e` is the only one required):
  1. `-e <environment>`: the environment name.
  2. `-d <docker_version>`: the Docker version that will be installed.
  3. `-k <kubectl_version>`: the Kubernetes version that will be installed.

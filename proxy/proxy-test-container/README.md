@@ -1,5 +1,6 @@
 # Testing, for Proxy running as a Container
-Steps below explain configuration & setup to run Swarm & Kubernetes testing, while Proxy is running as a container. <br />
+For running the tests as a container see [the docker folder](docker/README.md).  
+Steps below explain configuration & setup to run Swarm & Kubernetes testing, while Proxy is running as a container.
 Note: Steps below detail multi-user testing. Testing can also be done with a single-user.
 
 

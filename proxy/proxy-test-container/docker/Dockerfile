@@ -7,7 +7,7 @@ ARG k8s_version=1.3.5
 ARG docker_version=1.12.0
 
 # test tenants environment
-ARG env_name=dev-vbox
+ARG env_name
 
 # set the environment
 ENV ENV_NAME=${env_name} \

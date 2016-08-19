@@ -6,7 +6,7 @@ helpme()
 
 Syntax: ${0} -e <environment> -d <docker_version> -k <kubectl_version>
 
-* All flags are optional; default values are set.
+* All flags are optional except for -e; default values are set.
 
 HELPMEHELPME
 }
@@ -54,6 +54,12 @@ while test $# -gt 0; do
             ;;
     esac
 done
+
+if [[ `grep -c "env_name=" <<< "$BUILD_ARGS"` -eq 0 ]]; then
+    echo "ERROR: Environment required"
+    helpme
+    exit 1
+fi
 
 DIR="."
 
