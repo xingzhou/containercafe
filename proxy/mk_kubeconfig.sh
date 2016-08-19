@@ -1,28 +1,31 @@
 #!/bin/bash
 
-PATH="$1"
-TENANT_ID="$2"
+function make_kubeconfig {
+    local CONFIG_DIR="$1"
+    local TENANT_ID="$2"
 
-cd $PATH
+    cat > "$CONFIG_DIR/kube-config" <<YAML
+apiVersion: v1
+clusters:
+- cluster:
+    server: https://localhost:8087
+    certificate-authority: ca.pem
+  name: radiant
+contexts:
+- context:
+    cluster: radiant
+    namespace: s${TENANT_ID}-default
+    user: $TENANT_ID
+  name: radiant
+current-context: radiant
+kind: Config
+preferences: {}
+users:
+- name: ${TENANT_ID}
+  user:
+    client-certificate: cert.pem
+    client-key: key.pem
+YAML
+}
 
-
-echo "apiVersion: v1" > kube-config
-echo "clusters:" >> kube-config
-echo "- cluster:" >> kube-config
-echo "    server: https://localhost:8087" >> kube-config
-echo "    certificate-authority: ca.pem" >> kube-config
-echo "  name: radiant" >> kube-config
-echo "contexts:" >> kube-config
-echo "- context:" >> kube-config
-echo "    cluster: radiant" >> kube-config
-echo "    namespace: s$TENANT_ID-default" >> kube-config
-echo "    user: $TENANT_ID" >> kube-config
-echo "  name: radiant" >> kube-config
-echo "current-context: radiant" >> kube-config
-echo "kind: Config" >> kube-config
-echo "preferences: {}" >> kube-config
-echo "users:" >> kube-config
-echo "- name: $TENANT_ID" >> kube-config
-echo "  user:" >> kube-config
-echo "    client-certificate: cert.pem" >> kube-config
-echo "    client-key: key.pem" >> kube-config
+make_kubeconfig "$@"

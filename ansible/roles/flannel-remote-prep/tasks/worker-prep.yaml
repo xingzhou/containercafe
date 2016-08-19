@@ -1,5 +1,11 @@
 ---
 
+- name: Install Flannel binary
+  copy:
+    dest: /opt/bin/
+    src: "{{ lookup('env','HOME') }}/tmp/flannel-{{flannel_version}}/flanneld"
+    mode: a+x
+
 - name: Ensure /etc/default/flanneld
   template:
     src: defaults-flanneld.j2

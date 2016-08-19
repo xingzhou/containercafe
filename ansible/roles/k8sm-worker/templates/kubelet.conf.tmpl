@@ -7,17 +7,20 @@ console log
 pre-start script
         test -x /usr/local/bin/kubelet || { stop; exit 0; }
         /usr/local/bin/kubelet \
-		  --api-servers=https://{{master_vip}}:{{vip_k8s_apiserver_port}} \
-		  --allow-privileged=true \
-		  --config={{ k8s_kubelet_manifests_dir }} \
-		  --kubeconfig={{k8s_etc_dir}}/kubelet-kubeconfig \
-		  --v=0 \
-		  --file-check-frequency=5s \
-		  --hostname-override="{{ inventory_hostname }}" \
-		  --pod-infra-container-image="{{ kube_infra_image }}" \
- 	          --tls-cert-file={{k8s_cert_dir}}/{{k8s_kubelet_cn}}.pem \
-                  --tls-private-key-file={{k8s_cert_dir}}/{{k8s_kubelet_cn}}-key.pem \
-		  1>/var/log/kubernetes/kubelet.log 2>&1 &
+          --api-servers=https://{{master_vip}}:{{vip_k8s_apiserver_port}} \
+          --allow-privileged=true \
+          {% if use_kube_system_kubedns %} \
+          --cluster-dns={{ k8s_service_ip_range|ipaddr('10')|ipaddr('address') }} \
+          {% endif %} \
+          --config={{ k8s_kubelet_manifests_dir }} \
+          --kubeconfig={{k8s_etc_dir}}/kubelet-kubeconfig \
+          --v=0 \
+          --file-check-frequency=5s \
+          --hostname-override="{{ inventory_hostname }}" \
+          --pod-infra-container-image="{{ kube_infra_image }}" \
+          --tls-cert-file={{k8s_cert_dir}}/{{k8s_kubelet_cn}}.pem \
+          --tls-private-key-file={{k8s_cert_dir}}/{{k8s_kubelet_cn}}-key.pem \
+          1>/var/log/kubernetes/kubelet.log 2>&1 &
 end script
 
 post-stop script

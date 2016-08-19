@@ -19,7 +19,7 @@ if File.exist?(CONFIG)
   INSTALLER_VM=$installer_num
   INSTALLER_VM_MEMORY=$installer_vm_memory
 else
-  puts "Info: vagrant_config file is missing, vagrant will usedefault values"
+  puts "Info: vagrant_config file is missing, vagrant will use default values"
   VM_COUNT=2
   VM_MEMORY=1536
   PROXY_NUM=1

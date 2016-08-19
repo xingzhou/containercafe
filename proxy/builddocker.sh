@@ -1,13 +1,21 @@
 #!/bin/bash
 # set -v
-# copy src into dockerize directory so it can be build by Dockerfile
-cp -r src dockerize
 
-# copy creds file and scripts to dockerize dir.
-cp creds.json dockerize/
-cp make_TLS_certs.sh dockerize/
-cp mk_user_cert.sh dockerize/
-cp mk_kubeconfig.sh dockerize/
+function build_proxy_image {
+    local name="$1"
+    local context="$2"
+    
+    # copy src into Dockerfile directory
+    cp -r src "$context"
 
-cd dockerize
-docker build -t api-proxy .
+    # copy scripts into Dockerfile directory
+    cp make_TLS_certs.sh mk_user_cert.sh mk_kubeconfig.sh "$context"
+    
+    # create an empty creds.json if necessary
+    touch "$context/creds.json"
+    
+    # build the docker image
+    docker build -t "$name" "$context"
+}
+
+build_proxy_image "api-proxy" "dockerize/"

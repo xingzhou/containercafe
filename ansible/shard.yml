@@ -4,14 +4,10 @@
 - hosts:
     - cluster-{{cluster_name}}
     - localhost
-  tasks:
-  - debug: msg="network plugin is {{network_kind}}"
-
-- hosts:
-    - cluster-{{cluster_name}}
-    - localhost
 
   pre_tasks:
+  - debug: msg="network plugin is {{network_kind}}"
+
   - name: check for disallowed combination
     fail:
       msg: Mesos is currently required when deploying Swarm
@@ -43,6 +39,7 @@
 
 - hosts: localhost
   roles:
+  - { role: k8s-system-kubedns-local-prep, when: use_kube_system_kubedns }
   - "{{ network_kind }}-local-prep"
 
 - hosts: cluster-{{cluster_name}}
