@@ -19,3 +19,12 @@
   shell: if kubectl get service kube-dns --namespace=kube-system; then echo Goody; else kubectl create -f {{ ansible_user_dir }}/skydns-svc.yaml; fi
   register: rslt
   changed_when: "'Goody' not in rslt.stdout"
+
+- name: Test whether the kube-system service account is authorized for everything
+  shell: if curl http://localhost:{{etcd_port}}/v2/keys/abac-policy | fgrep '{\"user\":\"system:serviceaccount:kube-system:default\",\"apiGroup\":\"*\",\"resource\":\"*\",\"namespace\":\"*\"}' ; then echo Goody; fi
+  register: rslt
+  changed_when: False
+
+- name: Authorize kube-system service account for everything
+  command: docker exec remoteabac /opt/kubernetes/ruser --authorization-policy-file=etcd@http://localhost:{{etcd_port}}/abac-policy --type=add --user=system:serviceaccount:kube-system:default '--namespace=*'
+  when: "'Goody' not in rslt.stdout"
