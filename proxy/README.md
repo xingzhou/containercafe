@@ -73,7 +73,7 @@ Setup the environment and start the application:
 source ./set_local_env.sh
 ./start_proxy.sh
 ```
-NOTE: There is a problem when running the proxy as a script on mac. (See the 
+NOTE: There is a problem when running the proxy as a script on mac. (See the
 issue [#256](https://github.ibm.com/alchemy-containers/openradiant/issues/256) Mac implements
 their own native SSL libraries for curl, therefore passing certs that are not
 in the keychain is a bit problematic. Install curl via Homebrew:
@@ -137,8 +137,8 @@ kubectl get deployment
 docker ps
 
 # you can also try ReplicationController and ReplicaSet:
-kubectl create -f ../examples/apps/k8s/replication.yaml
-kubectl create -f ../examples/apps/k8s/replica-set.yaml
+kubectl create -f ../examples/apps/k8s/nginx-rc.yaml
+kubectl create -f ../examples/apps/k8s/frontend-rs.yaml
 ```
 To run the proxy against a different OpenRadiant shard, pass the IP of this shard
 as additional parameter of the script `make_TLS_certs`. E.g:
