@@ -28,6 +28,7 @@ spec:
     - --advertised-address={{ vip_k8s_scheduler_ip }}:{{ vip_k8s_scheduler_port }}
     {% if use_kube_system_kubedns %}
     - --cluster-dns={{ k8s_service_ip_range|ipaddr('10')|ipaddr('address') }}
+    - --cluster-domain=cluster.local
     {% endif %}
     - --mesos-master=zk://{% for host in groups['zk-' ~ cluster_name] %}{{ host }}:{{ zookeeper_port }}{% if not loop.last %},{% endif %}{% endfor %}/mesos
     - --mesos-framework-roles=kube
