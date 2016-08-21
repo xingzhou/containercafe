@@ -129,6 +129,9 @@ cd ansible
 ansible-playbook -v -i ../examples/envs/dev-vbox/radiant01.hosts shard.yml -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge
 ```
 
+See
+[the general doc on deployment](../READE.md#installing-openradiant)
+for the general story.
 
 ## One-step create and use installer machine
 
