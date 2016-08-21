@@ -1,21 +1,17 @@
-## Tiny Example
+# Tiny Example
 
-This produces a very simple demonstration shard of two VirtualBox
-VMs, one master and one worker.  They have Mesos installed, and
-Kubernetes and Swarm playing nicely together thanks to Mesos.  The
-networking is Docker bridge networking.  The Swarm master is modified
-for multi-tenant use.
+This produces a very simple demonstration shard of two VirtualBox VMs,
+one master and one worker.  They have Mesos installed, and Kubernetes
+and Swarm playing nicely together thanks to Mesos.  The networking is
+Docker bridge networking (which is good only for a single-worker
+deployment; see the documentation of
+[networking plugins](../docs/ansible.md#networking-plugins) for more
+options).  The Swarm master is modified for multi-tenant use.
 
 Install [git](https://git-scm.com/downloads),
 [Vagrant](https://www.vagrantup.com/) and
 [VirtualBox](https://www.virtualbox.org/wiki/Downloads). You will need
 at least Vagrant 1.8.4 and VirtualBox 5.0.24.
-
-This example shows just one way to provision machines for use with
-OpenRadiant.  In general, you can use OpenRadiant with any
-provisioning technology you like.  See
-[the inventory contract](../docs/ansible.md#the-inventory-contract) for
-the key idea.
 
 Checkout this project:
 
@@ -24,7 +20,28 @@ git clone git@github.ibm.com:alchemy-containers/openradiant.git
 cd openradiant
 ```
 
-Create a new cluster with Vagrant:
+This example proceeds through five steps, as follows.
+
+1. Provision target machines
+2. Prepare the installer machine
+3. Use the installer machine to deploy an OpenRadiant shard on target machines
+4. (Optionally) deploy the OpenRadiant API proxy
+5. Exercise the OpenRadiant shard
+
+For OpenRadiant in general, the first two steps can be done in either
+order.
+
+
+## Provision target machines
+
+This example shows just one way to provision machines for use with
+OpenRadiant.  In general, you can use OpenRadiant with any
+provisioning technology you like.  See
+[the inventory contract](../docs/ansible.md#the-inventory-contract) for
+the key idea.
+
+Create target machines with Vagrant.  The following creates two, named
+`radiant2` and `radiant3`.
 
 ```bash
 cd examples/vagrant
@@ -33,26 +50,51 @@ cd -
 ```
 In case you face any issues, please follow [vagrant troubleshooting](vagrant/README.md)
 
-### Windows
 
-Deploy OpenRadiant automatically:
+## FYI on SSH to Vagrant/VirtualBox VMs
+
+There are two easy ways to open a connection to a shell in a
+Vagrant/VirtualBox VM.  One is provided by Vagrant:
+
+```bash
+vagrant ssh radiant2
+```
+
+There's not much magic under that hat. You can do the equivalent
+directly using `ssh` as follows.
+
+```bash
+ssh -i ~/.vagrant.d/insecure_private_key vagrant@192.168.10.2
+```
+
+
+## Prepare the installer machine
+
+To create an installer machine, you can either (1) use another Vagrant
+VM we have defined to serve this purpose for you or (2) follow
+instructions to make your laptop or machine of choice into an
+installer machine.  The installer machine has to be able to run
+Ansible, which runs only on Linux.
+
+
+### Create installer VM
 
 ```bash
 cd examples/vagrant
-vagrant up example && vagrant destroy -f example
-cd -
+vagrant up installer
+vagrant ssh installer
 ```
 
-Or deploy OpenRadiant manually:
+That creates an installer VM that is specialized to this example.  You
+will find most of the contents of this repository in `/vagrant`.
 
-```bash
-cd examples/vagrant
-vagrant up ansible
-vagrant ssh ansible
-# then follow the deployment instructions for Linux
-```
 
-### Linux/OSX
+### Manually create installer
+
+See
+[the general documentation of the installer machine](../README.md#the-installer-machine)
+for the general story.  Following is one concrete realization of that
+story for this example.
 
 If you are running Ubuntu in your host, you may need to install the following
 python packages:
@@ -61,7 +103,7 @@ python packages:
 sudo apt-get install python-pip python-dev
 ```
 
-Install ansible:
+Install ansible and its `netaddr` module:
 
 ```bash
 pip install -r requirements.txt
@@ -76,34 +118,52 @@ try the following:
 pip install --upgrade ansible
 ```
 
-The above is just one way to prepare a machine to do OpenRadiant
-installation.  See
-[the installer machine](../README.md#the-installer-machine) for the
-general story.
 
-Deploy OpenRadiant:
+## Deploy an OpenRadiant shard
+
+Use Ansible on the installer machine to deploy an OpenRadiant shard on
+the target machines.
 
 ```bash
 cd ansible
-export ANSIBLE_INVENTORY=../examples/envs/dev-vbox/radiant01.hosts
-ansible-playbook -v shard.yml -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge
+ansible-playbook -v -i ../examples/envs/dev-vbox/radiant01.hosts shard.yml -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge
 ```
 
-Again, remember that this is just one example of how to provision
-machines and get them in the Ansible inventory; see
-[the OpenRadiant Ansible doc](../docs/ansible.md) for the full story.
+See
+[the general doc on deployment](../README.md#installing-openradiant)
+for the general story.
+
+## One-step create and use installer machine
 
 
+An alternative to creating and then using the installer machine is to
+use another Vagrant/VirtualBox VM that we have prepared for you that
+is an installer that deploys the shard as the last startup step.
 
-### Run the example
-Now you have a choice to run the example with or without the proxy.
-Proxy enables multi-tenancy, multi-sharding and many other [features](../docs/proxy.md).
-
-To run the example with proxy, please follow [these steps here](../proxy/README.md#run-proxy-as-a-container),
-or you can continue with the steps below without the proxy.
+```bash
+cd examples/vagrant
+vagrant up installer_extra
+```
 
 
-Now you can open an SSH connection to the master node:
+## Optionally deploy the OpenRadiant API proxy
+
+Now you have a choice to exercise the shard with or without the proxy.
+The proxy enables multi-tenancy, multi-sharding and many other
+[features](../docs/proxy.md).
+
+To deploy the API proxy, please follow
+[these steps here](../proxy/README.md#run-proxy-as-a-container);
+alternatiely you can continue with the steps below to exercise the
+shard without the proxy.
+
+
+## Exercise the shard directly
+
+The following describes how to exercise the shard without using the
+API proxy.
+
+Open an SSH connection to the master node:
 ```bash
 ssh -i ~/.vagrant.d/insecure_private_key vagrant@192.168.10.2
 ```
@@ -195,7 +255,7 @@ kubectl exec sleepy-pod ping -- -c 2 172.17.0.5
 ```
 For more information see ... (TBD)
 
-### To check the HAproxy statistics using the GUI:
+## To check the HAproxy statistics using the GUI:
 
 On your local browser, enter the following URL:
 
@@ -208,11 +268,11 @@ When prompt for the user_namer:password  use  vagrant:radiantHA
 To setup Proxy, follow the steps in [Proxy Setup](#proxy-setup)
 
 
-### To view the Mesos web UI
+## To view the Mesos web UI
 
 On your local browser visit http://192.168.0.2:5050/
 
 
-### Proxy Setup
+## Proxy Setup
 
 For details, please follow [Proxy documentation](../proxy/README.md)
