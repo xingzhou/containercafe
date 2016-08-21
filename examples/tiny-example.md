@@ -74,7 +74,7 @@ To create an installer machine, you can either (1) use another Vagrant
 VM we have defined to serve this purpose for you or (2) follow
 instructions to make your laptop or machine of choice into an
 installer machine.  The installer machine has to be able to run
-Ansible, which runs only on Linux.
+Ansible, which runs only on Linux and MacOS.
 
 
 ### Create installer VM
@@ -148,14 +148,12 @@ vagrant up installer_extra
 
 ## Optionally deploy the OpenRadiant API proxy
 
-Now you have a choice to exercise the shard with or without the proxy.
-The proxy enables multi-tenancy, multi-sharding and many other
+Now you have a choice to deploy the API proxy.  The proxy enables
+multi-tenancy, multi-sharding and many other
 [features](../docs/proxy.md).
 
-To deploy the API proxy, please follow
-[these steps here](../proxy/README.md#run-proxy-as-a-container);
-alternatiely you can continue with the steps below to exercise the
-shard without the proxy.
+For details on proxy setup and use, please see
+[Proxy documentation](../proxy/README.md).
 
 
 ## Exercise the shard directly
@@ -253,9 +251,12 @@ is 172.17.0.5):
 ```bash
 kubectl exec sleepy-pod ping -- -c 2 172.17.0.5
 ```
-For more information see ... (TBD)
 
-## To check the HAproxy statistics using the GUI:
+
+## General clues
+
+
+### To check the HAproxy statistics using the GUI:
 
 On your local browser, enter the following URL:
 
@@ -268,11 +269,6 @@ When prompt for the user_namer:password  use  vagrant:radiantHA
 To setup Proxy, follow the steps in [Proxy Setup](#proxy-setup)
 
 
-## To view the Mesos web UI
+### To view the Mesos web UI
 
 On your local browser visit http://192.168.0.2:5050/
-
-
-## Proxy Setup
-
-For details, please follow [Proxy documentation](../proxy/README.md)
