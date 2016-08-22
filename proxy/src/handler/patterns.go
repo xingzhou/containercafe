@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"auth"
+	"github.com/golang/glog"
 )
 
 //return true if uri prefix is supported
@@ -77,15 +78,15 @@ func (router *Router) CheckRoute(req *http.Request)(found bool, route Route){
 
 //uses SelectRoute to determine target handler and invokes it
 func (router *Router) DoRoute(w http.ResponseWriter, req *http.Request, body []byte, creds auth.Creds, req_id string) {
-	Log.Printf("Processing request: %+v", req.RequestURI)
+	glog.Infof("Processing request: %+v", req.RequestURI)
 	for  _, route := range router.routes {
 		if found, vars := route.matchRoute(req); found {
-			Log.Printf("DoRoute found route pattern=%s method=%s", route.pattern, route.method)
+			glog.Infof("DoRoute found route pattern=%s method=%s", route.pattern, route.method)
 			route.handler(w, req, body, creds, vars, req_id)
 			return
 		}
 	}
-	Log.Printf("No route found req_id=%s", req_id)
+	glog.Warningf("No route found req_id=%s", req_id)
 }
 
 func (route *Route) matchRoute(req *http.Request) (match bool, vars map[string]string){
@@ -132,7 +133,7 @@ func (route *Route) matchRoute(req *http.Request) (match bool, vars map[string]s
 ///////////////////////////
 
 func TestPatt() {
-	Log.Print("TestPatt start >>>>>")
+	glog.Info("TestPatt start >>>>>")
 
 	//dummy router 1
 	var route Route
@@ -157,12 +158,12 @@ func TestPatt() {
 	}
 	routes[0].handler(w, r, body, creds, vars, "321")
 
-	Log.Print("TestPatt end <<<<<")
+	glog.Info("TestPatt end <<<<<")
 }
 
 func containers_json(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string){
-	Log.Print("containers_json start >>>>>")
-	Log.Printf("containers_json req_id=%s", req_id)
-	Log.Print("containers_json end <<<<<")
+	glog.Info("containers_json start >>>>>")
+	glog.Infof("containers_json req_id=%s", req_id)
+	glog.Info("containers_json end <<<<<")
 }
 

@@ -4,6 +4,7 @@ import(
 	"fmt"
 	"io/ioutil"
 	"encoding/json"
+	"github.com/golang/glog"
 )
 
 const Version = 1.20
@@ -27,7 +28,7 @@ func GetBuildInfo(fname string) (buildId string, buildDate string){
 
 	b, err := ioutil.ReadFile(fname)
 	if err != nil {
-		Log.Printf("error reading build info file %s", fname)
+		glog.Errorf("error reading build info file %s", fname)
 		BuildDate = " "  //prevent future attempts to reload
 		return
 	}
@@ -36,7 +37,7 @@ func GetBuildInfo(fname string) (buildId string, buildDate string){
 	var f interface{}
 	err = json.Unmarshal(b, &f)
 	if err != nil{
-		Log.Printf("error in json unmarshalling, err=%v", err)
+		glog.Errorf("error in json unmarshalling, err=%v", err)
 		BuildDate = " "  //prevent future attempts to reload
 		return
 	}

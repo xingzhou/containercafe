@@ -6,6 +6,7 @@ import (
 
 	"conf"
 	"auth"
+	"github.com/golang/glog"
 )
 
 var healthRouter *Router
@@ -25,14 +26,14 @@ func InitHealthHandler(){
 }
 
 func HealthEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	Log.Printf("HealthEndpointHandler triggered, URI=%s", r.RequestURI)
+	glog.Infof("HealthEndpointHandler triggered, URI=%s", r.RequestURI)
 	healthRouter.DoRoute(w, r, nil /*body*/, auth.Creds{}, "" /*req_id*/)
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string){
 	v := conf.GetVerStr()
 	fmt.Fprintf(w,"hjproxy up\n%s\n", v)
-	Log.Print("hjproxy up ", v)
+	glog.Info("hjproxy up ", v)
 }
 
 func statsHandler(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string){
@@ -40,8 +41,8 @@ func statsHandler(w http.ResponseWriter, r *http.Request, body []byte, creds aut
 	n := conf.GetNumServedRequests()
 	fmt.Fprintf(w,"hjproxy %s\n", v)
 	fmt.Fprintf(w,"This instance served %d non-admin requests\n", n)
-	Log.Print("hjproxy ", v)
-	Log.Printf("This instance served %d non-admin requests", n)
+	glog.Info("hjproxy ", v)
+	glog.Infof("This instance served %d non-admin requests", n)
 }
 
 func pingHandler(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
@@ -53,7 +54,7 @@ func pingNotlsHandler(w http.ResponseWriter, r *http.Request, body []byte, creds
 }
 
 func defaultHealthHandler(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string){
-	Log.Printf("Health pattern not accepted, URI=%s", r.RequestURI)
+	glog.Infof("Health pattern not accepted, URI=%s", r.RequestURI)
 	NoEndpointHandler(w, r)
 }
 
@@ -68,13 +69,13 @@ func _ping(w http.ResponseWriter, r *http.Request, tls_override bool, vars map[s
 	resp, err, _ := redirect (r, nil /*body*/, redirect_host, "" /*resource_id*/, pingRewriteUri, tls_override)
 	var status int
 	if (err != nil) {
-		Log.Printf("Error in redirection of _ping to %s ... err=%v", redirect_host, err)
+		glog.Errorf("Error in redirection of _ping to %s ... err=%v", redirect_host, err)
 		status = 500
 	}else {
 		status = resp.StatusCode
 	}
 	if status == 200 {
-		Log.Printf("_ping success to host=%s", redirect_host)
+		glog.Infof("_ping success to host=%s", redirect_host)
 		fmt.Fprintf(w,"_ping success to host=%s\n", redirect_host)  //returns status 200
 	}else{
 		//ErrorHandler(w, r, status)
@@ -85,6 +86,6 @@ func _ping(w http.ResponseWriter, r *http.Request, tls_override bool, vars map[s
 
 func pingRewriteUri(reqUri string, resource_id string) (newReqUri string){
 	newReqUri = conf.GetDockerApiVer()+"/_ping"
-	Log.Printf("pingRewriteURI: '%s' --> '%s'", reqUri, newReqUri)
+	glog.Infof("pingRewriteURI: '%s' --> '%s'", reqUri, newReqUri)
 	return newReqUri
 }

@@ -6,7 +6,12 @@ ARG git_remote_url=unknown
 ARG build_date=unknown
 ARG jenkins_build_id=unknown
 ARG jenkins_build_number=unknown
-ARG log_level=debug
+
+# Log levels are INFO, WARNING, ERROR, FATAL
+ARG log_level=INFO
+
+# Log verbosity is a non-negative integer
+ARG log_verbosity=0
 
 LABEL git-commit-id=${git_commit_id} \
       git-remote-url=${git_remote_url} \
@@ -16,12 +21,12 @@ LABEL git-commit-id=${git_commit_id} \
 
 #install docker
 #RUN apt-get update && apt-get install -y golang
-RUN apt-get update && apt-get install -y wget curl
+RUN apt-get update && apt-get install -y wget curl git-all
 RUN wget --quiet https://storage.googleapis.com/golang/go1.5.1.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.5.1.linux-amd64.tar.gz && rm -f go1.5.1.linux-amd64.tar.gz 
 
 ADD src/ /api-proxy/src/
 WORKDIR /api-proxy
-RUN export PATH=$PATH:/usr/local/go/bin && export GOPATH=/api-proxy && go build -o bin/api-proxy src/api-proxy/api-proxy.go
+RUN export PATH=$PATH:/usr/local/go/bin && export GOPATH=/api-proxy && go get "github.com/golang/glog" && go build -o bin/api-proxy src/api-proxy/api-proxy.go
 
 ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
     docker_port="8089" \
@@ -46,7 +51,8 @@ ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
     registry_admin_password= \
     consul_ip="" \
     consul_port="" \
-    log_level=${log_level}
+    log_level=${log_level} \
+    log_verbosity=${log_verbosity}
 
 # copy all the scripts needed by proxy
 ADD make_TLS_certs.sh /api-proxy/make_TLS_certs.sh
