@@ -268,8 +268,6 @@ Example:
 http://192.168.10.2:9000/haproxy_stats (port 9000 is statically assigned)
 When prompt for the user_namer:password  use  vagrant:radiantHA
 
-To setup Proxy, follow the steps in [Proxy Setup](#proxy-setup)
-
 
 ### To view the Mesos web UI
 
