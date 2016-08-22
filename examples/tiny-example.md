@@ -44,9 +44,7 @@ Create target machines with Vagrant.  The following creates two, named
 `radiant2` and `radiant3`.
 
 ```bash
-cd examples/vagrant
-vagrant up
-cd -
+( cd examples/vagrant; vagrant up )
 ```
 In case you face any issues, please follow [vagrant troubleshooting](vagrant/README.md)
 
@@ -57,7 +55,7 @@ There are two easy ways to open a connection to a shell in a
 Vagrant/VirtualBox VM.  One is provided by Vagrant:
 
 ```bash
-vagrant ssh radiant2
+( cd examples/vagrant; vagrant ssh radiant2 )
 ```
 
 There's not much magic under that hat. You can do the equivalent
@@ -80,13 +78,12 @@ Ansible, which runs only on Linux and MacOS.
 ### Create installer VM
 
 ```bash
-cd examples/vagrant
-vagrant up installer
-vagrant ssh installer
+( cd examples/vagrant; vagrant up installer )
 ```
 
-That creates an installer VM that is specialized to this example.  You
-will find most of the contents of this repository in `/vagrant`.
+That creates an installer VM that is specialized to this example.
+Connect to it using SSH as described above.  In that VM you will find
+most of the contents of the OpenRadiant repository in `/vagrant`.
 
 
 ### Manually create installer
@@ -125,13 +122,17 @@ Use Ansible on the installer machine to deploy an OpenRadiant shard on
 the target machines.
 
 ```bash
-cd ansible
-ansible-playbook -v -i ../examples/envs/dev-vbox/radiant01.hosts shard.yml -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge
+( cd ansible; \
+  ansible-playbook -v -i ../examples/envs/dev-vbox/radiant01.hosts shard.yml \
+                   -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge )
 ```
+
+The `cd` makes Ansible 2 find the `ansible.cfg` supplied by OpenRadiant.
 
 See
 [the general doc on deployment](../README.md#installing-openradiant)
-for the general story.
+for the general story about deploying OpenRadiant.
+
 
 ## One-step create and use installer machine
 
@@ -141,16 +142,17 @@ use another Vagrant/VirtualBox VM that we have prepared for you that
 is an installer that deploys the shard as the last startup step.
 
 ```bash
-cd examples/vagrant
-vagrant up installer_extra
+( cd examples/vagrant; vagrant up installer_extra )
 ```
 
 
 ## Optionally deploy the OpenRadiant API proxy
 
-Now you have a choice to deploy the API proxy.  The proxy enables
+Now you have an option to deploy and use the API proxy.  The shard can
+be used directly or through the proxy.  The proxy enables
 multi-tenancy, multi-sharding and many other
-[features](../docs/proxy.md).
+[features](../docs/proxy.md).  Using the shard directly does not
+involve these features.
 
 For details on proxy setup and use, please see
 [Proxy documentation](../proxy/README.md).
@@ -159,7 +161,7 @@ For details on proxy setup and use, please see
 ## Exercise the shard directly
 
 The following describes how to exercise the shard without using the
-API proxy.
+API proxy and the features it provides.
 
 Open an SSH connection to the master node:
 ```bash
