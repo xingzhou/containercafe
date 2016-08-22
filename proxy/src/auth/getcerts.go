@@ -6,11 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
-	
-	"httphelper"  	// my httphelper
-	"conf"  		// my conf package 
-	
 )
 
 
@@ -30,11 +25,6 @@ type GetCertResp struct {
 func GetCert(r *http.Request, creds Creds) (status int, certs GetCertResp) {
 	Log.Printf("Getting certs from local file")
 	TLS_path := creds.TLS_path
-	
-	if (TLS_path == "") {
-		Log.Printf("APIkey not in local creds.json, going to CCSAPI")
-		return GetCert_API(r)
-	}
 	
 	certs_bytes, cert_err := ioutil.ReadFile(TLS_path + "/cert.pem")
 	if (cert_err != nil) {
@@ -63,57 +53,6 @@ func GetCert(r *http.Request, creds Creds) (status int, certs GetCertResp) {
 	return 200, certs
 	
 }
-
-
-
-
-func GetCert_API(r *http.Request) (status int, certs GetCertResp){ 
-	
-	new_uri := "http://"+conf.GetCcsapiHost()+"/v3/tlskey"
-
-	if ! AuthHeadersExist(r.Header){
-		Log.Println("Auth headers missing. Will NOT invoke CCSAPI to authenticate.")
-		status = 500
-		return
-	}
-
-	req, _ := http.NewRequest("GET", new_uri, nil)
-	httphelper.CopyHeader(req.Header, r.Header)  //req.Header = r.Header
-	req.URL.Host = conf.GetCcsapiHost()
-	
-	client := &http.Client{
-		CheckRedirect: nil,
-	}
-	Log.Println("will invoke CCSAPI to authenticate and get certs...")
-
-	resp, err := client.Do(req)
-	if (err != nil) {
-		Log.Printf("GetCert: Error... %v\n", err)
-		return 500, certs
-	}
-
-	Log.Printf("CCSAPI 'tlskey' resp StatusCode=%d", resp.StatusCode)
-	status = resp.StatusCode
-	if resp.StatusCode == 200 {
-	
-		defer resp.Body.Close()
-		body, e := ioutil.ReadAll(resp.Body)
-		if e != nil {
-			Log.Printf("error reading CCSAPI response\n")
-			return 500, certs
-		}
-		//Log.Printf("CCSAPI raw response=%s\n", body)
-		err := parse_getCert_Response(body, &certs)
-		if err != nil {
-			Log.Printf("error parsing ccsapi response\n")
-			return 500, certs
-		}
-		return status, certs  //status == 200
-	}
-	return status, certs  // status != 200
-}
-
-
 
 
 func parse_getCert_Response(body []byte, resp *GetCertResp) error{
