@@ -81,34 +81,22 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	creds = auth.FileAuth(r) // So creds should now hold info FOR THAT space_id. 
 	if creds.Status == 200 {
 		Log.Printf("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
-		Log.Printf("Will not execute CCSAPI auth")
 		// Log.Printf("**** Creds %+v", creds)
 	} else {
 		Log.Printf("Authentication from FILE failed for req_id=%s status=%d", req_id, creds.Status)
-		Log.Printf("Excuting CCSAPI auth")
-		
-		creds = auth.KubeAuth(r)
-		// Log.Printf("***** Creds: %+v", creds)
-	
-		if creds.Status == 200 {
-			Log.Printf("CCSAPI Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
+		if creds.Status == 401 {
+			NotAuthorizedHandler(w, r)
 		} else {
-			Log.Printf("CCAPI Auth failed to process req_id=%s\n", req_id)
-			if creds.Status == 401 {
-				NotAuthorizedHandler(w, r)
-			} else {
-				ErrorHandler(w, r, creds.Status)
-			}
-			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-			return
-		}	
-		Log.Printf("CCSAPI Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
+			ErrorHandler(w, r, creds.Status)
+		}
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
 	}
 
 	// validate the creds
 	if creds.Node == "" || creds.Space_id == "" {
 		Log.Printf("Missing data. Host = %v, Space_id = %v", creds.Node, creds.Space_id)
-		ErrorHandlerWithMsg(w, r, 404, "Incomplete data received from CCSAPI server")
+		ErrorHandlerWithMsg(w, r, 404, "Incomplete data received from authentication component")
 		return
 	}
 	
@@ -125,38 +113,15 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	Log.Printf("Assigning proper Kubernetes port. Old target: %v, New target: %v", creds.Node, redirectTarget)
-	
-	// TODO for now skip the StubAuth, not needed
-	if (false) {
-	//Call Auth interceptor to authenticate with ccsapi
-	creds = auth.StubAuth(r)
-	Log.Printf("*** Creds %+v", creds)
-	if creds.Status == 200 {
-		Log.Printf("Stub Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
-	}else {
-		creds = auth.KubeAuth(r)
-		if creds.Status != 200 {
-			Log.Printf("Authentication failed for req_id=%s status=%d", req_id, creds.Status)
-			if creds.Status == 401 {
-				NotAuthorizedHandler(w, r)
-			}else {
-				ErrorHandler(w, r, creds.Status)
-			}
-			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-			return
-		}
-		Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
-	}
-    }
 
 	// get user certificates from the CCSAPI server
-	 status, certs := auth.GetCert(r, creds)
-	 //status, certs := auth.GetCert(r)
-	 if status != 200 {
-	 	Log.Printf("Obtaining user certs failed for req_id=%s status=%d", req_id, status)
-			ErrorHandler(w, r, creds.Status)
-	 }
-	 Log.Printf("Obtaining user certs successful for req_id=%s status=%d", req_id, status)
+	status, certs := auth.GetCert(r, creds)
+	//status, certs := auth.GetCert(r)
+	if status != 200 {
+		Log.Printf("Obtaining user certs failed for req_id=%s status=%d", req_id, status)
+		ErrorHandler(w, r, creds.Status)
+	}
+	Log.Printf("Obtaining user certs successful for req_id=%s status=%d", req_id, status)
 	
 	// convert the Bluemix space id to namespace
 	namespace := auth.GetNamespace(creds.Space_id)

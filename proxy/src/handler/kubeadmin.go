@@ -59,24 +59,13 @@ func KubeAdminEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		Log.Printf("Will not execute CCSAPI auth")
 	} else {
 		Log.Printf("Authentication from FILE failed for req_id=%s status=%d", req_id, creds.Status)
-		Log.Printf("Excuting CCSAPI auth")
-		
-		creds = auth.KubeAuth(r)
-		Log.Printf("User creds: %+v", creds)
-	
-		if creds.Status == 200 {
-			Log.Printf("CCSAPI Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
+		if creds.Status == 401 {
+			NotAuthorizedHandler(w, r)
 		} else {
-			Log.Printf("CCAPI Auth failed to process req_id=%s\n", req_id)
-			if creds.Status == 401 {
-				NotAuthorizedHandler(w, r)
-			} else {
-				ErrorHandler(w, r, creds.Status)
-			}
-			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-			return
-		}	
-		Log.Printf("CCSAPI Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
+			ErrorHandler(w, r, creds.Status)
+		}
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
 	}
 
 	// validate the creds
