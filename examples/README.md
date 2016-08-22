@@ -77,3 +77,13 @@ following in your environment-specific variables file.
 ```
 network_interface: eth0
 ```
+###VIP configuration
+
+OpenRadiant uses a virtual IP solution for its HA configuration. When configuring a multi-node HA cluster, the VIP should be a portable IP (or floating IP). In case of a single master non-HA deployment, you can simply set your VIP configuration into the configuration of your master node, i.e. use the real IP address in the VIP configuration. The VIP configuration of our tiny example is found in:
+[openradiant/examples/envs/dev-vbox/radiant01.yml](envs/dev-vbox/radiant01.yml). Make sure the VIP configuration is aligned with your environment. 
+
+```
+master_vip: 192.168.10.2
+master_vip_net: 192.168.10.0
+master_vip_net_prefix_len: 24
+```
