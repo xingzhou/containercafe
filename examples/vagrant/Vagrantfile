@@ -79,7 +79,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
-  ['installer', 'active-installer'].each do |name|
+  ['installer-tiny', 'active-installer-tiny'].each do |name|
     config.vm.define name, autostart: false do |installer|
       installer.vm.network "private_network", ip: "192.168.9.253"
       installer.vm.synced_folder ".", "/vagrant", disabled: true
@@ -100,7 +100,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       installer.vm.provision "shell", inline: "apt-get -qq update && apt-get -qq -y install python-pip build-essential libssl-dev libffi-dev python-dev && cd /home/vagrant && pip install -r requirements.txt"
       installer.vm.provision "shell", privileged: false, inline: "source ~/.profile && [ -z \"$ANSIBLE_INVENTORY\" ] && echo \"export ANSIBLE_INVENTORY=/home/vagrant/openradiant/examples/envs/dev-vbox/radiant01.hosts\" >> ~/.profile"
 
-      if name == 'active-installer'
+      if name == 'active-installer-tiny'
         installer.vm.provision "shell", privileged: false, inline: "cd /home/vagrant/openradiant/ansible && ansible-playbook -v shard.yml -e envs=/home/vagrant/openradiant/examples/envs -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
         installer.vm.provision "shell", inline: "cp -rf /home/vagrant/openradiant/ansible/certs /home/vagrant/openradiant/synced_ansible"
       end

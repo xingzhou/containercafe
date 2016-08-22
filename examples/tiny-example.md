@@ -78,7 +78,7 @@ Ansible, which runs only on Linux and MacOS.
 ### Create installer VM
 
 ```bash
-( cd examples/vagrant; vagrant up installer )
+( cd examples/vagrant; vagrant up installer-tiny )
 ```
 
 That creates an installer VM that is specialized to this example.
@@ -153,7 +153,7 @@ use another Vagrant/VirtualBox VM that we have prepared for you that
 is an installer that deploys the shard as the last startup step.
 
 ```bash
-( cd examples/vagrant; vagrant up installer_extra )
+( cd examples/vagrant; vagrant up active-installer-tiny )
 ```
 
 
