@@ -13,7 +13,6 @@ import (
 	"bytes"
 	"strconv"
 
-	"limit"  //my limits package
 	"httphelper"  //my httphelper package
 	"auth"  // my auth package
 	"conf"  // my conf package
@@ -98,44 +97,39 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	creds = auth.FileAuth(r)
 	if creds.Status == 200 {
 		Log.Printf("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
-		Log.Printf("***** creds: %+v", creds)
-	}else {
-		creds = auth.DockerAuth(r)
-		if creds.Status != 200 {
-			Log.Printf("Authentication failed for req_id=%s status=%d", req_id, creds.Status)
-			if creds.Status == 401 {
-				NotAuthorizedHandler(w, r)
-			}else {
-				ErrorHandler(w, r, creds.Status)
-			}
-			Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-			return
+		//Log.Printf("***** creds: %+v", creds)
+	} else {
+		Log.Printf("Authentication failed for req_id=%s status=%d", req_id, creds.Status)
+		if creds.Status == 401 {
+			NotAuthorizedHandler(w, r)
+		}else {
+			ErrorHandler(w, r, creds.Status)
 		}
-		Log.Printf("Authentication succeeded for req_id=%s status=%d", req_id, creds.Status)
+		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		return
 	}
-	
 
 	body, _ := ioutil.ReadAll(r.Body)
 
 	//Call conn limiting interceptor(s) pre-processing
-	if !limit.OpenConn(creds.Container, conf.GetMaxContainerConn()) {
-		Log.Printf("Max conn limit reached for container...aborting request")
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-		return
-	}
-	if !limit.OpenConn(creds.Node, conf.GetMaxNodeConn()) {
-		Log.Printf("Max conn limit reached for host node...aborting request")
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
-		return
-	}
+//	if !limit.OpenConn(creds.Container, conf.GetMaxContainerConn()) {
+//		Log.Printf("Max conn limit reached for container...aborting request")
+//		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+//		return
+//	}
+//	if !limit.OpenConn(creds.Node, conf.GetMaxNodeConn()) {
+//		Log.Printf("Max conn limit reached for host node...aborting request")
+//		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+//		return
+//	}
 
 	//Handle request
 	//dockerHandler(w, r, body, creds, nil /*vars*/, req_id)
 	dockerRouter.DoRoute(w, r, body, creds, req_id)
 
 	//Call conn limiting interceptor(s) post-processing, to decrement conn count(s)
-	limit.CloseConn(creds.Container, conf.GetMaxContainerConn())
-	limit.CloseConn(creds.Node, conf.GetMaxNodeConn())
+//	limit.CloseConn(creds.Container, conf.GetMaxContainerConn())
+//	limit.CloseConn(creds.Node, conf.GetMaxNodeConn())
 
 	Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 }
@@ -386,18 +380,18 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 		//***** Filter framework for Interception of commands before returning result to client (2) *****
 		//Check if Redis caching is required
 		//if request uri contains "/container/" and "/exec" then store in Redis the returned exec id (in resp body) and container id (in uri)
-		if ! creds.Swarm_shard {
-			//This is needed only in nova-docker case
-			if is_container_exec_call(r.RequestURI) {
-				container_id := strip_nova_prefix(redirect_resource_id)
-				exec_id := get_exec_id_from_response(resp_body)
-				if exec_id == "" {
-					Log.Printf("Error: error in retrieving exec id from response body")
-				}else {
-					conf.RedisSetExpire(exec_id, container_id, 60*60)
-				}
-			}
-		}
+//		if ! creds.Swarm_shard {
+//			//This is needed only in nova-docker case
+//			if is_container_exec_call(r.RequestURI) {
+//				container_id := strip_nova_prefix(redirect_resource_id)
+//				exec_id := get_exec_id_from_response(resp_body)
+//				if exec_id == "" {
+//					Log.Printf("Error: error in retrieving exec id from response body")
+//				}else {
+//					conf.RedisSetExpire(exec_id, container_id, 60*60)
+//				}
+//			}
+//		}
 
 		//Printout the response body
 		bodystr := "Dump Body:\n"

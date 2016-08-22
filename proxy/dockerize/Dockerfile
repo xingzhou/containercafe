@@ -23,11 +23,6 @@ WORKDIR /api-proxy
 RUN export PATH=$PATH:/usr/local/go/bin && export GOPATH=/api-proxy && go build -o bin/api-proxy src/api-proxy/api-proxy.go
 
 ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
-    ccsapi_host="" \
-    ccsapi_uri="/v3/admin/" \
-    ccsapi_compute_node_header="X-Compute-Node" \
-    ccsapi_id_header="X-Container-Id" \
-    ccsapi_id_type_header="X-Id-Type" \
     docker_port="8089" \
     docker_api_ver="/v1.18" \
     tls_inbound="true" \
@@ -41,8 +36,6 @@ ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
     kube_admin_key_file="/opt/tls_certs/admin-certs/kadmin.key" \
     kube_admin_cert_file="/opt/tls_certs/admin-certs/kadmin.pem" \
     stub_auth_file="/opt/tls_certs/creds.json" \
-    ccsapi_admin_user="" \
-    ccsapi_admin_psswd="" \
     surrogate_ids="false" \
     max_container_conn="4" \
     max_node_conn="0" \
