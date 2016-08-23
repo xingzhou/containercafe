@@ -56,17 +56,14 @@ func KubeAdminEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	creds = auth.FileAuth(r)
 	if creds.Status == 200 {
 		Log.Printf("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
-		Log.Printf("Will not execute CCSAPI auth")
+	} else 	if creds.Status == 401 {
+		NotAuthorizedHandler(w, r)
+		return
 	} else {
-		Log.Printf("Authentication from FILE failed for req_id=%s status=%d", req_id, creds.Status)
-		if creds.Status == 401 {
-			NotAuthorizedHandler(w, r)
-		} else {
-			ErrorHandler(w, r, creds.Status)
-		}
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		ErrorHandler(w, r, creds.Status)
 		return
 	}
+	Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
 
 	// validate the creds
 	if creds.Node == "" || creds.Space_id == "" {
@@ -166,19 +163,42 @@ func kubeAdminHandler(w http.ResponseWriter, r *http.Request, kubeTarget string,
 		//w http.ResponseWriter, r *http.Request, status int
 		switch resp.StatusCode {
 			case 200:
-			Log.Printf("User successfully created for amespace %s", namespace)
-			OkHandler(w, r, 200)
+			Log.Printf("User successfully created for namespace %s", namespace)
 			case 201:
-			Log.Printf("User successfully created for amespace %s", namespace)
-			OkHandler(w, r, 200)
+			Log.Printf("User successfully created for namespace %s", namespace)
 			case 409:
 			Log.Printf("User already set for namespace %s", namespace)
-			OkHandlerWithMsg(w, r, 409, "User already created")
 			default:
 			Log.Printf("Case default")
 			ErrorHandlerWithMsg(w, r, 500, "Error creating a user: "+ creds.Apikey + " for namespace: "+ namespace)
 			return
 		}
+		
+		// using service user template, add services user to the namespace
+		//service_user_template := "system:serviceaccount:$namespace:default"
+		service_user_template := conf.GetServiceUserTemplate()
+		service_user := strings.Replace(service_user_template, "$namespace", namespace, 1)
+		resp, err = kubeCreateUserRequest(r, kubeAuthzTarget, namespace, service_user, req_id, ac)
+		if err != nil {
+			Log.Printf("Error executing kubeCreateUserRequest: %v", err)
+		}
+		//w http.ResponseWriter, r *http.Request, status int
+		switch resp.StatusCode {
+			case 200:
+			Log.Printf("Service user successfully created for namespace %s", namespace)
+			OkHandler(w, r, 200)
+			case 201:
+			Log.Printf("Service user successfully created for namespace %s", namespace)
+			OkHandler(w, r, 200)
+			case 409:
+			Log.Printf("Service user already set for namespace %s", namespace)
+			OkHandler(w, r, 200)
+			default:
+			Log.Printf("Case default")
+			ErrorHandlerWithMsg(w, r, 500, "Error creating a service user: "+ service_user + " for namespace: "+ namespace)
+			return
+		}
+
 }
 
 
@@ -221,9 +241,10 @@ func kubeCreateUserRequest(r *http.Request, target_host string, namespace string
 			Log.Printf("Error geting AdminCreds: %s", er)
 			return nil, er
 		}
+		// create new user and request access to the namespace
 		request := "/user/"+user+"/"+namespace
-		return kubeGenericRequest("PUT", r, target_host, request, namespace, nil, req_id, uac)  
-}
+		return kubeGenericRequest("PUT", r, target_host, request, namespace, nil, req_id, uac)
+	}
 
 
 // private handler processing
