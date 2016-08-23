@@ -101,7 +101,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       installer.vm.provision "shell", privileged: false, inline: "source ~/.profile && [ -z \"$ANSIBLE_LIBRARY\" ] && echo \"export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY\" >> ~/.profile"
 
       if name == 'installer_extra'
-        installer.vm.provision "shell", privileged: false, inline: "cd /vagrant/ansible && ansible-playbook -v shard.yml -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
+        installer.vm.provision "shell", privileged: false, inline: "cd /vagrant/ansible && ansible-playbook -v shard.yml -e envs=../examples/envs -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
         installer.vm.provision "shell", inline: "cp -rf /vagrant/ansible/certs /vagrant/synced_ansible"
       end
 
