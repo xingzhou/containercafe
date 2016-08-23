@@ -138,7 +138,7 @@ Otherwise it's possible to print a specific log identified by the log tag (the l
 ```
 
 Each line of the results file will look similar to this:
-`20160705.144709,PASS,1,test1,swarm,Test 1,docker ps,0,0,OK`.
+`20160705.144709,PASS,1,test1,swarm,Test 1,docker ps,0,exit code equals 0,OK`.
 Each field is comma-seperated, and represents the following:
 
 1. Timestamp of when the command was executed. Read as: YYYYMMDD.HHMMSS.
@@ -149,5 +149,5 @@ Each field is comma-seperated, and represents the following:
 6. Test number (sequential).
 7. Description of test run.
 8. Result code of the command.
-9. Expected result code.
+9. Expected result.
 10. If test passed, will just be `OK`. Otherwise, if fail, further information on what went wrong (the error displayed to the user).
