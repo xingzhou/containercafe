@@ -124,10 +124,21 @@ the target machines.
 ```bash
 ( cd ansible; \
   ansible-playbook -v -i ../examples/envs/dev-vbox/radiant01.hosts shard.yml \
-                   -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge )
+      -e "envs=../examples/envs cluster_name=dev-vbox-radiant01 network_kind=bridge" )
 ```
 
 The `cd` makes Ansible 2 find the `ansible.cfg` supplied by OpenRadiant.
+
+The `envs` variable tells the playbook where to find the files that
+define the environment and shard.
+
+The `cluster_name` variable tells the playbook which shard to deploy.
+
+The `networking_plugin` variable tells the playbook which networking
+plugin to deploy (Ansible technicalities make it impossible for the
+playbook to use a definition for this variable placed the environment
+or shard variables file --- do not put one there, it will just cause
+confusion).
 
 See
 [the general doc on deployment](../README.md#installing-openradiant)
