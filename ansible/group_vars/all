@@ -10,7 +10,7 @@ network_interface: eth1
 # Certificates
 ################################################################
 
-cert_dir: "{{ansible_env.HOME}}/.openradiant/envs/{{env_name}}"
+cert_dir: "~/.openradiant/envs/{{env_name}}"
 ca_cert: ca.pem
 ca_key: ca-key.pem
 ca_srl: ca.srl
