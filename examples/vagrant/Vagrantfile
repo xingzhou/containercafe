@@ -50,16 +50,6 @@ if VM_MEMORY < 1024
   puts "Warning: workers and master VMs have less than 1536 MB of memory"
 end
 
-$install_docker = <<SCRIPT
-apt-get -qq update
-apt-get -qq -y install apt-transport-https ca-certificates
-apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" > /etc/apt/sources.list.d/docker.list
-apt-get -qq update
-apt-get -qq -y install linux-image-extra-$(uname -r) apparmor docker-engine
-usermod -aG docker vagrant
-SCRIPT
-
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty64"
   config.ssh.insert_key = false
@@ -78,8 +68,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
     end
   end
+  
+  config.vm.define 'proxy' do |proxy|
+    proxy.vm.network "private_network", ip: "192.168.10.#{VM_COUNT+2}"
+    proxy.vm.hostname = "proxy"
 
-  ['installer', 'active-installer'].each do |name|
+    proxy.vm.provider "virtualbox" do |proxy_node|
+      proxy_node.name   = "api-proxy"
+      proxy_node.memory = PROXY_VM_MEMORY
+    end
+  end
+
+  ['installer-tiny', 'active-installer-tiny'].each do |name|
     config.vm.define name, autostart: false do |installer|
       installer.vm.network "private_network", ip: "192.168.9.253"
       installer.vm.synced_folder ".", "/vagrant", disabled: true
@@ -99,33 +99,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       installer.vm.provision "shell", inline: "chmod 600 /home/vagrant/.vagrant.d/insecure_private_key"
       installer.vm.provision "shell", inline: "apt-get -qq update && apt-get -qq -y install python-pip build-essential libssl-dev libffi-dev python-dev && cd /home/vagrant && pip install -r requirements.txt"
       installer.vm.provision "shell", privileged: false, inline: "source ~/.profile && [ -z \"$ANSIBLE_INVENTORY\" ] && echo \"export ANSIBLE_INVENTORY=/home/vagrant/openradiant/examples/envs/dev-vbox/radiant01.hosts\" >> ~/.profile"
-      installer.vm.provision "shell", privileged: false, inline: "source ~/.profile && [ -z \"$ANSIBLE_LIBRARY\" ] && echo \"export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY\" >> ~/.profile"
 
-      if name == 'active-installer'
+      if name == 'active-installer-tiny'
         installer.vm.provision "shell", privileged: false, inline: "cd /home/vagrant/openradiant/ansible && ansible-playbook -v shard.yml -e envs=/home/vagrant/openradiant/examples/envs -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
         installer.vm.provision "shell", inline: "cp -rf /home/vagrant/openradiant/ansible/certs /home/vagrant/openradiant/synced_ansible"
       end
 
       installer.vm.provider "virtualbox" do |installer_node|
-        installer_node.name = name
-        installer_node.memory=INSTALLER_VM_MEMORY
+        installer_node.name   = name
+        installer_node.memory = INSTALLER_VM_MEMORY
       end
-    end
-  end
-
-  config.vm.define 'proxy', autostart: false do |proxy|
-    proxy.vm.network "private_network", ip: "192.168.9.252"
-    proxy.vm.synced_folder ".", "/vagrant", disabled: true
-    proxy.vm.synced_folder "../../ansible", "/vagrant/ansible", mount_options: ["dmode=775,fmode=664"]
-    proxy.vm.synced_folder "../../proxy", "/vagrant/proxy", mount_options: ["dmode=775,fmode=764"]
-
-    proxy.vm.provision "shell", inline: $install_docker
-    proxy.vm.provision "shell", inline: "cd /vagrant/proxy && ./builddocker.sh && ./rundocker.sh -d"
-    proxy.vm.provision "shell", privileged: false, inline: "ln -s /vagrant/proxy"
-
-    proxy.vm.provider "virtualbox" do |proxy_node|
-      proxy_node.name = "hjproxy"
-      proxy_node.memory=PROXY_VM_MEMORY
     end
   end
 end
