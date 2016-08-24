@@ -58,6 +58,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.define "radiant#{i+1}" do |node|
       node.vm.network "private_network", ip: "192.168.10.#{i+1}"
       node.vm.hostname = "radiant#{i+1}"
+      node.vm.synced_folder ".", "/vagrant", disabled: true
 
       node.vm.provider "virtualbox" do |nodeopts|
         nodeopts.name = "radiant#{i+1}"
@@ -72,6 +73,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define 'proxy' do |proxy|
     proxy.vm.network "private_network", ip: "192.168.10.#{VM_COUNT+2}"
     proxy.vm.hostname = "proxy"
+    proxy.vm.synced_folder ".", "/vagrant", disabled: true
 
     proxy.vm.provider "virtualbox" do |proxy_node|
       proxy_node.name   = "api-proxy"
