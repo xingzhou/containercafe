@@ -9,7 +9,7 @@ function build_proxy_image {
     cp -r src "$context"
 
     # copy scripts into Dockerfile directory
-    cp make_TLS_certs.sh mk_user_cert.sh mk_kubeconfig.sh "$context"
+    cp create_tenant.sh mk_user_cert.sh mk_kubeconfig.sh "$context"
     
     # build the docker image
     docker build -t "$name" "$context"

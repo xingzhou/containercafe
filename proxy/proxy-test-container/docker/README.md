@@ -21,9 +21,9 @@ The build script has 3 possible flags (`-e` is the only one required):
 
 After starting the API Proxy, execute the script to create test tenants:
 ```bash
-docker exec api-proxy /api-proxy/make_TLS_certs.sh test1 radiant01 192.168.10.2
-docker exec api-proxy /api-proxy/make_TLS_certs.sh test2 radiant01 192.168.10.2
-docker exec api-proxy /api-proxy/make_TLS_certs.sh test3 radiant01 192.168.10.2
+docker exec api-proxy /api-proxy/create_tenant.sh test1 radiant01 192.168.10.2
+docker exec api-proxy /api-proxy/create_tenant.sh test2 radiant01 192.168.10.2
+docker exec api-proxy /api-proxy/create_tenant.sh test3 radiant01 192.168.10.2
 ```
 To view all the accounts valid for this proxy: 
 ```bash
