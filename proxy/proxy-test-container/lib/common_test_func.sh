@@ -74,16 +74,31 @@ function end_test_block {
 # assert - Assert
 function assert {
     local TEST_CMD=()
-    local EXPECTED= 
+    local EQUALS=""
+    local OUTPUT_CONTAINS=""
+    local OUTPUT_NOT_CONTAINS=""
     local TEST_NAME=
 
     local test_count="$TEST_COUNT"
     increment_test_count
     
+    local expected=""
+    
     while test $# -gt 0; do
         case "$1" in 
             "--equal")
-                EXPECTED=$2
+                EQUALS="$2"
+                expected="$expected and exit code equals $2"
+                shift 2
+                ;;
+            "--output-contains")
+                OUTPUT_CONTAINS="$2"
+                expected="$expected and output contains '$2'"
+                shift 2
+                ;;
+            "--output-not-contains")
+                OUTPUT_NOT_CONTAINS="$2"
+                expected="$expected and output does not contains '$2'"
                 shift 2
                 ;;
             "--log")
@@ -96,31 +111,83 @@ function assert {
                 ;;
         esac
     done
+    
+    if [ "$expected" = "" ]; then
+        echo "Missing test condition for ${TEST_CMD[@]}"
+        echo "Missing test condition for ${TEST_CMD[@]}" >> "$RESULTS_PATH"
+    else
+        expected=`cut -c6- <<<"$expected"`
+    fi
 
     echo -e "Running test $test_count *** $TEST_NAME ***\n" 
 
-    local output=""
-    local timestamp=$(date +"%Y%m%d.%H%M%S")
-    local start_time=$(date +%s)
-    output=$("${TEST_CMD[@]}" 2>&1)
-    local RESULT=$?
-    local end_time=$(date +%s)
+    local test_completed=false
+    until [ "$test_completed" = true ]; do
+        local output=""
+        local timestamp=$(date +"%Y%m%d.%H%M%S")
+        local start_time=$(date +%s)
+        output=$("${TEST_CMD[@]}" 2>&1)
+        local RESULT=$?
+        local end_time=$(date +%s)
+        
+        if [ $(grep -c "docker: Error response from daemon: Task launched with invalid offers: Offer " <<<"$output") -eq 0 ]; then
+            test_completed=true
+        fi
+    done
 
     echo -e "Test $TEST_NAME completed with code $RESULT ($EXPECTED expected):\n$output\n"
 
     local log_command=$(printf " %s" "${TEST_CMD[@]}")
     log_command=${log_command:1}
-    
-    local success=""
-    if [ $RESULT -eq $EXPECTED ]; then
+
+    local success=true
+    _test_equals "$RESULT" "$EQUALS" || success=false
+    _test_contains "$output" "$OUTPUT_CONTAINS" || success=false
+    _test_not_contains "$output" "$OUTPUT_NOT_CONTAINS" || success=false
+
+    if [ "$success" = true ]; then
         output="OK"
-        success=true
     else
         output=`tr "\n" " " <<< "$output"`
-        success=false
     fi
 
-    log_test_result "$timestamp" "$success" $((end_time - start_time)) "$TENANT_ID" "$TEST_TYPE" "$test_count" "$log_command" $RESULT $EXPECTED "$output" "$RESULTS_PATH"    
+    log_test_result "$timestamp" "$success" $((end_time - start_time)) "$TENANT_ID" "$TEST_TYPE" "$test_count" "$log_command" "$RESULT" "$expected" "$output" "$RESULTS_PATH"
+}
+
+# _test_equals - Internal, test equality between numbers
+function _test_equals {
+    local RESULT="$1"
+    local EXPECTED="$2"
+    
+    if [ "$EXPECTED" = "" ]; then
+        return 0
+    else
+        [ "$RESULT" -eq "$EXPECTED" ]
+    fi
+}
+
+# _test_contains - Internal, test if a string contains another string
+function _test_contains {
+    local INPUT="$1"
+    local STRING="$2"
+
+    if [ "$STRING" = "" ]; then
+        return 0
+    else
+        [ $(grep -cE "$STRING" <<<"$INPUT") -gt 0 ]
+    fi
+}
+
+# _test_not_contains - Internal, test if a string doesn't contains another string
+function _test_not_contains {
+    local INPUT="$1"
+    local STRING="$2"
+
+    if [ "$STRING" = "" ]; then
+        return 0
+    else
+        [ $(grep -cE "$STRING" <<<"$INPUT") -eq 0 ]
+    fi
 }
 
 # log_test_result - Append the test result to the log file
