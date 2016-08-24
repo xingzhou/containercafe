@@ -1,7 +1,7 @@
 package main
 
 import (
-    "net/http"
+	"net/http"
 	"strconv"
 	"strings"
 	"os"
@@ -11,17 +11,15 @@ import (
 
 	// _ "net/http/pprof" //for profiling only
 
-	"logger"	// my logger package, should be the first user package to init
+	"github.com/golang/glog"
 	"conf"   	// my conf package
 	"handler" 	// my handlers
 )
 
-var Log * logger.Log = logger.TeeLog
-
 func init(){
 	//logger package TeeLog var initialization and init() will take place before this main package init() is executed
 	//conf.LoadEnv() is called in init() of conf package, before this main package init() is executed
-	Log.Print(conf.GetVerStr())
+	glog.Info(conf.GetVerStr())
 }
 
 func main() {
@@ -33,10 +31,10 @@ func main() {
 	if nargs > 1 {
 		listen_port, _=strconv.Atoi(os.Args[1])
 	}
-	Log.Printf("Listening on port %d", listen_port)
+	glog.Infof("Listening on port %d", listen_port)
 	if nargs > 2 {
 		conf.Default_redirect_host = os.Args[2]
-		Log.Printf("Default upstream server: %s", conf.Default_redirect_host)
+		glog.V(2).Infof("Default upstream server: %s", conf.Default_redirect_host)
 	}
 	if nargs > 3 {
 		if strings.ToLower(os.Args[3]) == "true" {
@@ -47,7 +45,7 @@ func main() {
 			conf.SetTlsInbound(false)
 			conf.SetTlsOutbound(true)
 		}
-		Log.Printf("tls setup: Inbound=%t, Outbound=%t", conf.IsTlsInbound(), conf.IsTlsOutbound())
+		glog.V(2).Infof("tls setup: Inbound=%t, Outbound=%t", conf.IsTlsInbound(), conf.IsTlsOutbound())
 	}
 
 	//register handlers for supported url paths, can't register same path twice
@@ -68,7 +66,7 @@ func main() {
 
 	//Rely on NGINX to route accepted docker/swarm url paths only to hijackproxy
 	http.HandleFunc("/", handler.DockerEndpointHandler)
-	Log.Printf("All handlers registered")
+	glog.Infof("All handlers registered")
 	
 	
 	/*for profiling only
@@ -80,7 +78,7 @@ func main() {
 	// init server on any interface + listen_port
 	var err error
 	if conf.IsTlsInbound() {
-		Log.Printf("Starting TLS listener service")
+		glog.Info("Starting TLS listener service")
 		// Here is how started the server earlier, before parsing the user certs:
 		//	err = http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), conf.GetServerCertFile(), conf.GetServerKeyFile(), nil)
 		
@@ -88,7 +86,7 @@ func main() {
 		//caCert, err := ioutil.ReadFile(conf.GetServerCertFile())
 		caCert, err := ioutil.ReadFile(conf.GetCaCertFile())
 		if err != nil {
-			Log.Println(err)
+			glog.Error(err)
 		}
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
@@ -113,12 +111,12 @@ func main() {
 		server.ListenAndServeTLS(conf.GetServerCertFile(), conf.GetServerKeyFile()) 
 
 	} else {
-		Log.Printf("Starting non-TLS listener service")
+		glog.Info("Starting non-TLS listener service")
 		err = http.ListenAndServe(":"+strconv.Itoa(listen_port), nil)
 	}
 
 	//print something and exit on fatal error
 	if err != nil {
-		Log.Fatal("Aborting because ListenAndServe could not start: ", err)
+		glog.Fatal("Aborting because ListenAndServe could not start: ", err)
 	}
 }

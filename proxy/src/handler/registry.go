@@ -13,6 +13,7 @@ import (
 	"auth"
 	"conf"
 	"httphelper"
+	"github.com/golang/glog"
 )
 
 var _REG_ADMIN_CREDS_  bool = true   //feature flag
@@ -34,10 +35,10 @@ func InjectRegAuthHeader(r *http.Request, creds auth.Creds) {
 	//create X-Registry-Auth object out of apikey in creds
 	// {"username":"admin","password":"230189","auth":"","email":"swarm@dev.test","serveraddress":"registry-ice-dev-test.stage1.ng.bluemix.net"}
 	auth_str := fmt.Sprintf("{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"\",\"email\":\"swarm@dev.test\",\"serveraddress\":\"%s\"}", user, psswd, reg)
-    auth_bytes := []byte(auth_str)
+    	auth_bytes := []byte(auth_str)
 	tok := base64.StdEncoding.EncodeToString( auth_bytes )
 
-	Log.Printf("InjectRegAuthHeader:  auth_str=%s  tok=%s", auth_str, tok)
+	glog.Infof("InjectRegAuthHeader:  auth_str=%s  tok=%s", auth_str, tok)
 	r.Header.Set("X-Registry-Auth", tok)
 }
 
@@ -46,11 +47,11 @@ func GetRegistryApiHosts() (hosts []string){
 	service := "registry-api"
 	hosts = conf.GetServiceHosts(service)
 	if len(hosts) == 0 {
-		Log.Printf("Failed to get Registry API host  service=%s", service)
+		glog.Errorf("Failed to get Registry API host  service=%s", service)
 		return
 	}
 	for _,v := range hosts{
-		Log.Printf("Found Registry api host=%s", v)
+		glog.Infof("Found Registry api host=%s", v)
 	}
 	return
 }
@@ -76,7 +77,7 @@ func DoRegistryCall(w http.ResponseWriter, r *http.Request, uriPath string, meth
 		//Call service endpoint
 	for i:=0; i<len(hosts); i++ {
 		url := "http://" + hosts[i] + uriPath
-		Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
+		glog.Infof("Will call Registry... url=%s req_id=%s", url, req_id)
 		client := &http.Client{}
 		req, _ := http.NewRequest(method, url, nil)
 		AddCredsHeaders(req, creds)
@@ -87,14 +88,14 @@ func DoRegistryCall(w http.ResponseWriter, r *http.Request, uriPath string, meth
 		}
 		defer resp.Body.Close()
 		body, _ := ioutil.ReadAll(resp.Body)
-		Log.Printf("Registry response req_id=%s statusCode=%d body=%s", req_id, resp.StatusCode, httphelper.PrettyJson(body))
+		glog.Infof("Registry response req_id=%s statusCode=%d body=%s", req_id, resp.StatusCode, httphelper.PrettyJson(body))
 
 		//send response back to client
 		w.WriteHeader(resp.StatusCode)
 		io.WriteString(w, string(body))
 		return
 	}
-	Log.Printf("None of the Registry servers responded req_id=%s", req_id)
+	glog.Warningf("None of the Registry servers responded req_id=%s", req_id)
 	return
 }
 
@@ -123,15 +124,15 @@ func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds au
 	//img valid format:  host/namespace/name:tag
 	sl := strings.Split(img, "/")
 	if len(sl) != 3  {
-		Log.Printf("Not valid image name  img=%s req_id=%s", img, req_id)
+		glog.Errorf("Not valid image name  img=%s req_id=%s", img, req_id)
 		ErrorHandlerWithMsg(w, r, 500, "Not valid image name")
 		return
 	}
 	reg := sl[0]
-    namespace := sl[1]
+	namespace := sl[1]
 	img_name_and_tag := strings.Split(sl[2], ":")
 	if len(img_name_and_tag) != 2 {
-		Log.Printf("Not valid image name  img=%s req_id=%s", img, req_id)
+		glog.Errorf("Not valid image name  img=%s req_id=%s", img, req_id)
 		ErrorHandlerWithMsg(w, r, 500, "Not valid image name")
 		return
 	}
@@ -139,8 +140,8 @@ func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds au
 	img_tag := img_name_and_tag[1]
 
 	// Construct the request to registry.
-    url := fmt.Sprintf("https://%s/v1/repositories/%s/%s/tags/%s", reg, namespace, img_name, img_tag)
-	Log.Printf("Will call Registry... url=%s req_id=%s", url, req_id)
+    	url := fmt.Sprintf("https://%s/v1/repositories/%s/%s/tags/%s", reg, namespace, img_name, img_tag)
+	glog.Infof("Will call Registry... url=%s req_id=%s", url, req_id)
 	client := &http.Client{}
 	req, _ := http.NewRequest("DELETE",url, nil)
 	//TODO: when rmi is implemented by reg microservice 	AddCredsHeaders(req, creds)
@@ -155,8 +156,8 @@ func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds au
 	resp, _ := client.Do(req)
 	defer resp.Body.Close()
 	body,_:=ioutil.ReadAll(resp.Body)
-	Log.Printf("Registry status code: %d", resp.StatusCode)
-	Log.Printf("Registry response: %s", httphelper.PrettyJson(body))
+	glog.Infof("Registry status code: %d", resp.StatusCode)
+	glog.Infof("Registry response: %s", httphelper.PrettyJson(body))
 
 	//send response back to client
 	body_str := ""
@@ -203,18 +204,18 @@ func get_image_from_container_create(body []byte) (img string){
 	var f interface{}
 	err := json.Unmarshal(body, &f)
 	if err != nil{
-		Log.Printf("get_image_from_container_create: error in json unmarshalling, err=%v", err)
+		glog.Errorf("get_image_from_container_create: error in json unmarshalling, err=%v", err)
 		return
 	}
 	m := f.(map[string]interface{})
 	for k, v := range m {
 		if (k == "Image") {
 			img = v.(string)
-			Log.Printf("get_image_from_container_create: found img=%s", img)
+			glog.Infof("get_image_from_container_create: found img=%s", img)
 			return
 		}
 	}
-	Log.Print("get_image_from_container_create: did not find Image in json body")
+	glog.Warning("get_image_from_container_create: did not find Image in json body")
 	return
 }
 
@@ -236,7 +237,7 @@ func get_image_from_image_create(reqUri string) (img string){
 	//look for ?fromImage=...&registry=...
 	u, err := url.Parse(reqUri)
 	if err != nil {
-		Log.Print(err)
+		glog.Error(err)
 		return
 	}
 	q := u.Query()  // q is map[string][]string

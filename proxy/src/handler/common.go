@@ -11,22 +11,14 @@ import (
 	"math/big"
 
 	"conf"
-	"logger"
+	"github.com/golang/glog"
 )
-
-//used by all src files in the handler package
-var Log * logger.Log  = logger.TeeLog
 
 func init() {
 	//call initializers for all handlers
 	InitDockerHandler()
 	InitKubeHandler()
 	InitHealthHandler()
-}
-
-//called from main package init() after the logger is created
-func SetLogger(lg * logger.Log){
-	Log = lg
 }
 
 //called by golang before init() of main packagev
@@ -45,15 +37,15 @@ func redirect(r *http.Request, body []byte, redirect_host string, redirect_resou
 	c , err := net.Dial("tcp", redirect_host)
 	if err != nil {
 		// handle error
-		Log.Printf("Error connecting to server=%s, %v", redirect_host, err)
+		glog.Errorf("Error connecting to server=%s, %v", redirect_host, err)
 		return nil,err,nil
 	}
 
 	if conf.IsTlsOutbound() && !tls_override{
-		Log.Printf("Excuting TLS redirect")
+		glog.Infof("Excuting TLS redirect")
 		cert, er := tls.LoadX509KeyPair(conf.GetClientCertFile(), conf.GetClientKeyFile())
 		if er != nil {
-			Log.Printf("Error loading client key pair, %v", er)
+			glog.Errorf("Error loading client key pair, %v", er)
 			return nil,err,nil
 		}
 		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{cert}})
@@ -68,9 +60,9 @@ func redirect(r *http.Request, body []byte, redirect_host string, redirect_resou
 	//req.Host = redirect_host
 	req.URL.Host = redirect_host
 
-	Log.Printf("will forward request to server=%s ...", redirect_host)
+	glog.Infof("will forward request to server=%s ...", redirect_host)
 	resp, err := cc.Do(req)
-	Log.Printf("Response from redirect_host: %v", resp)
+	glog.Infof("Response from redirect_host: %v", resp)
 	return resp, err, cc
 }
 
@@ -86,17 +78,17 @@ func redirect_with_cert(r *http.Request, body []byte, redirect_host string, redi
 	c , err := net.Dial("tcp", redirect_host)
 	if err != nil {
 		// handle error
-		Log.Printf("Error connecting to server=%s, %v", redirect_host, err)
+		glog.Errorf("Error connecting to server=%s, %v", redirect_host, err)
 		return nil,err,nil
 	}
 
 	if conf.IsTlsOutbound() && !tls_override{
 		var tlscert tls.Certificate
 		var er error
-		Log.Printf("Excuting TLS redirect")
+		glog.Infof("Excuting TLS redirect")
 		tlscert, er = tls.X509KeyPair([]byte(cert),[]byte(key))
 		if er != nil {
-			Log.Printf("Error loading client key pair, %v", er)
+			glog.Errorf("Error loading client key pair, %v", er)
 			return nil,err,nil
 		}
 		c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{tlscert}})
@@ -109,9 +101,9 @@ func redirect_with_cert(r *http.Request, body []byte, redirect_host string, redi
 				bytes.NewReader(body))
 	req.Header = r.Header
 	req.URL.Host = redirect_host
-	Log.Printf("will forward request to server=%s ...", redirect_host)
-	Log.Printf("***** request URL: %+v", req.URL)
-	Log.Printf("***** all request: %+v", req)
+	glog.Infof("will forward request to server=%s ...", redirect_host)
+	glog.Infof("***** request URL: %+v", req.URL)
+	glog.Infof("***** all request: %+v", req)
 	resp, err := cc.Do(req)
 	return resp, err, cc
 }
@@ -126,13 +118,13 @@ func redirect_random(r *http.Request, body []byte, redirect_host string, redirec
 	// get list of host:port pairs
 	nodes := strings.Split(redirect_host,",")
 	num_nodes := len(nodes)
-	Log.Printf("redirect_random num_nodes=%d nodes=%s", num_nodes, nodes)
+	glog.Infof("redirect_random num_nodes=%d nodes=%s", num_nodes, nodes)
 
 	// pick random target
 	var target int
 	t , e := rand.Int( rand.Reader, big.NewInt(int64(num_nodes)) )
 	if e != nil {
-		Log.Print("error in rand num generator:", e)
+		glog.Error("error in rand num generator:", e)
 		target = 0
 		num_nodes = 1
 	}else {
@@ -141,7 +133,7 @@ func redirect_random(r *http.Request, body []byte, redirect_host string, redirec
 
 	// call redirect
 	redirect_host = nodes[target]
-	Log.Printf("redirect_random: node=%s target=%d", redirect_host, target)
+	glog.Infof("redirect_random: node=%s target=%d", redirect_host, target)
 	resp, err, cc = redirect (r, body, redirect_host, redirect_resource_id, rewriteURI, tls_override)
 	if err == nil {
 		return
@@ -152,30 +144,30 @@ func redirect_random(r *http.Request, body []byte, redirect_host string, redirec
 		target += i
 		target = target % num_nodes
 		redirect_host = nodes[target]
-		Log.Printf("redirect_random: node=%s target=%d", redirect_host, target)
+		glog.Infof("redirect_random: node=%s target=%d", redirect_host, target)
 		resp, err, cc = redirect(r, body, redirect_host, redirect_resource_id, rewriteURI, tls_override)
 		if err == nil {
 			break
 		}
-		Log.Printf("redirect_random: redirect failed  node=%s err=%s", redirect_host, err)
+		glog.Infof("redirect_random: redirect failed  node=%s err=%s", redirect_host, err)
 	}
 
 	return
 }
 	
 func getAdminConn(redirect_host string) (error, *httputil.ClientConn){
-	Log.Printf("Loading Kube Admin certifcates")
+	glog.Infof("Loading Kube Admin certifcates")
 	var cc *httputil.ClientConn
 
 	c , err := net.Dial("tcp", redirect_host)
 	if err != nil {
 		// handle error
-		Log.Printf("Error connecting to server=%s, %v", redirect_host, err)
+		glog.Errorf("Error connecting to server=%s, %v", redirect_host, err)
 		return err,nil
 	}
 	admincert, err := getAdminCert()
 	if err != nil {
-		Log.Printf("Error getting admin certs for host=%s: %v", redirect_host, err)
+		glog.Errorf("Error getting admin certs for host=%s: %v", redirect_host, err)
 		return err, nil
 	}
 	c_tls := tls.Client(c, &tls.Config{InsecureSkipVerify : true, Certificates : []tls.Certificate{admincert}})
@@ -189,7 +181,7 @@ func getAdminCert() (tls.Certificate, error) {
 	var er error	
 	admincert, er = tls.LoadX509KeyPair(conf.GetKadminCertFile(), conf.GetKadminKeyFile())
 	if er != nil {
-		Log.Printf("Error loading kube admin key pair, %v", er)
+		glog.Errorf("Error loading kube admin key pair, %v", er)
 		return admincert, er
 	}
 	return admincert, nil

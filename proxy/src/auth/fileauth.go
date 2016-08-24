@@ -7,16 +7,9 @@ import (
 	"os"
 
 	"conf"  		// my conf package
-	"logger"
+	"github.com/golang/glog"
 )
-var Log * logger.Log = logger.TeeLog
 
-func init() {
-}
-
-func SetLogger(lg * logger.Log){
-	Log = lg
-}
 // Use a file as authentication credentials store (mainly for trusted test SWARM tenants)
 // BlueMix space id is passed in request header as X-Auth-Project-Id header and is used as search key into the file
 func FileAuth(r *http.Request) (creds Creds) {
@@ -24,15 +17,15 @@ func FileAuth(r *http.Request) (creds Creds) {
 	// let's start with 400 Bad Request 
 	creds.Status = 400
 	if (r.TLS == nil || len(r.TLS.PeerCertificates) < 1) {
-		Log.Println("ERROR, request missing client TLS certificate")
+		glog.Error("Request missing client TLS certificate")
 		return
 	}
 
-	Log.Printf("Total of TLS certificate(s) found in request: %v", len(r.TLS.PeerCertificates))	
+	glog.Infof("Total of TLS certificate(s) found in request: %v", len(r.TLS.PeerCertificates))
 	cn := ""
 
 	for _, cert := range r.TLS.PeerCertificates {
-		Log.Printf("CN from the client cert: %v", cert.Subject.CommonName)
+		glog.Infof("CN from the client cert: %v", cert.Subject.CommonName)
 		cn = cert.Subject.CommonName
 		
 		// cert could be CA:
@@ -50,7 +43,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 
 	fp, err := os.Open(conf.GetStubAuthFile())
 	if err != nil{
-		Log.Println(err)
+		glog.Error(err)
 		return
 	}
 	dec := json.NewDecoder(fp)
@@ -60,7 +53,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 		if err := dec.Decode(&c); err == io.EOF {
 			break
 		} else if err != nil {
-			Log.Println(err)
+			glog.Error(err)
 			break
 		}
 		// skip if this is not swarm shard nor radiant endpoint
@@ -78,7 +71,7 @@ func FileAuth(r *http.Request) (creds Creds) {
 			return
 		}
 	}
-    	Log.Printf("Tenant API key %s not found in %s file", Apikey, conf.GetStubAuthFile())
+    	glog.Infof("Tenant API key %s not found in %s file", Apikey, conf.GetStubAuthFile())
 	//tenant not found in credentials file
 	creds.Status = 401
 	return

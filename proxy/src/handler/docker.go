@@ -3,8 +3,8 @@
 package handler
 
 import (
-    "fmt"
-    "net/http"
+    	"fmt"
+    	"net/http"
 	"net/http/httputil"
 	"io/ioutil"
 	"time"
@@ -16,6 +16,7 @@ import (
 	"httphelper"  //my httphelper package
 	"auth"  // my auth package
 	"conf"  // my conf package
+	"github.com/golang/glog"
 )
 
 // supported docker api uri prefixes
@@ -78,34 +79,34 @@ func InitDockerHandler(){
 // handler for docker/swarm
 func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	req_id := conf.GetReqId()
-	Log.Printf("------> DockerEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
+	glog.Infof("------> DockerEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
 
 	// check if uri pattern is accepted
 	if ! IsSupportedPattern(r.RequestURI, dockerPatterns){
-		Log.Printf("Docker pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
+		glog.Infof("Docker pattern not accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
 		NoEndpointHandler(w, r)
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		glog.Infof("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 
 	data, _ := httputil.DumpRequest(r, true)
-	Log.Printf("Request dump req_id=%s req_length=%d:\n%s", req_id, len(data), string(data))
+	glog.Infof("Request dump req_id=%s req_length=%d:\n%s", req_id, len(data), string(data))
 
 	var creds auth.Creds
 
 	// workaround defective sharding in dev-mon
 	creds = auth.FileAuth(r)
 	if creds.Status == 200 {
-		Log.Printf("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
-		//Log.Printf("***** creds: %+v", creds)
+		glog.Infof("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
+		//glog.Infof("***** creds: %+v", creds)
 	} else {
-		Log.Printf("Authentication failed for req_id=%s status=%d", req_id, creds.Status)
+		glog.Errorf("Authentication failed for req_id=%s status=%d", req_id, creds.Status)
 		if creds.Status == 401 {
 			NotAuthorizedHandler(w, r)
 		}else {
 			ErrorHandler(w, r, creds.Status)
 		}
-		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+		glog.Infof("------ Completed processing of request req_id=%s\n", req_id)
 		return
 	}
 
@@ -113,13 +114,13 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 
 	//Call conn limiting interceptor(s) pre-processing
 //	if !limit.OpenConn(creds.Container, conf.GetMaxContainerConn()) {
-//		Log.Printf("Max conn limit reached for container...aborting request")
-//		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+//		glog.Infof("Max conn limit reached for container...aborting request")
+//		glog.Infof("------ Completed processing of request req_id=%s\n", req_id)
 //		return
 //	}
 //	if !limit.OpenConn(creds.Node, conf.GetMaxNodeConn()) {
-//		Log.Printf("Max conn limit reached for host node...aborting request")
-//		Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+//		glog.Infof("Max conn limit reached for host node...aborting request")
+//		glog.Infof("------ Completed processing of request req_id=%s\n", req_id)
 //		return
 //	}
 
@@ -131,7 +132,7 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 //	limit.CloseConn(creds.Container, conf.GetMaxContainerConn())
 //	limit.CloseConn(creds.Node, conf.GetMaxNodeConn())
 
-	Log.Printf("------ Completed processing of request req_id=%s\n", req_id)
+	glog.Infof("------ Completed processing of request req_id=%s\n", req_id)
 }
 
 ///////////////////
@@ -139,12 +140,12 @@ func DockerEndpointHandler(w http.ResponseWriter, r *http.Request) {
 ///////////////////
 
 func notSupported(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string){
-	Log.Printf("Docker pattern not accepted, URI=%s", r.RequestURI)
+	glog.Warningf("Docker pattern not accepted, URI=%s", r.RequestURI)
 	NoEndpointHandler(w, r)
 }
 
 func notImplemented(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string){
-	Log.Printf("Docker pattern not implemented, URI=%s", r.RequestURI)
+	glog.Warningf("Docker pattern not implemented, URI=%s", r.RequestURI)
 	NotImplementedHandler(w, r)
 }
 
@@ -152,7 +153,7 @@ func notImplemented(w http.ResponseWriter, r *http.Request, body []byte, creds a
 func removeImage(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
 	img := getImageFullnameFromVars(vars)
 	if !is_img_valid(img, creds.Reg_namespace){
-		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
+		glog.Errorf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
 		NotAuthorizedHandler(w, r)
 	}else {
 		invoke_reg_rmi(w, r, img, creds, req_id)
@@ -162,7 +163,7 @@ func removeImage(w http.ResponseWriter, r *http.Request, body []byte, creds auth
 func inspectImage(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
 	img := getImageFullnameFromVars(vars)
 	if !is_img_valid(img, creds.Reg_namespace){
-		Log.Printf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
+		glog.Errorf("Not allowed to access image img=%s namespace=%s req_id=%s", img, creds.Reg_namespace, req_id)
 		NotAuthorizedHandler(w, r)
 	}else {
 		invoke_reg_inspect(w, r, img, creds, req_id)
@@ -174,7 +175,7 @@ func listImages(w http.ResponseWriter, r *http.Request, body []byte, creds auth.
 }
 
 func createContainer(w http.ResponseWriter, r *http.Request, body []byte, creds auth.Creds, vars map[string]string, req_id string) {
-	Log.Printf("createContainer invoked req_id=%s", req_id)
+	glog.Infof("createContainer invoked req_id=%s", req_id)
 	// extract image
 	// disable image inspection
 //	img := get_image_from_container_create(body)
@@ -191,7 +192,7 @@ func createContainer(w http.ResponseWriter, r *http.Request, body []byte, creds 
 
 	// make the net==none by default:
 	if net == "none" || net == "" {
-		Log.Printf("executing --net=none")
+		glog.Info("executing --net=none")
 		dockerHandler(w, r, body, creds, vars, req_id)
 		return
 	}
@@ -254,7 +255,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 	// if port is not provided (Radiant) assign the default swarm port
 	if len(sp)<2 {
 		redirect_host = redirect_host + ":" + strconv.Itoa(conf.GetSwarmMasterPort())
-		Log.Printf("Assigning proper Swarm  port. Old target: %v, New target: %v", creds.Node, redirect_host)
+		glog.Infof("Assigning proper Swarm  port. Old target: %v, New target: %v", creds.Node, redirect_host)
 	}
 	
 	redirect_resource_id := creds.Docker_id
@@ -271,11 +272,11 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 	//***** Filter req/headers here before forwarding request to server *****
 
 	if (httphelper.IsUpgradeHeader(r.Header)) {
-		Log.Printf("@ Upgrade request detected\n")
+		glog.Infof("@ Upgrade request detected\n")
 		req_UPGRADE = true
 	}
 	if is_container_logs_call(r.RequestURI) {
-		Log.Printf("@ Logs request detected\n")
+		glog.Infof("@ Logs request detected\n")
 		req_LOGS = true
 	}
 
@@ -288,7 +289,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 		backOffTimeout = conf.GetBackOffTimeout()
 	}
 
-	Log.Printf("Redirecting to host=%s req_id=%s", redirect_host, req_id)
+	glog.Infof("Redirecting to host=%s req_id=%s", redirect_host, req_id)
 	var (resp *http.Response
 		cc *httputil.ClientConn
 	)
@@ -298,40 +299,40 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 		if err == nil {
 			break
 		}
-		Log.Printf("redirect failed retry=%d req_id=%s err=%s", i, req_id, err)
+		glog.Warningf("redirect failed retry=%d req_id=%s err=%s", i, req_id, err)
 		if (i+1) < maxRetries {
-			Log.Printf("will sleep before retry secs=%d req_id=%s", backOffTimeout, req_id)
+			glog.Infof("will sleep before retry secs=%d req_id=%s", backOffTimeout, req_id)
 			time.Sleep( time.Duration(backOffTimeout) * time.Second)
 		}
 	}
 	if (err != nil) {
-		Log.Printf("Error in redirection, will abort req_id=%s err=%v\n", req_id, err)
+		glog.Errorf("Error in redirection, will abort req_id=%s err=%v\n", req_id, err)
 		ErrorHandlerWithMsg(w, r, 500, err.Error())
 		return
 	}
 
 	//write out resp
 	//now = time.Now()
-	Log.Printf("<------ req_id=%s\n", req_id)
+	glog.Infof("<------ req_id=%s\n", req_id)
 	//data2, _ := httputil.DumpResponse(resp, true)
 	//fmt.Printf("Response dump of %d bytes:\n", len(data2))
 	//fmt.Printf("%s\n", string(data2))
 
-	Log.Printf("Resp Status: %s\n", resp.Status)
-	Log.Print( httphelper.DumpHeader(resp.Header) )
+	glog.Infof("Resp Status: %s\n", resp.Status)
+	glog.Info( httphelper.DumpHeader(resp.Header) )
 
 	httphelper.CopyHeader(w.Header(), resp.Header)
 
 	if (httphelper.IsUpgradeHeader(resp.Header)) {
-		Log.Printf("@ Upgrade response detected\n")
+		glog.Infof("@ Upgrade response detected\n")
 		resp_UPGRADE = true
 	}
 	if httphelper.IsStreamHeader(resp.Header) {
-		Log.Printf("@ application/octet-stream detected\n")
+		glog.Infof("@ application/octet-stream detected\n")
 		resp_STREAM = true
 	}
 	if httphelper.IsDockerHeader(resp.Header) {
-		Log.Printf("@ application/vnd.docker.raw-stream detected\n")
+		glog.Infof("@ application/vnd.docker.raw-stream detected\n")
 		resp_DOCKER = true
 	}
 
@@ -339,14 +340,14 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 
 	proto := strings.ToUpper(httphelper.GetHeader(resp.Header, "Upgrade"))
 	if (req_UPGRADE || resp_UPGRADE) && (proto != "TCP") {
-		Log.Printf("Warning: will start hijack proxy loop although Upgrade proto %s is not TCP\n", proto)
+		glog.Warningf("Warning: will start hijack proxy loop although Upgrade proto %s is not TCP\n", proto)
 	}
 
 	if req_UPGRADE || resp_UPGRADE || resp_STREAM || resp_DOCKER || req_LOGS{
 		//resp header is sent first thing on hijacked conn
 		w.WriteHeader(resp.StatusCode)
 
-		Log.Printf("starting tcp hijack proxy loop req_id=%s", req_id)
+		glog.Infof("starting tcp hijack proxy loop req_id=%s", req_id)
 		httphelper.InitProxyHijack(w, cc, req_id, "TCP") // TCP is the only supported proto now
 		return
 	}
@@ -354,7 +355,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 	w.WriteHeader(resp.StatusCode)
 
 	if resp.Body == nil {
-		Log.Printf("\n")
+		glog.Infof("\n")
 		fmt.Fprintf(w, "\n")
 		return
 	}
@@ -372,7 +373,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 		resp_body, err := ioutil.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
-			Log.Printf("Error: error in reading server response body")
+			glog.Error("Error: error in reading server response body")
 			fmt.Fprint(w, "error in reading server response body\n")
 			return
 		}
@@ -386,7 +387,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 //				container_id := strip_nova_prefix(redirect_resource_id)
 //				exec_id := get_exec_id_from_response(resp_body)
 //				if exec_id == "" {
-//					Log.Printf("Error: error in retrieving exec id from response body")
+//					glog.Errorf("Error: error in retrieving exec id from response body")
 //				}else {
 //					conf.RedisSetExpire(exec_id, container_id, 60*60)
 //				}
@@ -396,7 +397,7 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 		//Printout the response body
 		bodystr := "Dump Body:\n"
 		bodystr += httphelper.PrettyJson(resp_body)
-		Log.Println(bodystr)
+		glog.Info(bodystr)
 		/*
 		if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
 			bodystr += httphelper.PrettyJson(resp_body)
@@ -435,7 +436,7 @@ func dockerRewriteUri(reqUri string, redirect_resource_id string)(redirectUri st
 			}
 		}
 	}
-	Log.Printf("dockerRewriteURI: '%s' --> '%s'\n", reqUri, redirectUri)
+	glog.Infof("dockerRewriteURI: '%s' --> '%s'\n", reqUri, redirectUri)
 	return redirectUri
 }
 
@@ -451,13 +452,13 @@ func get_exec_id_from_response(body []byte) string{
 	}
 	var resp Resp
 
-	Log.Printf("get_exec_id_from_response: json=%s\n", body)
+	glog.Infof("get_exec_id_from_response: json=%s\n", body)
 	err := json.Unmarshal(body, &resp)
 	if err != nil {
-		Log.Printf("get_exec_id_from_response: error=%v", err)
+		glog.Errorf("get_exec_id_from_response: error=%v", err)
 		return ""
 	}
-	Log.Printf("get_exec_id_from_response: Id=%s\n", resp.Id)
+	glog.Infof("get_exec_id_from_response: Id=%s\n", resp.Id)
 	return resp.Id
 }
 
@@ -511,18 +512,18 @@ func getNetworkFromNetworkCreate(body []byte) (net string) {
 	var f interface{}
 	err := json.Unmarshal(body, &f)
 	if err != nil{
-		Log.Printf("getNetworkFromNetworkCreate: error in json unmarshalling, err=%v", err)
+		glog.Errorf("getNetworkFromNetworkCreate: error in json unmarshalling, err=%v", err)
 		return
 	}
 	m := f.(map[string]interface{})
 	for k, v := range m {
 		if (k == "name")||(k == "Name") {
 			net = v.(string)
-			Log.Printf("getNetworkFromNetworkCreate: found net=%s", net)
+			glog.Infof("getNetworkFromNetworkCreate: found net=%s", net)
 			return
 		}
 	}
-	Log.Print("getNetworkFromNetworkCreate: did not find name in json body")
+	glog.Warning("getNetworkFromNetworkCreate: did not find name in json body")
 	return
 }
 
@@ -531,7 +532,7 @@ func getNetworkFromContainerCreate(body []byte) (net string){
 	var f interface{}
 	err := json.Unmarshal(body, &f)
 	if err != nil{
-		Log.Printf("getNetworkFromContainerCreate: error in json unmarshalling, err=%v", err)
+		glog.Errorf("getNetworkFromContainerCreate: error in json unmarshalling, err=%v", err)
 		return
 	}
 	m := f.(map[string]interface{})
@@ -541,13 +542,13 @@ func getNetworkFromContainerCreate(body []byte) (net string){
 			for kk, vv := range hc {
 				if (kk == "NetworkMode"){
 					net = vv.(string)
-					Log.Printf("getNetworkFromContainerCreate: found net=%s", net)
+					glog.Infof("getNetworkFromContainerCreate: found net=%s", net)
 					return
 				}
 			}
 		}
 	}
-	Log.Print("getNetworkFromContainerCreate: did not find NetworkMode in json body")
+	glog.Warning("getNetworkFromContainerCreate: did not find NetworkMode in json body")
 	return
 }
 
@@ -559,18 +560,18 @@ func rewriteNetworkInNetworkCreate(body []byte, space_id string) (b []byte){
 	var nc netCreate
 	err := json.Unmarshal(body, &nc)
 	if err != nil {
-		Log.Printf("rewriteNetworkInNetworkCreate: Unmarshal error=%v", err)
+		glog.Errorf("rewriteNetworkInNetworkCreate: Unmarshal error=%v", err)
 		b = body
 		return
 	}
 	nc.Name = uniqueNetName(nc.Name, space_id)
 	b, err = json.Marshal(&nc)
-		if err != nil {
-		Log.Printf("rewriteNetworkInNetworkCreate: Marshal error=%v", err)
+	if err != nil {
+		glog.Errorf("rewriteNetworkInNetworkCreate: Marshal error=%v", err)
 		b = body
 		return
 	}
-	Log.Printf("rewriteNetworkInNetworkCreate: unique name=%s", nc.Name)
+	glog.Infof("rewriteNetworkInNetworkCreate: unique name=%s", nc.Name)
 	return
 }
 
@@ -582,17 +583,17 @@ func rewriteNetworkInContainerCreate(body []byte, space_id string) (b []byte){
 	j := bytes.Index(body[i:], []byte("\"") )  // j == len of name
 	j += i //position of double-quote after net name
 
-	Log.Printf("i=%d j=%d", i, j)
+	glog.Infof("i=%d j=%d", i, j)
 	//var nameBytes []byte
 	//nameBytes = make([]byte, j-i+1)
-	Log.Printf("**%s**", string(body[i:j]) )
+	glog.Infof("**%s**", string(body[i:j]) )
 
 	//copy(nameBytes, body[i:j])
 	//buf := bytes.NewBuffer(nameBytes)
 	//nameString := buf.String()
 	nameString := string(body[i:j])
 	//nameString = strings.TrimSpace(nameString)
-	Log.Printf("nameString=**%s**", nameString )
+	glog.Infof("nameString=**%s**", nameString )
 
 	fullnameString := uniqueNetName(nameString, space_id)
 
@@ -601,7 +602,7 @@ func rewriteNetworkInContainerCreate(body []byte, space_id string) (b []byte){
 	//b = make([]byte, len(newBody))
 	b = []byte(newBodyStr)
 
-	Log.Printf("rewriteNetworkInContainerCreate: New Body=**%s**", newBodyStr)
+	glog.Infof("rewriteNetworkInContainerCreate: New Body=**%s**", newBodyStr)
 
 	return
 }

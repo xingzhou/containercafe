@@ -6,6 +6,7 @@ function build_proxy_image {
     local context="$2"
     
     # copy src into Dockerfile directory
+    [[ -d "$context/src" ]] && rm -rf "$context/src"
     cp -r src "$context"
 
     # copy scripts into Dockerfile directory
