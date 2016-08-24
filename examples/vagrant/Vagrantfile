@@ -14,6 +14,7 @@ if File.exist?(CONFIG)
   puts "Info: vagrant_config file is found, and will be used"
   VM_COUNT=$vm_count
   VM_MEMORY=$vm_memory
+  VM_CPU=$vm_cpu
   PROXY_NUM=$proxy_num
   PROXY_VM_MEMORY=$proxy_vm_memory
   INSTALLER_VM=$installer_num
@@ -22,20 +23,25 @@ else
   puts "Info: vagrant_config file is missing, vagrant will use default values"
   VM_COUNT=2
   VM_MEMORY=1536
+  VM_CPU=1
   PROXY_NUM=1
   PROXY_VM_MEMORY=1024
   INSTALLER_VM=1
   INSTALLER_VM_MEMORY=1024
 end
 
-puts "Info: vagrant will use the following configuration parameters:
+puts "Info: vagrant is using the following configuration parameters:
 ------------------------
-VM_COUNT=#{VM_COUNT}
-VM_MEMORY=#{VM_MEMORY}
-PROXY_NUM=#{PROXY_NUM}
-PROXY_VM_MEMORY=#{PROXY_VM_MEMORY}
-INSTALLER_VM=#{INSTALLER_VM}
-INSTALLER_VM_MEMORY=#{INSTALLER_VM_MEMORY}
+Master & Worker:
+  VM_COUNT=#{VM_COUNT}
+  VM_MEMORY=#{VM_MEMORY}
+  VM_CPU=#{VM_CPU}
+Proxy:
+  PROXY_NUM=#{PROXY_NUM}
+  PROXY_VM_MEMORY=#{PROXY_VM_MEMORY}
+Installer:
+  INSTALLER_VM=#{INSTALLER_VM}
+  INSTALLER_VM_MEMORY=#{INSTALLER_VM_MEMORY}
 ------------------------
 "
 
@@ -73,6 +79,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       node.vm.provider "virtualbox" do |nodeopts|
         nodeopts.name = "radiant#{i+1}"
         nodeopts.memory = VM_MEMORY
+        nodeopts.cpus = VM_CPU
         nodeopts.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
         nodeopts.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
       end

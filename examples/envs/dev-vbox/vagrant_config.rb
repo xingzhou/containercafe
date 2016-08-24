@@ -2,6 +2,7 @@
 # The roles (masters/workers) will be assigined in the ansible inventory
 $vm_count=2
 $vm_memory=1536
+$vm_cpu=1
 
 #Configuration for the proxy_VM hosting the proxy
 $proxy_num=1
