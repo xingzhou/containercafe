@@ -11,26 +11,16 @@
 
 - debug: msg="environment name is '{{env_name}}', remainder of cluster name is '{{cluster_tail}}'"
 
-- name: "Check if k8s CA cert exists"
-  stat: path={{ cert_dir }}/{{ ca_cert }}
-  register: cacert
-
-- debug: msg="cacert path= {{ cert_dir }}/{{ ca_cert }} exists= {{cacert.stat.exists}}"
-
-- name: "Check if k8s CA key exists"
-  stat: path={{ cert_dir }}/{{ ca_key }}
-  register: cakey
-
 - name: "Initialize vip_changed"
   set_fact: vip_changed=True
 
 - name: "Check cluster vip file exists"
-  stat: path={{ cert_dir }}/vip
+  stat: path={{ cert_dir }}/{{cluster_name}}/vip
   register: vip
 
 - name: "Check cluster vip"
   when: vip.stat.exists == True
-  shell: cat "{{ cert_dir }}/vip"
+  shell: cat "{{ cert_dir }}/{{cluster_name}}/vip"
   register: vipres
   changed_when: False
 
@@ -40,342 +30,274 @@
 
 - debug: msg="vip_changed is '{{vip_changed}}'"
 
-- set_fact: ca_is_newer=False
-- name: "Test if CA cert and key are newer"
-  when: cacert.stat.exists == True and cakey.stat.exists == True and vip.stat.exists == True and cacert.stat.mtime > vip.stat.mtime
-  set_fact: ca_is_newer=True
-
-- name: "Test if all certs need to be regenerated"
-  when: cacert.stat.exists == True and (cakey.stat.exists == False or vip_changed == True or ca_is_newer == True)
-  set_fact: regenerate_all_certs=True
-
-- name: "Clean up existing certs"
-  shell: ls -d {{ cert_dir }}/* | grep -v {{ ca_key }} | grep -v {{ ca_cert }} | grep -v vip | xargs rm
-  when: regenerate_all_certs is defined
-
-- name: "Create k8s CA files"
-  when: cacert.stat.exists == False or cakey.stat.exists == False
-  shell: "{{ item }}"
-  with_items:
-    - rm -rf {{ cert_dir }}
-    - mkdir -p {{ cert_dir }}
-    - openssl genrsa -out {{ cert_dir }}/{{ ca_key }} 4096
-    - openssl req -x509 -new -nodes -key {{ cert_dir }}/{{ ca_key }} -days 10000
-      -out {{ cert_dir }}/{{ ca_cert }} -subj "/CN=kubernetes-ca"
-    - chmod 0400 {{ cert_dir }}/{{ ca_key }}
-    - chmod 0444 {{ cert_dir }}/{{ ca_cert }}
-
-- name: "Check if k8s CA serial file exists"
-  stat: path={{ cert_dir }}/{{ ca_srl }}
-  register: srlres
-
-- name: "Create CA serial file"
-  when: srlres.stat.exists == False
-  shell: echo 01 > {{ cert_dir }}/{{ ca_srl }}
-
 - name: "Check if k8s apiserver key exists"
-  stat: path={{ cert_dir }}/{{ k8s_apiserver_cn }}-key.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}-key.pem
   register: apiserver_key
 
 - name: "Check if k8s apiserver cert key exists"
-  stat: path={{ cert_dir }}/{{ k8s_apiserver_cn }}.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}.pem
   register: apiserver_cert
+
+- name: "Generate shard secrets directory"
+  when: regenerate_all_certs is defined or apiserver_key.stat.exists == False or apiserver_cert.stat.exists == False
+  shell: "{{ item }}"
+  with_items:
+    - rm -rf {{ cert_dir }}/{{cluster_name}}/
+    - mkdir -p {{ cert_dir }}/{{cluster_name}}/
 
 - name: "Create k8s apiserver tls conf"
   when: regenerate_all_certs is defined or apiserver_key.stat.exists == False or apiserver_cert.stat.exists == False
-  template: src=server-openssl.cnf.tmpl dest={{ cert_dir }}/{{ k8s_apiserver_cn }}-openssl.cnf
+  template: src=server-openssl.cnf.tmpl dest={{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}-openssl.cnf
 
 - name: "Generate k8s apiserver tls key + cert req"
   when: regenerate_all_certs is defined or apiserver_key.stat.exists == False or apiserver_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - openssl genrsa -out {{ cert_dir }}/{{ k8s_apiserver_cn }}-key.pem 4096
-    - openssl req -new -key {{ cert_dir }}/{{ k8s_apiserver_cn }}-key.pem
-      -out {{ cert_dir }}/{{ k8s_apiserver_cn }}.csr -subj "/CN={{ k8s_apiserver_cn }}"
-      -config {{ cert_dir }}/{{ k8s_apiserver_cn }}-openssl.cnf
+    - openssl genrsa -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}-key.pem 4096
+    - openssl req -new -key {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}-key.pem
+      -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}.csr -subj "/CN={{ k8s_apiserver_cn }}"
+      -config {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}-openssl.cnf
 
 - name: "Generate k8s apiserver tls cert without password"
   when: (regenerate_all_certs is defined or apiserver_key.stat.exists == False or apiserver_cert.stat.exists == False) and CA_passwd is not defined
-  shell: openssl x509 -req -in {{ cert_dir }}/{{ k8s_apiserver_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAserial {{ cert_dir }}/{{ ca_srl }}
-         -CAkey {{ cert_dir }}/{{ ca_key }} -days 1500 -extensions v3_req
-         -out {{ cert_dir }}/{{ k8s_apiserver_cn }}.pem
-         -extfile {{ cert_dir }}/{{ k8s_apiserver_cn }}-openssl.cnf
+  shell: openssl x509 -req -in {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }}
+         -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }} -days 1500 -extensions v3_req
+         -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}.pem
+         -extfile {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}-openssl.cnf
 
 - name: "Generate k8s apiserver tls cert with password"
   when: (regenerate_all_certs is defined or apiserver_key.stat.exists == False or apiserver_cert.stat.exists == False) and CA_passwd is defined
-  shell: openssl x509 -req -in {{ cert_dir }}/{{ k8s_apiserver_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAserial {{ cert_dir }}/{{ ca_srl }}
-         -CAkey {{ cert_dir }}/{{ ca_key }} -days 1500 -extensions v3_req
-         -out {{ cert_dir }}/{{ k8s_apiserver_cn }}.pem -passin pass:{{ CA_passwd }}
-         -extfile {{ cert_dir }}/{{ k8s_apiserver_cn }}-openssl.cnf
+  shell: openssl x509 -req -in {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }}
+         -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }} -days 1500 -extensions v3_req
+         -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}.pem -passin pass:{{ CA_passwd }}
+         -extfile {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}-openssl.cnf
 
 - name: "Cleanup k8s apiserver cert artifacts"
   when: regenerate_all_certs is defined or apiserver_key.stat.exists == False or apiserver_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - chmod 0400 {{ cert_dir }}/{{ k8s_apiserver_cn }}-key.pem
-    - chmod 0444 {{ cert_dir }}/{{ k8s_apiserver_cn }}.pem
+    - chmod 0400 {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}-key.pem
+    - chmod 0444 {{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}.pem
 
 - name: "Check if k8s scheduler key exists"
-  stat: path={{ cert_dir }}/{{ k8s_scheduler_cn }}-key.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}-key.pem
   register: scheduler_key
 
 - name: "Check if k8s scheduler cert key exists"
-  stat: path={{ cert_dir }}/{{ k8s_scheduler_cn }}.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}.pem
   register: scheduler_cert
 
 - name: "Create k8s scheduler tls conf"
   when: regenerate_all_certs is defined or scheduler_key.stat.exists == False or scheduler_cert.stat.exists == False
-  template: src=server-openssl.cnf.tmpl dest={{ cert_dir }}/{{ k8s_scheduler_cn }}-openssl.cnf
+  template: src=server-openssl.cnf.tmpl dest={{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}-openssl.cnf
 
 - name: "Generate k8s scheduler tls key + cert req"
   when: regenerate_all_certs is defined or scheduler_key.stat.exists == False or scheduler_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - openssl genrsa -out {{ cert_dir }}/{{ k8s_scheduler_cn }}-key.pem 4096
-    - openssl req -new -key {{ cert_dir }}/{{ k8s_scheduler_cn }}-key.pem
-      -out {{ cert_dir }}/{{ k8s_scheduler_cn }}.csr -subj "/CN={{ k8s_scheduler_cn }}"
-      -config {{ cert_dir }}/{{ k8s_scheduler_cn }}-openssl.cnf
+    - openssl genrsa -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}-key.pem 4096
+    - openssl req -new -key {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}-key.pem
+      -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}.csr -subj "/CN={{ k8s_scheduler_cn }}"
+      -config {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}-openssl.cnf
 
 - name: "Generate k8s scheduler tls cert without password"
   when: (regenerate_all_certs is defined or scheduler_key.stat.exists == False or scheduler_cert.stat.exists == False) and CA_passwd is not defined
-  shell: openssl x509 -req -in {{ cert_dir }}/{{ k8s_scheduler_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAserial {{ cert_dir }}/{{ ca_srl }}
-         -CAkey {{ cert_dir }}/{{ ca_key }} -days 1500 -extensions v3_req
-         -out {{ cert_dir }}/{{ k8s_scheduler_cn }}.pem
-         -extfile {{ cert_dir }}/{{ k8s_scheduler_cn }}-openssl.cnf
+  shell: openssl x509 -req -in {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }}
+         -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }} -days 1500 -extensions v3_req
+         -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}.pem
+         -extfile {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}-openssl.cnf
 
 - name: "Generate k8s scheduler tls cert with password"
   when: (regenerate_all_certs is defined or scheduler_key.stat.exists == False or scheduler_cert.stat.exists == False) and CA_passwd is defined
-  shell: openssl x509 -req -in {{ cert_dir }}/{{ k8s_scheduler_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAserial {{ cert_dir }}/{{ ca_srl }}
-         -CAkey {{ cert_dir }}/{{ ca_key }} -days 1500 -extensions v3_req
-         -out {{ cert_dir }}/{{ k8s_scheduler_cn }}.pem -passin pass:{{ CA_passwd }}
-         -extfile {{ cert_dir }}/{{ k8s_scheduler_cn }}-openssl.cnf
+  shell: openssl x509 -req -in {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }}
+         -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }} -days 1500 -extensions v3_req
+         -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}.pem -passin pass:{{ CA_passwd }}
+         -extfile {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}-openssl.cnf
 
 - name: "Cleanup k8s scheduler cert artifacts"
   when: regenerate_all_certs is defined or scheduler_key.stat.exists == False or scheduler_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - chmod 0400 {{ cert_dir }}/{{ k8s_scheduler_cn }}-key.pem
-    - chmod 0444 {{ cert_dir }}/{{ k8s_scheduler_cn }}.pem
+    - chmod 0400 {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}-key.pem
+    - chmod 0444 {{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}.pem
 
 - name: "Check if k8s controller manager key exists"
-  stat: path={{ cert_dir }}/{{ k8s_controller_manager_cn }}-key.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}-key.pem
   register: cm_key
 
 - name: "Check if k8s controller manager cert key exists"
-  stat: path={{ cert_dir }}/{{ k8s_controller_manager_cn }}.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}.pem
   register: cm_cert
 
 - name: "Create k8s controller manager tls conf"
   when: regenerate_all_certs is defined or cm_key.stat.exists == False or cm_cert.stat.exists == False
-  template: src=server-openssl.cnf.tmpl dest={{ cert_dir }}/{{ k8s_controller_manager_cn }}-openssl.cnf
+  template: src=server-openssl.cnf.tmpl dest={{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}-openssl.cnf
 
 - name: "Generate k8s controller manager tls key + cert req"
   when: regenerate_all_certs is defined or cm_key.stat.exists == False or cm_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - openssl genrsa -out {{ cert_dir }}/{{ k8s_controller_manager_cn }}-key.pem 4096
-    - openssl req -new -key {{ cert_dir }}/{{ k8s_controller_manager_cn }}-key.pem
-      -out {{ cert_dir }}/{{ k8s_controller_manager_cn }}.csr -subj "/CN={{ k8s_controller_manager_cn }}"
-      -config {{ cert_dir }}/{{ k8s_controller_manager_cn }}-openssl.cnf
+    - openssl genrsa -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}-key.pem 4096
+    - openssl req -new -key {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}-key.pem
+      -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}.csr -subj "/CN={{ k8s_controller_manager_cn }}"
+      -config {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}-openssl.cnf
 
 - name: "Generate k8s controller manager tls cert without password"
   when: (regenerate_all_certs is defined or cm_key.stat.exists == False or cm_cert.stat.exists == False) and CA_passwd is not defined
-  shell: openssl x509 -req -in {{ cert_dir }}/{{ k8s_controller_manager_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAserial {{ cert_dir }}/{{ ca_srl }}
-         -CAkey {{ cert_dir }}/{{ ca_key }} -days 1500 -extensions v3_req
-         -out {{ cert_dir }}/{{ k8s_controller_manager_cn }}.pem
-         -extfile {{ cert_dir }}/{{ k8s_controller_manager_cn }}-openssl.cnf
+  shell: openssl x509 -req -in {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }}
+         -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }} -days 1500 -extensions v3_req
+         -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}.pem
+         -extfile {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}-openssl.cnf
 
 - name: "Generate k8s controller manager tls cert with password"
   when: (regenerate_all_certs is defined or cm_key.stat.exists == False or cm_cert.stat.exists == False) and CA_passwd is defined
-  shell: openssl x509 -req -in {{ cert_dir }}/{{ k8s_controller_manager_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAserial {{ cert_dir }}/{{ ca_srl }}
-         -CAkey {{ cert_dir }}/{{ ca_key }} -days 1500 -extensions v3_req
-         -out {{ cert_dir }}/{{ k8s_controller_manager_cn }}.pem -passin pass:{{ CA_passwd }}
-         -extfile {{ cert_dir }}/{{ k8s_controller_manager_cn }}-openssl.cnf
+  shell: openssl x509 -req -in {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }}
+         -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }} -days 1500 -extensions v3_req
+         -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}.pem -passin pass:{{ CA_passwd }}
+         -extfile {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}-openssl.cnf
 
 - name: "Cleanup k8s controller manager cert artifacts"
   when: regenerate_all_certs is defined or cm_key.stat.exists == False or cm_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - chmod 0400 {{ cert_dir }}/{{ k8s_controller_manager_cn }}-key.pem
-    - chmod 0444 {{ cert_dir }}/{{ k8s_controller_manager_cn }}.pem
+    - chmod 0400 {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}-key.pem
+    - chmod 0444 {{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}.pem
 
 - name: "Check if k8s kubelet key exists"
-  stat: path={{ cert_dir }}/{{ k8s_kubelet_cn }}-key.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}-key.pem
   register: kubelet_key
 
 - name: "Check if k8s kubelet cert key exists"
-  stat: path={{ cert_dir }}/{{ k8s_kubelet_cn }}.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}.pem
   register: kubelet_cert
 
 - name: "Create k8s kubelet tls conf"
   when: regenerate_all_certs is defined or kubelet_key.stat.exists == False or kubelet_cert.stat.exists == False
-  copy: src=client-openssl.cnf.tmpl dest={{ cert_dir }}/client-openssl.cnf mode=0644
+  copy: src=client-openssl.cnf.tmpl dest={{ cert_dir }}/{{cluster_name}}/client-openssl.cnf mode=0644
 
 - name: "Generate k8s kubelet tls key + cert req"
   when: regenerate_all_certs is defined or kubelet_key.stat.exists == False or kubelet_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - openssl genrsa -out {{ cert_dir }}/{{ k8s_kubelet_cn }}-key.pem 4096
+    - openssl genrsa -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}-key.pem 4096
     - openssl req -subj '/CN={{ k8s_kubelet_cn }}' -new
-      -key {{ cert_dir }}/{{ k8s_kubelet_cn }}-key.pem
-      -out {{ cert_dir }}/{{ k8s_kubelet_cn }}.csr
+      -key {{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}-key.pem
+      -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}.csr
 
 - name: "Generate k8s kubelet tls cert without password"
   when: (regenerate_all_certs is defined or kubelet_key.stat.exists == False or kubelet_cert.stat.exists == False) and CA_passwd is not defined
-  shell: openssl x509 -req -days 1500 -sha256 -in {{ cert_dir }}/{{ k8s_kubelet_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAkey {{ cert_dir }}/{{ ca_key }}
-         -CAserial {{ cert_dir }}/{{ ca_srl }} -out {{ cert_dir }}/{{ k8s_kubelet_cn }}.pem
-         -extfile {{ cert_dir }}/client-openssl.cnf
+  shell: openssl x509 -req -days 1500 -sha256 -in {{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }}
+         -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }} -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}.pem
+         -extfile {{ cert_dir }}/{{cluster_name}}/client-openssl.cnf
 
 - name: "Generate k8s kubelet tls cert with password"
   when: (regenerate_all_certs is defined or kubelet_key.stat.exists == False or kubelet_cert.stat.exists == False) and CA_passwd is defined
-  shell: openssl x509 -req -days 1500 -sha256 -in {{ cert_dir }}/{{ k8s_kubelet_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAkey {{ cert_dir }}/{{ ca_key }}
-         -CAserial {{ cert_dir }}/{{ ca_srl }} -out {{ cert_dir }}/{{ k8s_kubelet_cn }}.pem
-         -extfile {{ cert_dir }}/client-openssl.cnf -passin pass:{{ CA_passwd }}
+  shell: openssl x509 -req -days 1500 -sha256 -in {{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }}
+         -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }} -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}.pem
+         -extfile {{ cert_dir }}/{{cluster_name}}/client-openssl.cnf -passin pass:{{ CA_passwd }}
 
 - name: "Cleanup k8s kubelet cert artifacts"
   when: regenerate_all_certs is defined or kubelet_key.stat.exists == False or kubelet_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - chmod 0400 {{ cert_dir }}/{{ k8s_kubelet_cn }}-key.pem
-    - chmod 0444 {{ cert_dir }}/{{ k8s_kubelet_cn }}.pem
-
-- name: "Check if k8s admin key exists"
-  stat: path={{ cert_dir }}/{{ k8s_admin_cn }}-key.pem
-  register: admin_key
-
-- name: "Check if k8s admin cert key exists"
-  stat: path={{ cert_dir }}/{{ k8s_admin_cn }}.pem
-  register: admin_cert
-
-- name: "Create k8s admin account tls conf"
-  when: regenerate_all_certs is defined or admin_key.stat.exists == False or admin_cert.stat.exists == False
-  copy: src=client-openssl.cnf.tmpl dest={{ cert_dir }}/client-openssl.cnf mode=0644
-
-- name: "Generate k8s admin account tls key + cert req"
-  when: regenerate_all_certs is defined or admin_key.stat.exists == False or admin_cert.stat.exists == False
-  shell: "{{ item }}"
-  with_items:
-    - openssl genrsa -out {{ cert_dir }}/{{ k8s_admin_cn }}-key.pem 4096
-    - openssl req -subj '/CN={{ k8s_admin_cn }}' -new
-      -key {{ cert_dir }}/{{ k8s_admin_cn }}-key.pem
-      -out {{ cert_dir }}/{{ k8s_admin_cn }}.csr
-
-- name: "Generate k8s admin account tls cert without password"
-  when: (regenerate_all_certs is defined or admin_key.stat.exists == False or admin_cert.stat.exists == False) and CA_passwd is not defined
-  shell: openssl x509 -req -days 1500 -sha256 -in {{ cert_dir }}/{{ k8s_admin_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAkey {{ cert_dir }}/{{ ca_key }}
-         -CAserial {{ cert_dir }}/{{ ca_srl }} -out {{ cert_dir }}/{{ k8s_admin_cn }}.pem
-         -extfile {{ cert_dir }}/client-openssl.cnf
-
-- name: "Generate k8s admin account tls cert with password"
-  when: (regenerate_all_certs is defined or admin_key.stat.exists == False or admin_cert.stat.exists == False) and CA_passwd is defined
-  shell: openssl x509 -req -days 1500 -sha256 -in {{ cert_dir }}/{{ k8s_admin_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAkey {{ cert_dir }}/{{ ca_key }}
-         -CAserial {{ cert_dir }}/{{ ca_srl }} -out {{ cert_dir }}/{{ k8s_admin_cn }}.pem
-         -extfile {{ cert_dir }}/client-openssl.cnf -passin pass:{{ CA_passwd }}
-
-- name: "Cleanup k8s admin account cert artifacts"
-  when: regenerate_all_certs is defined or admin_key.stat.exists == False or admin_cert.stat.exists == False
-  shell: "{{ item }}"
-  with_items:
-    - chmod 0400 {{ cert_dir }}/{{ k8s_admin_cn }}-key.pem
-    - chmod 0444 {{ cert_dir }}/{{ k8s_admin_cn }}.pem
+    - chmod 0400 {{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}-key.pem
+    - chmod 0444 {{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}.pem
 
 - name: "Check if remoteabac key exists"
-  stat: path={{ cert_dir }}/{{ rabac_cn }}-key.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}-key.pem
   register: rabac_key
 
 - name: "Check if remoteabac cert key exists"
-  stat: path={{ cert_dir }}/{{ rabac_cn }}.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}.pem
   register: rabac_cert
 
 - name: "Create remoteabac tls conf"
   when: regenerate_all_certs is defined or rabac_key.stat.exists == False or rabac_cert.stat.exists == False
-  template: src=server-openssl.cnf.tmpl dest={{ cert_dir }}/{{ rabac_cn }}-openssl.cnf
+  template: src=server-openssl.cnf.tmpl dest={{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}-openssl.cnf
 
 - name: "Generate remoteabac key + cert req"
   when: regenerate_all_certs is defined or rabac_key.stat.exists == False or rabac_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - openssl genrsa -out {{ cert_dir }}/{{ rabac_cn }}-key.pem 4096
-    - openssl req -new -key {{ cert_dir }}/{{ rabac_cn }}-key.pem
-      -out {{ cert_dir }}/{{ rabac_cn }}.csr -subj "/CN={{ rabac_cn }}"
-      -config {{ cert_dir }}/{{ rabac_cn }}-openssl.cnf
+    - openssl genrsa -out {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}-key.pem 4096
+    - openssl req -new -key {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}-key.pem
+      -out {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}.csr -subj "/CN={{ rabac_cn }}"
+      -config {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}-openssl.cnf
 
 - name: "Generate remoteabac tls cert without password"
   when: (regenerate_all_certs is defined or rabac_key.stat.exists == False or rabac_cert.stat.exists == False) and CA_passwd is not defined
-  shell: openssl x509 -req -in {{ cert_dir }}/{{ rabac_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAserial {{ cert_dir }}/{{ ca_srl }}
-         -CAkey {{ cert_dir }}/{{ ca_key }} -days 1500 -extensions v3_req
-         -out {{ cert_dir }}/{{ rabac_cn }}.pem
-         -extfile {{ cert_dir }}/{{ rabac_cn }}-openssl.cnf
+  shell: openssl x509 -req -in {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }}
+         -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }} -days 1500 -extensions v3_req
+         -out {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}.pem
+         -extfile {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}-openssl.cnf
 
 - name: "Generate remoteabac tls cert with password"
   when: (regenerate_all_certs is defined or rabac_key.stat.exists == False or rabac_cert.stat.exists == False) and CA_passwd is defined
-  shell: openssl x509 -req -in {{ cert_dir }}/{{ rabac_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAserial {{ cert_dir }}/{{ ca_srl }}
-         -CAkey {{ cert_dir }}/{{ ca_key }} -days 1500 -extensions v3_req
-         -out {{ cert_dir }}/{{ rabac_cn }}.pem -passin pass:{{ CA_passwd }}
-         -extfile {{ cert_dir }}/{{ rabac_cn }}-openssl.cnf
+  shell: openssl x509 -req -in {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }}
+         -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }} -days 1500 -extensions v3_req
+         -out {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}.pem -passin pass:{{ CA_passwd }}
+         -extfile {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}-openssl.cnf
 
 - name: "Cleanup remoteabac cert artifacts"
   when: regenerate_all_certs is defined or rabac_key.stat.exists == False or rabac_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - chmod 0400 {{ cert_dir }}/{{ rabac_cn }}-key.pem
-    - chmod 0444 {{ cert_dir }}/{{ rabac_cn }}.pem
+    - chmod 0400 {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}-key.pem
+    - chmod 0444 {{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}.pem
 
 - name: "Check if kubernetes user key exists"
-  stat: path={{ cert_dir }}/{{ k8s_user_cn }}-key.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}-key.pem
   register: user_key
 
 - name: "Check if kubernetes user cert key exists"
-  stat: path={{ cert_dir }}/{{ k8s_user_cn }}.pem
+  stat: path={{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}.pem
   register: user_cert
 
 - name: "Create user {{ k8s_user_cn }} account tls conf"
   when: regenerate_all_certs is defined or user_key.stat.exists == False or user_cert.stat.exists == False
-  copy: src=client-openssl.cnf.tmpl dest={{ cert_dir }}/client-openssl.cnf mode=0644
+  copy: src=client-openssl.cnf.tmpl dest={{ cert_dir }}/{{cluster_name}}/client-openssl.cnf mode=0644
 
 - name: "Generate user {{ k8s_user_cn }} account tls key + cert req"
   when: regenerate_all_certs is defined or user_key.stat.exists == False or user_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - openssl genrsa -out {{ cert_dir }}/{{ k8s_user_cn }}-key.pem 4096
+    - openssl genrsa -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}-key.pem 4096
     - openssl req -subj '/CN={{ k8s_user_cn }}' -new
-      -key {{ cert_dir }}/{{ k8s_user_cn }}-key.pem
-      -out {{ cert_dir }}/{{ k8s_user_cn }}.csr
+      -key {{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}-key.pem
+      -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}.csr
 
 - name: "Generate user {{ k8s_user_cn }} account tls cert without password"
   when: (regenerate_all_certs is defined or user_key.stat.exists == False or user_cert.stat.exists == False) and CA_passwd is not defined
-  shell: openssl x509 -req -days 1500 -sha256 -in {{ cert_dir }}/{{ k8s_user_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAkey {{ cert_dir }}/{{ ca_key }}
-         -CAserial {{ cert_dir }}/{{ ca_srl }} -out {{ cert_dir }}/{{ k8s_user_cn }}.pem
-         -extfile {{ cert_dir }}/client-openssl.cnf
+  shell: openssl x509 -req -days 1500 -sha256 -in {{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }}
+         -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }} -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}.pem
+         -extfile {{ cert_dir }}/{{cluster_name}}/client-openssl.cnf
 
 - name: "Generate user {{ k8s_user_cn }} account tls cert with password"
   when: (regenerate_all_certs is defined or user_key.stat.exists == False or user_cert.stat.exists == False) and CA_passwd is defined
-  shell: openssl x509 -req -days 1500 -sha256 -in {{ cert_dir }}/{{ k8s_user_cn }}.csr
-         -CA {{ cert_dir }}/{{ ca_cert }} -CAkey {{ cert_dir }}/{{ ca_key }}
-         -CAserial {{ cert_dir }}/{{ ca_srl }} -out {{ cert_dir }}/{{ k8s_user_cn }}.pem
-         -extfile {{ cert_dir }}/client-openssl.cnf -passin pass:{{ CA_passwd }}
+  shell: openssl x509 -req -days 1500 -sha256 -in {{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}.csr
+         -CA {{ cert_dir }}/admin-certs/{{ ca_cert }} -CAkey {{ cert_dir }}/admin-certs/{{ ca_key }}
+         -CAserial {{ cert_dir }}/admin-certs/{{ ca_srl }} -out {{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}.pem
+         -extfile {{ cert_dir }}/{{cluster_name}}/client-openssl.cnf -passin pass:{{ CA_passwd }}
 
 - name: "Cleanup user {{ k8s_user_cn }} cert artifacts"
   when: regenerate_all_certs is defined or user_key.stat.exists == False or user_cert.stat.exists == False
   shell: "{{ item }}"
   with_items:
-    - chmod 0400 {{ cert_dir }}/{{ k8s_user_cn }}-key.pem
-    - chmod 0444 {{ cert_dir }}/{{ k8s_user_cn }}.pem
+    - chmod 0400 {{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}-key.pem
+    - chmod 0444 {{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}.pem
 
 - name: "Update vip file"
-  copy: content="{{ master_vip }}" dest={{ cert_dir }}/vip mode=0644
+  copy: content="{{ master_vip }}" dest={{ cert_dir }}/{{cluster_name}}/vip mode=0644
   when: vip_changed == True
-- shell: touch {{ cert_dir }}/vip
+- shell: touch {{ cert_dir }}/{{cluster_name}}/vip
