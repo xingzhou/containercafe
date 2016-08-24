@@ -27,7 +27,7 @@
 
 - name: "Check cluster vip"
   when: vip.stat.exists == True
-  shell: cat "{{ cert_dir }}/{{cluster_name}}/vip"
+  shell: cat "{{ansible_env.HOME}}/.openradiant/envs/{{env_name}}/{{cluster_name}}/vip"
   register: vipres
   changed_when: False
 
