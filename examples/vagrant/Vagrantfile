@@ -93,7 +93,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       installer.vm.provision "shell", privileged: false, inline: "source ~/.profile && [ -z \"$ANSIBLE_INVENTORY\" ] && echo \"export ANSIBLE_INVENTORY=/home/vagrant/openradiant/examples/envs/dev-vbox/radiant01.hosts\" >> ~/.profile"
 
       if name == 'active-installer-tiny'
-        installer.vm.provision "shell", privileged: false, inline: "cd /home/vagrant/openradiant/ansible && ansible-playbook -v shard.yml -e envs=/home/vagrant/openradiant/examples/envs -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
+        installer.vm.provision "shell", privileged: false, inline: "cp -rf /home/vagrant/openradiant /tmp"
+        installer.vm.provision "shell", privileged: false, inline: "cd /tmp/openradiant/ansible && ansible-playbook -v shard.yml -e envs=/tmp/openradiant/examples/envs -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
       end
 
       installer.vm.provider "virtualbox" do |installer_node|
