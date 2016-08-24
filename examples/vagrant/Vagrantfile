@@ -50,13 +50,6 @@ if VM_MEMORY < 1024
   puts "Warning: workers and master VMs have less than 1536 MB of memory"
 end
 
-
-$install_ansible = <<SCRIPT
-apt-add-repository ppa:ansible/ansible-1.9
-apt-get -qq update
-apt-get -qq -y install ansible
-SCRIPT
-
 $install_docker = <<SCRIPT
 apt-get -qq update
 apt-get -qq -y install apt-transport-https ca-certificates
@@ -90,26 +83,27 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.define name, autostart: false do |installer|
       installer.vm.network "private_network", ip: "192.168.9.253"
       installer.vm.synced_folder ".", "/vagrant", disabled: true
-      installer.vm.synced_folder "../../ansible", "/vagrant/synced_ansible", mount_options: ["dmode=775,fmode=664"]
-      installer.vm.synced_folder "../../crawler", "/vagrant/crawler", mount_options: ["dmode=775,fmode=664"]
-      installer.vm.synced_folder "../../misc", "/vagrant/misc", mount_options: ["dmode=775,fmode=664"]
-      installer.vm.synced_folder "../../proxy", "/vagrant/proxy", mount_options: ["dmode=775,fmode=664"]
-      installer.vm.synced_folder "../../remoteabac", "/vagrant/remoteabac", mount_options: ["dmode=775,fmode=664"]
-      installer.vm.synced_folder "../envs", "/vagrant/examples/envs", mount_options: ["dmode=775,fmode=664"]
+      installer.vm.synced_folder "../../ansible", "/home/vagrant/openradiant/synced_ansible", mount_options: ["dmode=775,fmode=664"]
+      installer.vm.synced_folder "../../crawler", "/home/vagrant/openradiant/crawler", mount_options: ["dmode=775,fmode=664"]
+      installer.vm.synced_folder "../../misc", "/home/vagrant/openradiant/misc", mount_options: ["dmode=775,fmode=664"]
+      installer.vm.synced_folder "../../proxy", "/home/vagrant/openradiant/proxy", mount_options: ["dmode=775,fmode=664"]
+      installer.vm.synced_folder "../../remoteabac", "/home/vagrant/openradiant/remoteabac", mount_options: ["dmode=775,fmode=664"]
+      installer.vm.synced_folder "../envs", "/home/vagrant/openradiant/examples/envs", mount_options: ["dmode=775,fmode=664"]
 
       # Ansible fails on Windows when writes on a synced folder
       # (see https://github.com/ansible/ansible/issues/9526#issuecomment-199443969)
-      installer.vm.provision "shell", inline: "cp -rp /vagrant/synced_ansible /vagrant/ansible"
+      installer.vm.provision "shell", inline: "cp -rp /home/vagrant/openradiant/synced_ansible /home/vagrant/openradiant/ansible"
 
       installer.vm.provision "file", source: "~/.vagrant.d/insecure_private_key", destination: "/home/vagrant/.vagrant.d/insecure_private_key"
+      installer.vm.provision "file", source: "../../requirements.txt", destination: "/home/vagrant/requirements.txt"
       installer.vm.provision "shell", inline: "chmod 600 /home/vagrant/.vagrant.d/insecure_private_key"
-      installer.vm.provision "shell", inline: $install_ansible
-      installer.vm.provision "shell", privileged: false, inline: "source ~/.profile && [ -z \"$ANSIBLE_INVENTORY\" ] && echo \"export ANSIBLE_INVENTORY=/vagrant/examples/envs/dev-vbox/radiant01.hosts\" >> ~/.profile"
+      installer.vm.provision "shell", inline: "apt-get -qq update && apt-get -qq -y install python-pip build-essential libssl-dev libffi-dev python-dev && cd /home/vagrant && pip install -r requirements.txt"
+      installer.vm.provision "shell", privileged: false, inline: "source ~/.profile && [ -z \"$ANSIBLE_INVENTORY\" ] && echo \"export ANSIBLE_INVENTORY=/home/vagrant/openradiant/examples/envs/dev-vbox/radiant01.hosts\" >> ~/.profile"
       installer.vm.provision "shell", privileged: false, inline: "source ~/.profile && [ -z \"$ANSIBLE_LIBRARY\" ] && echo \"export ANSIBLE_LIBRARY=$ANSIBLE_INVENTORY\" >> ~/.profile"
 
       if name == 'active-installer'
-        installer.vm.provision "shell", privileged: false, inline: "cd /vagrant/ansible && ansible-playbook -v shard.yml -e envs=../examples/envs -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
-        installer.vm.provision "shell", inline: "cp -rf /vagrant/ansible/certs /vagrant/synced_ansible"
+        installer.vm.provision "shell", privileged: false, inline: "cd /home/vagrant/openradiant/ansible && ansible-playbook -v shard.yml -e envs=/home/vagrant/openradiant/examples/envs -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
+        installer.vm.provision "shell", inline: "cp -rf /home/vagrant/openradiant/ansible/certs /home/vagrant/openradiant/synced_ansible"
       end
 
       installer.vm.provider "virtualbox" do |installer_node|
