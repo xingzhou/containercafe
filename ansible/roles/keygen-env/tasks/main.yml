@@ -46,6 +46,14 @@
     - chmod 0400 {{ cert_dir }}/admin-certs/{{ ca_key }}
     - chmod 0444 {{ cert_dir }}/admin-certs/{{ ca_cert }}
 
+- name: "Check if k8s CA serial file exists"
+  stat: path={{ cert_dir }}/admin-certs/{{ ca_srl }}
+  register: srlres
+
+- name: "Create CA serial file"
+  when: srlres.stat.exists == False
+  shell: echo 01 > {{ cert_dir }}/admin-certs/{{ ca_srl }}
+
 - name: "Check if k8s admin key exists"
   stat: path={{ cert_dir }}/admin-certs/{{ k8s_admin_cn }}-key.pem
   register: admin_key
