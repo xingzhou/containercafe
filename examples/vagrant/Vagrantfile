@@ -11,7 +11,7 @@ pn = Pathname.new("../envs/dev-vbox/vagrant_config.rb")
 CONFIG = File.expand_path(pn)
 if File.exist?(CONFIG)
   require CONFIG
-  puts "Info: vagrant_config file is found, and will be used"
+  puts "Info: vagrant_config file is found, and will be used" if ARGV[0] == "up"
   VM_COUNT=$vm_count
   VM_MEMORY=$vm_memory
   VM_CPU=$vm_cpu
@@ -20,7 +20,7 @@ if File.exist?(CONFIG)
   INSTALLER_VM=$installer_num
   INSTALLER_VM_MEMORY=$installer_vm_memory
 else
-  puts "Info: vagrant_config file is missing, vagrant will use default values"
+  puts "Info: vagrant_config file is missing, vagrant will use default values" if ARGV[0] == "up"
   VM_COUNT=2
   VM_MEMORY=1536
   VM_CPU=1
@@ -43,7 +43,7 @@ Installer:
   INSTALLER_VM=#{INSTALLER_VM}
   INSTALLER_VM_MEMORY=#{INSTALLER_VM_MEMORY}
 ------------------------
-"
+" if ARGV[0] == "up"
 
 #Checking if the allocated memory is enough, if not, warn the user.
 if VM_MEMORY < 1024
