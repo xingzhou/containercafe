@@ -30,6 +30,14 @@
 
 - debug: msg="vip_changed is '{{vip_changed}}'"
 
+- name: "Test if all certs need to be regenerated"
+  when: cacert.stat.exists == True and (cakey.stat.exists == False or vip_changed == True or ca_is_newer == True)
+  set_fact: regenerate_all_certs=True
+
+- name: "Clean up existing certs"
+  shell: ls -d {{ cert_dir }}/admin-certs/* | grep -v {{ ca_key }} | grep -v {{ ca_cert }} | grep -v vip | xargs rm
+  when: regenerate_all_certs is defined
+
 - name: "Check if k8s apiserver key exists"
   stat: path={{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}-key.pem
   register: apiserver_key

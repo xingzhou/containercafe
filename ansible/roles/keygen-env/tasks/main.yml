@@ -21,6 +21,20 @@
   stat: path={{ cert_dir }}/admin-certs/{{ ca_key }}
   register: cakey
 
+- name: "Check cluster vip file exists"
+  stat: path={{ cert_dir }}/{{cluster_name}}/vip
+  register: vip
+
+- name: "Check cluster vip"
+  when: vip.stat.exists == True
+  shell: cat "{{ cert_dir }}/{{cluster_name}}/vip"
+  register: vipres
+  changed_when: False
+
+- name: "Set vip_changed"
+  when: vip.stat.exists == True and master_vip == vipres.stdout
+  set_fact: vip_changed=False
+
 - set_fact: ca_is_newer=False
 - name: "Test if CA cert and key are newer"
   when: cacert.stat.exists == True and cakey.stat.exists == True and vip.stat.exists == True and cacert.stat.mtime > vip.stat.mtime
