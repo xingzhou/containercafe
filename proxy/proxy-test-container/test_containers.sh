@@ -169,12 +169,26 @@ if [[ ! -z "$LOG_PREFIX" ]]; then
 fi
 LOG_PREFIX="${LOG_PREFIX}${TENANT_ID}"
 
+function run_swarm_tests {
+    if [ "$TEST_SWARM" = true ]; then
+        ./lib/test_swarm_containers.sh "${LOGS_DIR}/${LOG_PREFIX}_test_swarm_results_${LOG_SUFFIX}.log" "$TENANT_ID" $NUM_CONTAINERS "$PARALLEL"
+    fi
+}
+
+function run_k8s_tests {
+    if [ "$TEST_KUBE" = true ]; then
+        ./lib/test_kube_pods.sh "${LOGS_DIR}/${LOG_PREFIX}_test_kube_pods_results_${LOG_SUFFIX}.log" "$TENANT_ID" $NUM_PODS "$PARALLEL"
+    fi
+}
+
 # Main
 
-if [ "$TEST_SWARM" = true ]; then
-    ./lib/test_swarm_containers.sh "${LOGS_DIR}/${LOG_PREFIX}_test_swarm_results_${LOG_SUFFIX}.log" "$TENANT_ID" $NUM_CONTAINERS "$PARALLEL"
-fi
-
-if [ "$TEST_KUBE" = true ]; then
-    ./lib/test_kube_pods.sh "${LOGS_DIR}/${LOG_PREFIX}_test_kube_pods_results_${LOG_SUFFIX}.log" "$TENANT_ID" $NUM_PODS "$PARALLEL"
+if [ "$PARALLEL" = true ]; then
+    run_swarm_tests &
+    run_k8s_tests &
+    
+    wait
+else
+    run_swarm_tests
+    run_k8s_tests
 fi
