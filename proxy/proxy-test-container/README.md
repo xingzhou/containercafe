@@ -15,9 +15,9 @@ cd ~/workspace/openradiant/proxy
 ## Step 2: Certificates for test tenants
 In every terminal, execute the script to create one test tenant:
 ```bash
-docker exec api-proxy /api-proxy/make_TLS_certs.sh test1 radiant01 192.168.10.2
-docker exec api-proxy /api-proxy/make_TLS_certs.sh test2 radiant01 192.168.10.2
-docker exec api-proxy /api-proxy/make_TLS_certs.sh test3 radiant01 192.168.10.2
+docker exec api-proxy /api-proxy/create_tenant.sh test1 radiant01 192.168.10.2
+docker exec api-proxy /api-proxy/create_tenant.sh test2 radiant01 192.168.10.2
+docker exec api-proxy /api-proxy/create_tenant.sh test3 radiant01 192.168.10.2
 ```
 
 This will create the certificates for this tenant and the configurations necessary to run the tests.
