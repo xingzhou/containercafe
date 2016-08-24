@@ -90,8 +90,8 @@ using tenant `test1`. This script also requires the name and the IP of the shard
 E.g.
 ```
 docker ps
-docker exec api-proxy /api-proxy/make_TLS_certs.sh <tenant> <shard_name> <shared_ip>
-docker exec api-proxy /api-proxy/make_TLS_certs.sh test1 radiant01 192.168.10.2
+docker exec api-proxy /api-proxy/create_tenant.sh <tenant> <shard_name> <shared_ip>
+docker exec api-proxy /api-proxy/create_tenant.sh test1 radiant01 192.168.10.2
 ```
 
 This command will display the details about the newly created TLS certs, including

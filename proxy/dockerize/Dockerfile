@@ -55,7 +55,7 @@ ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
     log_verbosity=${log_verbosity}
 
 # copy all the scripts needed by proxy
-ADD make_TLS_certs.sh /api-proxy/make_TLS_certs.sh
+ADD create_tenant.sh /api-proxy/create_tenant.sh
 ADD mk_user_cert.sh /api-proxy/mk_user_cert.sh
 ADD mk_kubeconfig.sh /api-proxy/mk_kubeconfig.sh 
 
