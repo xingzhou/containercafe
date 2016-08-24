@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"strconv"
+	"github.com/golang/glog"
 )
 
 var glob_req_id = 0
@@ -23,7 +24,7 @@ func GetReqId() string{
 	b := make([]byte, 10)
 	_, err := rand.Read(b)
 	if err != nil {
-		Log.Print("error in rand num generator:", err)
+		glog.Error("error in rand num generator:", err)
 		return strconv.Itoa(surr) //"0"
 	}
 	// The slice should now contain random bytes instead of only zeroes.
