@@ -206,8 +206,6 @@ for tenant in $TENANTS; do
     TOTAL_FAILED=$((TOTAL_FAILED + FAILED_SWARM + FAILED_KUBE))
 done
 
-echo
-echo "$TOTAL_FAILED failed tests."
-echo
+echo -e "\n$TOTAL_FAILED failed tests.\n"
 
 exit $TOTAL_FAILED
