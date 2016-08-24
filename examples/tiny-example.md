@@ -83,7 +83,7 @@ Ansible, which runs only on Linux and MacOS.
 
 That creates an installer VM that is specialized to this example.
 Connect to it using SSH as described above.  In that VM you will find
-most of the contents of the OpenRadiant repository in `/vagrant`.
+most of the contents of the OpenRadiant repository in `~/openradiant`.
 
 
 ### Manually create installer
