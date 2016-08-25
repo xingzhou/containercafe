@@ -34,6 +34,7 @@ available in all combinations.
 * [Communication](#communication)
 * [Proxy documentation](proxy/README.md)
 * [Mesos clues](mesos-clues.md)
+* [Live Container crawling](#live-container-crawling)
 * [Learn concepts and commands](#learn-concepts-and-commands)
 * [License](#license)
 * [Issues](#issues)
@@ -76,7 +77,7 @@ with which these playbooks can cope.
 ### The installer machine
 
 Following are instructions on how to create a usable installer
-machine.  In the near future we hope to also provide a Docker image of
+ve machine.  In the near future we hope to also provide a Docker image of
 a usable installer machine.
 
 All the controller machine really needs is to have a copy of
@@ -86,10 +87,10 @@ For other operating systems you could do something analogous.
 
 The controller machine must have git installed.
 
-Checkout this project:
+Checkout this project along with all it's submodules::
 
 ```bash
-git clone git@github.ibm.com:alchemy-containers/openradiant.git
+git clone --recursive git@github.ibm.com:alchemy-containers/openradiant.git
 cd openradiant
 ```
 
@@ -130,6 +131,15 @@ and this variable must be defined in the Ansible invocation.  Two
 other variables must also be defined, as mentioned in that document:
 `envs` and `network_kind`.
 
+### Live container crawling
+It is essentially an agentless system crawler that offers a
+native and seamless framework for operational visibility and analytics.
+It makes use of virtualization and containerization abstractions together with
+introspection techniques to provide complete visibility into running entities like
+containers without modifying, instrumenting, or accessing the end user context.
+
+This is an opensource technology. For details visit [agentless-system-crawler](https://github.com/cloudviz/agentless-system-crawler).
+For how to use crawler in OpenRadiant environment, see [ link ](crawler/README.md)
 
 ### Code of Conduct
 Participation in the OpenRadiant community is governed by the OpenRadiant [Code of Conduct](CONDUCT.md)
