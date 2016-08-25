@@ -296,6 +296,11 @@ developer.
   application is deployed as usual in the `kube-system` namespace.
 
 
+* `kube_proxy_deploy`: A boolean that controls whether the
+  `kube-proxy` is used.  Defaults to `True`; consulted only after the
+  networking plugin has a chance to set it to `False`.
+
+
 ### Primary Ansible variables for the enviornment playbooks
 
 * `env_name`: a string of the sort discussed above

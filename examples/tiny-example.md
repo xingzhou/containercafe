@@ -282,4 +282,4 @@ When prompt for the user_namer:password  use  vagrant:radiantHA
 
 ### To view the Mesos web UI
 
-On your local browser visit http://192.168.0.2:5050/
+On your local browser visit http://192.168.10.2:5050/
