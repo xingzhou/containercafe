@@ -9,7 +9,7 @@ pre-start script
         /usr/local/bin/kubelet \
           --api-servers=https://{{master_vip}}:{{vip_k8s_apiserver_port}} \
           --allow-privileged=true \
-          {% if use_kube_system_kubedns %} \
+          {% if use_kube_system_kubedns|bool %} \
           --cluster-dns={{ k8s_service_ip_range|ipaddr('10')|ipaddr('address') }} \
           --cluster-domain=cluster.local \
           {% endif %} \
