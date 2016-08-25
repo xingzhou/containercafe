@@ -10,7 +10,7 @@ network_interface: eth1
 # Certificates
 ################################################################
 
-cert_dir: "{{playbook_dir}}/certs/{{cluster_name}}"
+cert_dir: "~/.openradiant/envs/{{env_name}}"
 ca_cert: ca.pem
 ca_key: ca-key.pem
 ca_srl: ca.srl
@@ -205,5 +205,3 @@ flannel_version: "0.5.5"
 infrastructure_docker_registry_type: v2
 # use 'always' with v2 and 'missing' with v1
 image_pull_type: always
-
-

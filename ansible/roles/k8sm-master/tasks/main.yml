@@ -27,37 +27,37 @@
   when: hostvars['localhost']['regenerate_all_certs'] is defined
 
 - name: "Copy CA cert"
-  copy: src={{ cert_dir }}/{{ ca_cert }} dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/admin-certs/{{ ca_cert }} dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy apiserver key"
-  copy: src={{ cert_dir }}/{{ k8s_apiserver_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy apiserver cert"
-  copy: src={{ cert_dir }}/{{ k8s_apiserver_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_apiserver_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy scheduler key"
-  copy: src={{ cert_dir }}/{{ k8s_scheduler_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy scheduler cert"
-  copy: src={{ cert_dir }}/{{ k8s_scheduler_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_scheduler_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy controller-manager key"
-  copy: src={{ cert_dir }}/{{ k8s_controller_manager_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy controller-manager cert"
-  copy: src={{ cert_dir }}/{{ k8s_controller_manager_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_controller_manager_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy admin key"
-  copy: src={{ cert_dir }}/{{ k8s_admin_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/admin-certs/{{ k8s_admin_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy admin cert"
-  copy: src={{ cert_dir }}/{{ k8s_admin_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/admin-certs/{{ k8s_admin_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy user key"
-  copy: src={{ cert_dir }}/{{ k8s_user_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy user cert"
-  copy: src={{ cert_dir }}/{{ k8s_user_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy scheduler kubeconfig"
   template: src={{ k8s_scheduler_cn }}-kubeconfig.tmpl dest={{ k8s_etc_dir }}/{{ k8s_scheduler_cn }}-kubeconfig mode=0644

@@ -50,7 +50,8 @@
 
 - hosts: localhost
   roles:
-  - keygen
+  - keygen-env
+  - keygen-shard
 
 - hosts: zk-{{cluster_name}}
   become: yes

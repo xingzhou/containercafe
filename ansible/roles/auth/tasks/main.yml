@@ -8,13 +8,13 @@
   file: path={{ k8s_cert_dir }} state=directory mode=0755
 
 - name: "Copy CA cert"
-  copy: src={{ cert_dir }}/{{ ca_cert }} dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/admin-certs/{{ ca_cert }} dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy apiserver key"
-  copy: src={{ cert_dir }}/{{ rabac_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy apiserver cert"
-  copy: src={{ cert_dir }}/{{ rabac_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_name}}/{{ rabac_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: "Copy bootstrap abac policy file"
   copy: src=bootstrap-abac-policy dest={{ k8s_etc_dir }}/ mode=0644
