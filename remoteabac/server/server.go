@@ -180,6 +180,9 @@ func (s *remoteABACServer) addUser(w http.ResponseWriter, r *http.Request) {
 
 	policy := resp.Node.Value
 
+	serviceAccountExists := false
+	serviceAccountName := "system:serviceaccount:" + namespace + ":default"
+
 	// Check if the user already exists
 	scanner := bufio.NewScanner(strings.NewReader(policy))
 	for scanner.Scan() {
@@ -204,6 +207,10 @@ func (s *remoteABACServer) addUser(w http.ResponseWriter, r *http.Request) {
 				genResponse(w, fmt.Errorf("User '%v' already exist", user), nil)
 				return
 			}
+		}
+
+		if po.Spec.User == serviceAccountName {
+			serviceAccountExists = true
 		}
 	}
 
@@ -274,13 +281,47 @@ func (s *remoteABACServer) addUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Encode response
+	// Write to etcd backend
 	_, err = s.kapi.Set(context.Background(), s.path, policy, nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		genResponse(w, err, nil)
 		return
 	}
+
+	log.Printf("serviceAccountExists: %v, serviceAccountName: %v", serviceAccountExists, serviceAccountName)
+	// Check if we need to also add authz for service account in this namespace
+	if !serviceAccountExists && privileged != "true" {
+		p0 := abacapi.Policy{
+			TypeMeta: unversioned.TypeMeta{
+				APIVersion: "abac.authorization.kubernetes.io/v1beta1",
+				Kind:       "Policy",
+			},
+			Spec: abacapi.PolicySpec{
+				User:      serviceAccountName,
+				Namespace: "default",
+				Resource:  "services",
+				Readonly:  true,
+				APIGroup:  "*",
+			},
+		}
+		b := new(bytes.Buffer)
+		if err := json.NewEncoder(b).Encode(p0); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			genResponse(w, err, nil)
+			return
+		}
+		policy = policy + b.String()
+
+		// Write to etcd backend
+		_, err = s.kapi.Set(context.Background(), s.path, policy, nil)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			genResponse(w, err, nil)
+			return
+		}
+	}
+
 	w.WriteHeader(http.StatusCreated)
 	genResponse(w, nil, nil)
 }
@@ -446,7 +487,6 @@ func (s *remoteABACServer) Run() {
 	log.Printf("Starting server and listening on %s\n", s.address)
 	mux := mux.NewRouter()
 	mux.HandleFunc("/authorize", s.authorize)
-	//mux.HandleFunc("/user", s.manageUser)
 	mux.HandleFunc("/user", s.getUser).Methods("GET")
 	mux.HandleFunc("/user/{user}", s.getUser).Methods("GET")
 	mux.HandleFunc("/user/{user}/{namespace}", s.getUser).Methods("GET")
