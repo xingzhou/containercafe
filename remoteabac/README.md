@@ -13,5 +13,6 @@
 
 **Step 5**: Add/delete user
 - `curl -k https://<ip>:<port>/users` to list all the users
-- `curl -XPOST -k https://<ip>:<port>/users/admin?privileged=true` to add an admin user
-- `curl -XPOST -k https://<ip>:<port>/users/haih/haihns` to add user `haih` to namespace `haihns`
+- `curl -XPOST -k https://<ip>:<port>/user/admin?privileged=true` to add an admin user
+- `curl -XPOST -k https://<ip>:<port>/user/haih/haihns` to add user `haih` to namespace `haihns`
+- `curl -XDELETE -k https://<ip>:<port>/user/haih` to delete user `haih`
