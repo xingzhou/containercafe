@@ -77,7 +77,7 @@ with which these playbooks can cope.
 ### The installer machine
 
 Following are instructions on how to create a usable installer
-ve machine.  In the near future we hope to also provide a Docker image of
+machine.  In the near future we hope to also provide a Docker image of
 a usable installer machine.
 
 All the controller machine really needs is to have a copy of
