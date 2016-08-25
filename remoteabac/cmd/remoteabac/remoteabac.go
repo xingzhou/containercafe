@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.ibm.com/alchemy-containers/remoteabac/server"
+	"github.ibm.com/alchemy-containers/openradiant/remoteabac/server"
 )
 
 func main() {
