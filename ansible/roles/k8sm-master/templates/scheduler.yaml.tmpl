@@ -38,6 +38,7 @@ spec:
                      {%- for host in groups['etcd-' ~ cluster_name] -%}
                        {{ comma() }}http://{{ host }}:{{ etcd_port }}
                      {%- endfor %}
+
     - --api-servers=https://{{ vip_k8s_apiserver_ip }}:{{ vip_k8s_apiserver_port }}
     {% if not kube_proxy_deploy|bool %}
     - --run-proxy=false
