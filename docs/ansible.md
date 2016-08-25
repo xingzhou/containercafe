@@ -312,12 +312,14 @@ As noted above, OpenRadiant includes the following networking plugins.
 
 * `bridge`: this uses Docker bridge networking and thus is not really
   functional when there are multiple worker nodes in a shard.
+  Provides non-multi-tenant DNS to users via the kube DNS application.
 
 * `flannel`: this uses Flannel networking with its `host-gw` backend.
   This supports multiple worker nodes and uses ordinary IP routing and
   connectivity.  It does not support the Kuernetes API for network
   filtering nor any implicit network filtering for containers created
-  through the DOcker API.
+  through the Docker API.  Provides non-multi-tenant DNS to users via
+  the kube DNS application.
 
 To create a networking plugin, the developer needs to define three
 Ansible roles.  A networking plugin named `fred` supplies the
