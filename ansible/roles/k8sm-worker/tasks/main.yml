@@ -75,7 +75,7 @@
 
 - name: Copy kube-proxy yaml file to {{ k8s_kubelet_manifests_dir }}
   template: src={{k8s_kube_proxy_cn}}.tmpl dest={{ k8s_kubelet_manifests_dir }}/kube-proxy.yaml mode=0644
-  when: not kubernetes_on_mesos_deploy|bool
+  when: kube_proxy_deploy|bool and not kubernetes_on_mesos_deploy|bool
 
 - name: Create kubelet upstart service
   template: src=kubelet.conf.tmpl dest=/etc/init/kubelet.conf mode=0644
