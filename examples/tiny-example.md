@@ -226,7 +226,7 @@ they lack the label identifying your tenant.  To make containers
 visible to Swarm, make a kubernetes pod as follows.  Create a YAML
 file prescribing the pod:
 ```bash
-cat > sleepy-pod.yaml
+cat > sleepy-pod.yaml <<EOF
 apiVersion: v1
 kind: Pod
 metadata:
@@ -240,6 +240,7 @@ spec:
       args:
       - sleep
       - "864000"
+EOF
 ```
 
 Then create the pod:
@@ -252,8 +253,9 @@ Then you can watch for it to come up, with
 kubectl get pod
 ```
 
-Once it is up, you can inspect its network configuration from inside,
-like this:
+Once the pod is created, you can see it with `docker ps`.  You can
+inspect its network configuration from inside, like this:
+
 ```bash
 kubectl exec sleepy-pod ifconfig
 ```
