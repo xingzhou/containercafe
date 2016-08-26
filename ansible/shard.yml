@@ -3,6 +3,17 @@
 
 - hosts:
     - cluster-{{cluster_name}}
+  tasks:
+  - name: test whether systemd is available
+    shell: if systemctl list-units 'init*'; then echo 'systemd here'; fi
+    changed_when: False
+    register: rslt
+
+  - set_fact: is_systemd={{ 'systemd here' in rslt.stdout }}
+  - set_fact: is_upstart={{ not is_systemd|bool }}
+
+- hosts:
+    - cluster-{{cluster_name}}
     - localhost
 
   pre_tasks:
