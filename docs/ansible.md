@@ -271,12 +271,11 @@ playbook.
 ### Secondary Ansible variables for the shard playbook
 
 These are of no interest to a deployer of OpenRadiant or a solution
-built on it.  These _are_ of interest to a developer of a solution
-that extends OpenRadiant.  Mostly the secondary variables are just set
-in certain roles and read in others.
+built on it.  These _are_ of interest to a developer of OpenRadiant or
+a solution that extends OpenRadiant.  Mostly the secondary variables
+are just set in certain roles and read in others.
 
-Following are the secondary variables of interest to an extension
-developer.
+Following are the secondary variables of interest to a developer.
 
 * `etcd_deploy`: A boolean that controls whether etcd is deployed.
   Initially set to `False`.  After the networking plugin's
@@ -295,10 +294,14 @@ developer.
 * `use_kube_system_kubedns`: A boolean that controls whether the KubeDNS
   application is deployed as usual in the `kube-system` namespace.
 
-
 * `kube_proxy_deploy`: A boolean that controls whether the
   `kube-proxy` is used.  Defaults to `True`; consulted only after the
   networking plugin has a chance to set it to `False`.
+
+* `is_systemd` and `is_upstart`: these identify the service manager
+  used on the target machine; not defined for localhost.  Currently
+  these are the only two recognized.  The systemd case is recognized
+  but not yet fully supported.
 
 
 ### Primary Ansible variables for the enviornment playbooks
