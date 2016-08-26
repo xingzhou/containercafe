@@ -9,7 +9,7 @@ create the solution you desire.
 
 Features of the OpenRadiant platform include:
 * Kubernetes
-* Swarm (original, not experimental)
+* Swarm (original, not "swarm mode" introduced in Docker 1.12)
 * Mesos
 * Multi-tenancy - with or without Bring-Your-Own-IPv4
 * Multi-sharding
