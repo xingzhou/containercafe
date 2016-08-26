@@ -1,6 +1,6 @@
 ---
 
-    - name: create haproxy.cfg
+    - name: create /opt/ha_config directory
       file: path=/opt/hap_config  state=directory mode=0644
 
     - name: generate and copy HAproxy config
@@ -27,6 +27,3 @@
     - name: restart haproxy container if it is started
       shell: docker restart haproxy
       when: hapConfig.changed
-
-    - name: copy HTTP start/stop scripts (for testing purposes only)
-      copy: src=../files/HTTP-actions.sh dest=/opt/HTTP-actions.sh owner={{ansible_user_id}} mode=0766
