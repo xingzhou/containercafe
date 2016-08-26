@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.ibm.com/alchemy-containers/remoteabac/policy"
+	"github.ibm.com/alchemy-containers/openradiant/remoteabac/policy"
 )
 
 func main() {
