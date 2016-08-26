@@ -341,3 +341,37 @@ following Ansible roles.
   and etcd and/or ZooKeeper, before the deployment of higher level
   frameworks such as Mesos or Kubernetes.
 
+
+## Temporary and not-so-temporary file locations on the installer
+
+The playbooks use (a) a temporary directory on the installer machine
+for files needed for the duration of one run of a playbook and (b) a
+non-temporary directory on the installer machine for files that should
+persist throughout all the playbook runs regarding a given
+environment.
+
+The temporary files are kept in `{{ lookup('env','HOME') }}/tmp/`.
+The deployer is allowed to retain them between playbook runs, and is
+allowed to delete them between playbook runs.  To allow the deployer
+to work on multiple deployments concurrently, it is recommended that
+the temporary files be kept in a subdirectory that is specific to the
+environment or shard being deployed.
+
+The non-temporary files are kept in `{{ lookup('env','HOME')
+}}/.openradiant/envs/{{ env_name }}/` or, in the case of files
+specific to a shard, `{{ lookup('env','HOME') }}/.openradiant/envs/{{
+env_name }}/{{cluster_tail}}/` (where `cluster_tail` is the shard
+short name, the part after the environment name).
+
+For example, there is a CA and admin user that are shared throughout
+an environment.  Their certs and keys are kept in `{{
+lookup('env','HOME') }}/.openradiant/envs/{{ env_name
+}}/admin-certs/`.  There are additional certs and keys that are
+specific to each shard, and they are kept in `{{ lookup('env','HOME')
+}}/.openradiant/envs/{{ env_name }}/{{cluster_tail}}/admin-certs/`
+(even though none of them is for "admin").
+
+The deployer is responsible for keeping the contents of
+`~/.openradiant/envs/{{ env_name }}/` persistent throughout the
+lifetime of the named environment and sharing it among all the
+installer machine(s) for that environment.

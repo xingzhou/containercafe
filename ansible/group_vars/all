@@ -10,7 +10,12 @@ network_interface: eth1
 # Certificates
 ################################################################
 
+# The location of the persistent files of an environment on the
+#  installer machine(s).  This variable must not be changed.  It is
+#  not really a variable.
+
 cert_dir: "~/.openradiant/envs/{{env_name}}"
+
 ca_cert: ca.pem
 ca_key: ca-key.pem
 ca_srl: ca.srl
