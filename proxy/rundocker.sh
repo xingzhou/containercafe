@@ -68,7 +68,7 @@ function copy_certs {
     cp -f "$CERT_MASTER/admin-key.pem" "$ACERTS/kadmin.key"
     cp -f "$CERT_MASTER/admin.pem" "$ACERTS/kadmin.pem"
 
-    cp -f ../ansible/roles/keygen/files/api-proxy-openssl.cnf "$ACERTS/api-proxy-openssl.cnf"
+    cp -f ../ansible/roles/keygen-shard/files/api-proxy-openssl.cnf "$ACERTS/api-proxy-openssl.cnf"
 
     # generate all proxy certs
     ./gen_server_certs.sh "$ACERTS"
