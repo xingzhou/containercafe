@@ -23,23 +23,24 @@ function main {
     local env_name="$1"
 
     # manage certificates - copy them to admin-certs
-    local CERT_MASTER="../ansible/certs/dev-vbox-radiant01"
+    #local CERT_MASTER="../ansible/certs/dev-vbox-radiant01"
     local CERTS="$HOME/.openradiant/envs/$env_name"
     local ACERTS="$CERTS/admin-certs"
-    if [ ! -d "$CERT_MASTER" ]; then
-      echo "missing $CERT_MASTER directory. Execute ansible scripts first"
+    if [ ! -d "$ACERTS" ]; then
+      echo "missing $ACERTS directory. Execute ansible scripts first"
       exit 99
     fi
 
-    if [[ ! -d "$ACERTS" || `verify_certs_matching "$CERT_MASTER" "$ACERTS"` = false ]]; then
-        [[ -d "$ACERTS" ]] && rm -rf "$ACERTS"
-        mkdir -p "$ACERTS"
-        
-        copy_certs "$CERT_MASTER" "$ACERTS"
-    else
-        echo "WARNING: using the existing certs in $ACERTS"
-        echo "To recreate the certs, delete this directory"
-    fi
+	# generte new api-proxy certs only if the hjproxy.cert is missing in $ACERTS
+	# assuming all the certs are delete when new CA is created 
+	if [ ! -e "$ACERTS/hjserver.pem" ]; then
+		cp -f ../ansible/roles/keygen-shard/files/api-proxy-openssl.cnf "$ACERTS/api-proxy-openssl.cnf"
+		# generate all proxy certs
+		./gen_server_certs.sh "$ACERTS"
+	else
+		echo "WARNING: using the existing api-proxy cert in $ACERTS"
+		echo "To recreate the api-proxy certs, delete $ACERTS/hjserver.pem"
+	fi
 
     # create an empty creds.json if necessary
     touch "$CERTS/creds.json"
@@ -56,7 +57,7 @@ function main {
     docker rm -f api-proxy
 
     # start new container instance. Map the volume to CERTS
-    docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy api-proxy
+    docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy containercafe/api-proxy
 }
 
 function copy_certs {
