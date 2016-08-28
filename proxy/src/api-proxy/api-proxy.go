@@ -82,15 +82,33 @@ func main() {
 		// Here is how started the server earlier, before parsing the user certs:
 		//	err = http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), conf.GetServerCertFile(), conf.GetServerKeyFile(), nil)
 		
+		// Validate that all the required certs and keys are available (server and kube admin):
+		_, err := ioutil.ReadFile(conf.GetServerCertFile())
+		if err != nil {
+			glog.Error(err)
+		}
+		_, err = ioutil.ReadFile(conf.GetServerKeyFile())
+		if err != nil {
+			glog.Error(err)
+		}
+		
+		_, err = ioutil.ReadFile(conf.GetKadminCertFile())
+		if err != nil {
+			glog.Error(err)
+		}
+		_, err = ioutil.ReadFile(conf.GetKadminKeyFile())
+		if err != nil {
+			glog.Error(err)
+		}
+		
 		// Here is the new server setup
-		//caCert, err := ioutil.ReadFile(conf.GetServerCertFile())
 		caCert, err := ioutil.ReadFile(conf.GetCaCertFile())
 		if err != nil {
 			glog.Error(err)
 		}
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
-	
+		
 		// Setup HTTPS client
 		tlsConfig := &tls.Config{
 			ClientCAs: caCertPool,
@@ -102,14 +120,13 @@ func main() {
 			ClientAuth: tls.RequireAndVerifyClientCert,
 		}
 		tlsConfig.BuildNameToCertificate()
-	
+		
 		server := &http.Server{
 			Addr:      ":"+strconv.Itoa(listen_port),
 			TLSConfig: tlsConfig,
 		}
-	
+		
 		server.ListenAndServeTLS(conf.GetServerCertFile(), conf.GetServerKeyFile()) 
-
 	} else {
 		glog.Info("Starting non-TLS listener service")
 		err = http.ListenAndServe(":"+strconv.Itoa(listen_port), nil)
