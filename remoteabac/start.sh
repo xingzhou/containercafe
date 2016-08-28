@@ -24,7 +24,8 @@ docker exec etcd /etcdctl set /abac-policy '
 
 # On a Mac if docker is started via Virtualbox, use `docker-machine env` to find out the ip address of the VM and use that as ETCD_IP
 # On a Linux machine if docker is started natively, use 127.0.0.1
-ETCD_IP=192.168.99.100
+#ETCD_IP=192.168.99.100
+ETCD_IP=127.0.0.1
 
 # standalone mode
 remoteabac --address=:8888 --tls-cert-file=apiserver.pem --tls-private-key-file=apiserver-key.pem --authorization-policy-file=etcd@http://${ETCD_IP}:4001/abac-policy

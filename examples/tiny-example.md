@@ -1,10 +1,10 @@
 # Tiny Example
 
 This produces a very simple demonstration shard of two VirtualBox VMs,
-one master and one worker.  They have Mesos installed, and Kubernetes
-and Swarm playing nicely together thanks to Mesos.  The networking is
-Docker bridge networking (which is good only for a single-worker
-deployment; see the documentation of
+one master and one worker, plus another VM for the proxy.  The shard
+has Mesos installed, and Kubernetes and Swarm playing nicely together
+thanks to Mesos.  The networking is Docker bridge networking (which is
+good only for a single-worker deployment; see the documentation of
 [networking plugins](../docs/ansible.md#networking-plugins) for more
 options).  The Swarm master is modified for multi-tenant use.
 
@@ -134,7 +134,7 @@ define the environment and shard.
 
 The `cluster_name` variable tells the playbook which shard to deploy.
 
-The `networking_plugin` variable tells the playbook which networking
+The `networking_kind` variable tells the playbook which networking
 plugin to deploy (Ansible technicalities make it impossible for the
 playbook to use a definition for this variable placed the environment
 or shard variables file --- do not put one there, it will just cause
@@ -226,7 +226,7 @@ they lack the label identifying your tenant.  To make containers
 visible to Swarm, make a kubernetes pod as follows.  Create a YAML
 file prescribing the pod:
 ```bash
-cat > sleepy-pod.yaml
+cat > sleepy-pod.yaml <<EOF
 apiVersion: v1
 kind: Pod
 metadata:
@@ -240,6 +240,7 @@ spec:
       args:
       - sleep
       - "864000"
+EOF
 ```
 
 Then create the pod:
@@ -252,8 +253,9 @@ Then you can watch for it to come up, with
 kubectl get pod
 ```
 
-Once it is up, you can inspect its network configuration from inside,
-like this:
+Once the pod is created, you can see it with `docker ps`.  You can
+inspect its network configuration from inside, like this:
+
 ```bash
 kubectl exec sleepy-pod ifconfig
 ```
@@ -282,4 +284,4 @@ When prompt for the user_namer:password  use  vagrant:radiantHA
 
 ### To view the Mesos web UI
 
-On your local browser visit http://192.168.0.2:5050/
+On your local browser visit http://192.168.10.2:5050/

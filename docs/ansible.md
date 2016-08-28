@@ -271,12 +271,11 @@ playbook.
 ### Secondary Ansible variables for the shard playbook
 
 These are of no interest to a deployer of OpenRadiant or a solution
-built on it.  These _are_ of interest to a developer of a solution
-that extends OpenRadiant.  Mostly the secondary variables are just set
-in certain roles and read in others.
+built on it.  These _are_ of interest to a developer of OpenRadiant or
+a solution that extends OpenRadiant.  Mostly the secondary variables
+are just set in certain roles and read in others.
 
-Following are the secondary variables of interest to an extension
-developer.
+Following are the secondary variables of interest to a developer.
 
 * `etcd_deploy`: A boolean that controls whether etcd is deployed.
   Initially set to `False`.  After the networking plugin's
@@ -295,6 +294,15 @@ developer.
 * `use_kube_system_kubedns`: A boolean that controls whether the KubeDNS
   application is deployed as usual in the `kube-system` namespace.
 
+* `kube_proxy_deploy`: A boolean that controls whether the
+  `kube-proxy` is used.  Defaults to `True`; consulted only after the
+  networking plugin has a chance to set it to `False`.
+
+* `is_systemd` and `is_upstart`: these identify the service manager
+  used on the target machine; not defined for localhost.  Currently
+  these are the only two recognized.  The systemd case is recognized
+  but not yet fully supported.
+
 
 ### Primary Ansible variables for the enviornment playbooks
 
@@ -307,12 +315,14 @@ As noted above, OpenRadiant includes the following networking plugins.
 
 * `bridge`: this uses Docker bridge networking and thus is not really
   functional when there are multiple worker nodes in a shard.
+  Provides non-multi-tenant DNS to users via the kube DNS application.
 
 * `flannel`: this uses Flannel networking with its `host-gw` backend.
   This supports multiple worker nodes and uses ordinary IP routing and
   connectivity.  It does not support the Kuernetes API for network
   filtering nor any implicit network filtering for containers created
-  through the DOcker API.
+  through the Docker API.  Provides non-multi-tenant DNS to users via
+  the kube DNS application.
 
 To create a networking plugin, the developer needs to define three
 Ansible roles.  A networking plugin named `fred` supplies the
@@ -331,3 +341,37 @@ following Ansible roles.
   and etcd and/or ZooKeeper, before the deployment of higher level
   frameworks such as Mesos or Kubernetes.
 
+
+## Temporary and not-so-temporary file locations on the installer
+
+The playbooks use (a) a temporary directory on the installer machine
+for files needed for the duration of one run of a playbook and (b) a
+non-temporary directory on the installer machine for files that should
+persist throughout all the playbook runs regarding a given
+environment.
+
+The temporary files are kept in `{{ lookup('env','HOME') }}/tmp/`.
+The deployer is allowed to retain them between playbook runs, and is
+allowed to delete them between playbook runs.  To allow the deployer
+to work on multiple deployments concurrently, it is recommended that
+the temporary files be kept in a subdirectory that is specific to the
+environment or shard being deployed.
+
+The non-temporary files are kept in `{{ lookup('env','HOME')
+}}/.openradiant/envs/{{ env_name }}/` or, in the case of files
+specific to a shard, `{{ lookup('env','HOME') }}/.openradiant/envs/{{
+env_name }}/{{cluster_tail}}/` (where `cluster_tail` is the shard
+short name, the part after the environment name).
+
+For example, there is a CA and admin user that are shared throughout
+an environment.  Their certs and keys are kept in `{{
+lookup('env','HOME') }}/.openradiant/envs/{{ env_name
+}}/admin-certs/`.  There are additional certs and keys that are
+specific to each shard, and they are kept in `{{ lookup('env','HOME')
+}}/.openradiant/envs/{{ env_name }}/{{cluster_tail}}/admin-certs/`
+(even though none of them is for "admin").
+
+The deployer is responsible for keeping the contents of
+`~/.openradiant/envs/{{ env_name }}/` persistent throughout the
+lifetime of the named environment and sharing it among all the
+installer machine(s) for that environment.

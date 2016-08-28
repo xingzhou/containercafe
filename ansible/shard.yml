@@ -3,6 +3,17 @@
 
 - hosts:
     - cluster-{{cluster_name}}
+  tasks:
+  - name: test whether systemd is available
+    shell: if systemctl list-units 'init*'; then echo 'systemd here'; fi
+    changed_when: False
+    register: rslt
+
+  - set_fact: is_systemd={{ 'systemd here' in rslt.stdout }}
+  - set_fact: is_upstart={{ not is_systemd|bool }}
+
+- hosts:
+    - cluster-{{cluster_name}}
     - localhost
 
   pre_tasks:
@@ -39,7 +50,7 @@
 
 - hosts: localhost
   roles:
-  - { role: k8s-system-kubedns-local-prep, when: use_kube_system_kubedns }
+  - { role: k8s-system-kubedns-local-prep, when: use_kube_system_kubedns|bool }
   - "{{ network_kind }}-local-prep"
 
 - hosts: cluster-{{cluster_name}}
@@ -50,7 +61,8 @@
 
 - hosts: localhost
   roles:
-  - keygen
+  - keygen-env
+  - keygen-shard
 
 - hosts: zk-{{cluster_name}}
   become: yes
@@ -105,5 +117,5 @@
   roles:
   - role: k8s-system-kubedns
     when: >
-      use_kube_system_kubedns and
+      use_kube_system_kubedns|bool and
       inventory_hostname == groups['k8s_master-' ~ cluster_name][0]
