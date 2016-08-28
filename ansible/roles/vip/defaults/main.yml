@@ -12,7 +12,7 @@ vip:
    ucarp_password: 'thesecret'
    # advskew : Advertisement skew [1-255]. A node with a higher advskew is at disadvantage of being a master
    ucarp_advskew: 100
-   # advbase : Interval in seconds that advertisements will occur. 
+   # advbase : Interval in seconds that advertisements will occur.
    ucarp_advbase: 1
    # master : determine if this server is the master (no=let ucarp pick the master)
    ucarp-master: 'no'
