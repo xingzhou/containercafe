@@ -107,9 +107,11 @@
 
 - name: "Create kubelet upstart service"
   template: src=kubelet.conf.tmpl dest=/etc/init/kubelet.conf mode=0644
+  when: is_upstart|bool
 
 - name: "Create kubelet service systemd unit file"
   template: src=kubelet.service.tmpl dest=/lib/systemd/system/kubelet.service mode=0644
+  when: is_systemd|bool
 
 - name: "Start kubelet upstart service"
   service: name=kubelet state=started
