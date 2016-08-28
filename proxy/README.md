@@ -21,21 +21,44 @@ for /[DOCKER MACHINE] tag.
 [*This will be done by ansible install script*]
 If you have not done this already, clone the repository:
 
-```
+```bash
 git clone git@github.ibm.com:alchemy-containers/openradiant.git
 # or
 git clone https://github.ibm.com/alchemy-containers/openradiant.git
 ```
 
+#### Build proxy image
+The latest working image of API Proxy is already built and publicly available
+[https://hub.docker.com/r/containercafe/api-proxy/](https://hub.docker.com/r/containercafe/api-proxy/)
+To build the image locally, using your local code, execute:
+
+```bash
+cd proxy
+./builddocker.sh
+```
+To publish the image to Docker Hub:
+[/TODO need to document steps here]
+
+
 #### Run proxy as a container
 [*This will be done by ansible install script*]
 Proxy service will be installed as a container on your default docker host.
-Build the image and deploy it. When starting the proxy, provide the environment
-name e.g. _dev-vbox_:
-```
+You can either start the proxy based on the public image or using image based
+on your own code (see above)
+
+When starting the proxy, provide the environment name e.g. _dev-vbox_:
+```bash
 cd openradiant/proxy
-./builddocker.sh
 ./rundocker.sh <env_name>
+```
+
+To run the local proxy image, comment out the public image:
+
+```bash
+# start new container instance using public api proxy image. Map the volume to CERTS
+# docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy containercafe/api-proxy
+# to run your own image, built using `builddocker.sh` script, comment out the line above on un-comment below:
+docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy api-proxy
 ```
 
 This will start the Proxy as a container named `api-proxy`, running in the current
