@@ -3,9 +3,7 @@
 bin/*
 pkg/darwin_amd64/*
 
-mylog.txt
 
-user_certificates/*
 mk_user_cert.sh~*
 
 .settings/com.googlecode.goclipse.core.prefs
@@ -13,11 +11,8 @@ mk_user_cert.sh~*
 *.csr
 *.cnf
 *.log
-
-creds_original.json
-proxy-test/logs/*
-proxy-test/lib/kube
-proxy-test/test_containers_results.*
+mylog.txt
+env_containers_ng_research.sh
 logs/*
 dockerize/*
 !dockerize/Dockerfile
