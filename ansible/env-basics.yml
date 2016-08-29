@@ -1,0 +1,6 @@
+---
+ - include: ./load-vars-environmentl.yml
+
+ - hosts: localhost
+   roles:
+    - keygen-env
