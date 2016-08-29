@@ -1,5 +1,5 @@
 ---
- - include: ./load-vars-environmentl.yml
+ - include: ./load-vars-environment.yml
 
  - hosts: localhost
    roles:
