@@ -193,8 +193,8 @@ The requirements on machines on that group are as follows.
 ## The playbooks
 
 OpenRadiant currently includes no playbooks for provisioning machines,
-and one playbook for installing software one them.  That is
-`ansible/shard.yml`.  We are creating additional playbooks for use at
+and two playbook for installing software one them.  These are
+`ansible/env-basics.yml` and `ansible/shard.yml`.  We are creating additional playbooks for use at
 the environment level.
 
 
