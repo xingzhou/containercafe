@@ -47,7 +47,7 @@ Do this for all tenants in their respective terminals.
 
 
 ## Step 4: Run Test Script
-`cd proxy-test-container`
+`cd proxy-test`
 
 In each corresponding window, run the test script, `test_containers.sh`
 

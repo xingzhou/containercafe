@@ -5,9 +5,9 @@ Note: Steps below detail multi-user testing. Testing can also be done with a sin
 
 ## Step 1: Build the Docker image
 
-Move to the proxy-test-container directory and run the build script
+Move to the `proxy-test` directory and run the build script
 ```bash
-cd ~/workspace/openradiant/proxy/proxy-test-container
+cd ~/workspace/openradiant/proxy/proxy-test
 # dev-vbox is the env name for the tiny example
 ./docker/build.sh -e dev-vbox
 ```
