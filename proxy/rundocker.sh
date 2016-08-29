@@ -54,8 +54,12 @@ function main {
     set -x
 
     # remove the previous container instance 
-    docker rm -f api-proxy
-
+    docker ps -a | grep api-proxy &> /dev/null
+    if [ $? == 0 ]; then
+        echo "A previous api-proxy container exists -> removing it now..."
+        docker rm -f api-proxy
+    fi
+    
     # start new container instance using public api proxy image. Map the volume to CERTS
     docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy containercafe/api-proxy
 	# to run your own image, built using `builddocker.sh` script, comment out the line above on un-comment below:
