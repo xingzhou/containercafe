@@ -10,7 +10,7 @@ Agentless System Crawler
 The current state of this project is in the middle of "make it right".
 
 
-Run Crawler in OpenRadiant platform**Prereqs and Building:**
+Run Crawler in OpenRadiant platform
 -----------
 
 Simplest trial is to run crawler in a container. 
@@ -30,14 +30,14 @@ Please create an index by @timestamp on kibana dashboard
 
 ```
 
-Be default crawler collects only __os-info__,__cpu__, __memory__ metrics for 
+By default crawler collects only __os-info__,__cpu__, __memory__ metrics for 
 containers every 1 min. For these crawl features the size of output produced
 is less than 1 KB.  
 
 If you want to crawl more features (packages, files, configs etc.) you can configure
 crawler accordingly. For more details see [agentless-system-crawler](https://github.com/cloudviz/agentless-system-crawler)
 
-Stop  crawler**Prereqs and Building:**
+Stop  crawler
 -----------
 To stop crawling, simply do _make clean_. It will stop crawler and elk containers and remove them.
 
