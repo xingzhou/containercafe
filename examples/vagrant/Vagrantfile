@@ -90,11 +90,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       installer.vm.provision "file", source: "~/.vagrant.d/insecure_private_key", destination: "/home/vagrant/.vagrant.d/insecure_private_key"
       installer.vm.provision "shell", inline: "chmod 600 /home/vagrant/.vagrant.d/insecure_private_key"
       installer.vm.provision "shell", inline: "apt-get -qq update && apt-get -qq -y install python-pip build-essential libssl-dev libffi-dev python-dev && cd /home/vagrant/openradiant && pip install -r requirements.txt"
-      installer.vm.provision "shell", privileged: false, inline: "source ~/.profile && [ -z \"$ANSIBLE_INVENTORY\" ] && echo \"export ANSIBLE_INVENTORY=/home/vagrant/openradiant/examples/envs/dev-vbox/radiant01.hosts\" >> ~/.profile"
 
       if name == 'active-installer-tiny'
-        installer.vm.provision "shell", privileged: false, inline: "cp -rf /home/vagrant/openradiant /tmp"
-        installer.vm.provision "shell", privileged: false, inline: "cd /tmp/openradiant/ansible && ansible-playbook -v shard.yml -e envs=/tmp/openradiant/examples/envs -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
+        installer.vm.provision "shell", privileged: false, inline: "cd /home/vagrant/openradiant/ansible && ansible-playbook -v -i /home/vagrant/openradiant/examples/envs/dev-vbox/radiant01.hosts env-basics.yml -e envs=/home/vagrant/openradiant/examples/envs -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
+        installer.vm.provision "shell", privileged: false, inline: "cd /home/vagrant/openradiant/ansible && ansible-playbook -v -i /home/vagrant/openradiant/examples/envs/dev-vbox/radiant01.hosts shard.yml -e envs=/home/vagrant/openradiant/examples/envs -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
       end
 
       installer.vm.provider "virtualbox" do |installer_node|
