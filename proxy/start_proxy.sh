@@ -21,4 +21,4 @@ cp -f ../ansible/certs/dev-vbox-radiant01/admin.pem "$kube_admin_cert_file"
 ./gen_server_certs.sh
 
 # start proxy
-bin/hijack 
+bin/api-proxy 
