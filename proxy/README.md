@@ -54,9 +54,9 @@ To run the local proxy image, comment out the public image:
 
 ```bash
 # start new container instance using public api proxy image. Map the volume to CERTS
-# docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy containercafe/api-proxy
+# docker run -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy containercafe/api-proxy
 # to run your own image, built using `builddocker.sh` script, comment out the line above on un-comment below:
-docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy api-proxy
+docker run -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy api-proxy
 ```
 
 This will start the Proxy as a container named `api-proxy`, running in the current
@@ -78,10 +78,16 @@ If you want to run the Proxy as background container (daemon), use the `-d` flag
 ```
 ./rundocker.sh <env_name> -d
 ```
+
 The Proxy container can be seen there along with its logs:
 ```
 docker ps
 docker logs -f api-proxy
+```
+
+To set a custom log level and/or log verbosity use the `-l` and `-v` flags:
+```
+./rundocker.sh <env_name> -l <INFO,WARNING,ERROR,FATAL> -v <non-negative integer>
 ```
 
 #### Run proxy as a script
