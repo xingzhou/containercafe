@@ -118,6 +118,15 @@ pip install --upgrade ansible
 
 ## Deploy an OpenRadiant shard
 
+Use Ansible on the installer machine to deploy an OpenRadiant environment keys
+on the localhost.
+
+```bash
+( cd ansible; \
+  ansible-playbook -v -i ../examples/envs/dev-vbox/radiant01.hosts env-basics.yml \
+      -e "envs=../examples/envs cluster_name=dev-vbox-radiant01 network_kind=bridge" )
+```
+
 Use Ansible on the installer machine to deploy an OpenRadiant shard on
 the target machines.
 
