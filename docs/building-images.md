@@ -15,7 +15,7 @@ docker push openradiant/remoteabac
 docker login (with dockerhub creds)
 cd proxy
 ./builddocker.sh
-# see you new image:
+# see your new image:
 docker images
 docker tag api-proxy containercafe/api-proxy
 docker push containercafe/api-proxy
