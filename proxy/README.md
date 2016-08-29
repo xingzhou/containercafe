@@ -36,9 +36,7 @@ To build the image locally, using your local code, execute:
 cd proxy
 ./builddocker.sh
 ```
-To publish the image to Docker Hub:
-[/TODO need to document steps here]
-
+To publish the image to Docker Hub see the steps [here](https://github.com/containercafe/containercafe/blob/master/docs/building-images.md#containercafeproxy)
 
 #### Run proxy as a container
 [*This will be done by ansible install script*]
