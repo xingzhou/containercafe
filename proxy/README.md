@@ -193,11 +193,9 @@ and can be overridden using the docker -e option on [startup](rundocker.sh)
 ## Running Test Scripts
 There are 2 type of tests:
 
-* test container for proxy running as a container [proxy-test-container/docker/README.md](proxy-test-container/docker/README.md)
+* test container for proxy running as a container [proxy-test/docker/README.md](proxy-test/docker/README.md)
 
-* test scripts for proxy running as a container [proxy-test-container/README.md](proxy-test-container/README.md)
-
-* test scripts for proxy running as a standalone script [proxy-test/README.md](proxy-test/README.md)
+* test scripts for proxy running as a container [proxy-test/README.md](proxy-test/README.md)
 
 
 ## Hints and Troubleshooting Errors

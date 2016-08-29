@@ -234,7 +234,7 @@ function _test_deletion_container {
     local CONTAINER_ID="$4"
     local container_name="${TENANT_ID}_${CONTAINER_ID}_test${COUNTER}"
 
-    if [ $(( $NONET_COUNTER % 2 )) -eq 0 ]; then
+    if [ $(( $COUNTER % 2 )) -eq 0 ]; then
         begin_test_block
     
         assert_stop "$container_name" 0
