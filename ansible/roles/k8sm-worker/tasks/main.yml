@@ -7,10 +7,10 @@
   copy: src={{ cert_dir }}/admin-certs/{{ ca_cert }} dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: Copy kubelet key
-  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_tail}}/admin-certs/{{ k8s_kubelet_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: Copy kubelet cert
-  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_kubelet_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_tail}}/admin-certs/{{ k8s_kubelet_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
 
 - name: Create directory {{ k8s_cert_dir }}
   file: path={{ k8s_cert_dir }} state=directory mode=0755
@@ -41,11 +41,11 @@
   when: not kubernetes_on_mesos_deploy|bool
 
 - name: Copy user key
-  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_tail}}/admin-certs/{{ k8s_user_cn }}.pem dest={{ k8s_cert_dir }}/ mode=0644
   when: not kubernetes_on_mesos_deploy|bool
 
 - name: Copy user cert
-  copy: src={{ cert_dir }}/{{cluster_name}}/{{ k8s_user_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
+  copy: src={{ cert_dir }}/{{cluster_tail}}/admin-certs/{{ k8s_user_cn }}-key.pem dest={{ k8s_cert_dir }}/ mode=0644
   when: not kubernetes_on_mesos_deploy|bool
 
 - name: Copy kubelet kubeconfig

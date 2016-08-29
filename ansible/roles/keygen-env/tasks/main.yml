@@ -1,15 +1,5 @@
 ---
-- name: parse cluster name
-  delegate_to: localhost
-  shell: echo "{{cluster_name}}" | cut -d- -f1,2; echo "{{cluster_name}}" | cut -d- -f3-
-  register: nameres
-  changed_when: False
-
-- set_fact:
-    env_name: "{{ nameres.stdout_lines[0] }}"
-    cluster_tail: "{{ nameres.stdout_lines[1] }}"
-
-- debug: msg="environment name is '{{env_name}}', remainder of cluster name is '{{cluster_tail}}'"
+- debug: msg="environment name is '{{env_name}}'"
 
 - name: "Check if k8s CA cert exists"
   stat: path={{ cert_dir }}/admin-certs/{{ ca_cert }}
@@ -21,31 +11,21 @@
   stat: path={{ cert_dir }}/admin-certs/{{ ca_key }}
   register: cakey
 
-- name: "Check cluster vip file exists"
-  stat: path={{ cert_dir }}/{{cluster_name}}/vip
-  register: vip
-
-- name: "Check cluster vip"
-  when: vip.stat.exists == True
-  shell: cat "{{ansible_env.HOME}}/.openradiant/envs/{{env_name}}/{{cluster_name}}/vip"
-  register: vipres
-  changed_when: False
-
-- name: "Set vip_changed"
-  when: vip.stat.exists == True and master_vip == vipres.stdout
-  set_fact: vip_changed=False
+- name: "Check if k8s CA serial file exists"
+  stat: path={{ cert_dir }}/admin-certs/{{ ca_srl }}
+  register: srlres
 
 - set_fact: ca_is_newer=False
 - name: "Test if CA cert and key are newer"
-  when: cacert.stat.exists == True and cakey.stat.exists == True and vip.stat.exists == True and cacert.stat.mtime > vip.stat.mtime
+  when: cacert.stat.exists == True and cakey.stat.exists == True and srlres.stat.exists == True and cacert.stat.mtime > srlres.stat.mtime
   set_fact: ca_is_newer=True
 
 - name: "Test if all certs need to be regenerated"
-  when: cacert.stat.exists == True and (cakey.stat.exists == False or vip_changed == True or ca_is_newer == True)
+  when: cacert.stat.exists == True and (cakey.stat.exists == False or ca_is_newer == True)
   set_fact: regenerate_all_certs=True
 
 - name: "Clean up existing certs"
-  shell: ls -d {{ cert_dir }}/admin-certs/* | grep -v {{ ca_key }} | grep -v {{ ca_cert }} | grep -v vip | xargs rm
+  shell: ls -d {{ cert_dir }}/admin-certs/* | grep -v {{ ca_key }} | grep -v {{ ca_cert }} | xargs rm
   when: regenerate_all_certs is defined
 
 - name: "Create k8s CA files"
@@ -59,10 +39,6 @@
       -out {{ cert_dir }}/admin-certs/{{ ca_cert }} -subj "/CN=kubernetes-ca"
     - chmod 0400 {{ cert_dir }}/admin-certs/{{ ca_key }}
     - chmod 0444 {{ cert_dir }}/admin-certs/{{ ca_cert }}
-
-- name: "Check if k8s CA serial file exists"
-  stat: path={{ cert_dir }}/admin-certs/{{ ca_srl }}
-  register: srlres
 
 - name: "Create CA serial file"
   when: srlres.stat.exists == False
