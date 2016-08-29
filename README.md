@@ -99,7 +99,7 @@ For other operating systems you could do something analogous.
 
 The controller machine must have git installed.
 
-Checkout this project along with all its submodules::
+Checkout this project along with all its submodules:
 
 ```bash
 git clone --recursive git@github.ibm.com:alchemy-containers/openradiant.git

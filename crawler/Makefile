@@ -20,8 +20,8 @@ start:
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-it -d crawler \
 		 --url "http://127.0.0.1:8080/crawler/data"\
-		 --features os,disk,process\
-		 --frequency 5\
+		 --features os,cpu,memory\
+		 --frequency 60\
 		 --environment radiant\
 		 --format json\
 		 --crawlmode OUTCONTAINER\
