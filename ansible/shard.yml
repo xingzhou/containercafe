@@ -61,7 +61,6 @@
 
 - hosts: localhost
   roles:
-  - keygen-env
   - keygen-shard
 
 - hosts: zk-{{cluster_name}}
