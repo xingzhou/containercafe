@@ -3,6 +3,8 @@ set -v
 
 export GOPATH="$(pwd):$GOPATH"
 
-go build -o bin/hijack src/hijack/hijack.go
+mkdir -p bin/
+
+go build -o bin/api-proxy src/api-proxy/api-proxy.go
 
 ls -l bin
