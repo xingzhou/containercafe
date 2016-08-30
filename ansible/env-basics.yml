@@ -4,3 +4,4 @@
  - hosts: localhost
    roles:
     - keygen-env
+    - proxy
