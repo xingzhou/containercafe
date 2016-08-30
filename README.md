@@ -3,9 +3,7 @@
 [![Travis Lint Status](https://travis.innovate.ibm.com/alchemy-containers/openradiant.svg?token=hs5iLEHWzyL9jLf6acy1)](https://travis.innovate.ibm.com/alchemy-containers/openradiant)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-OpenRadiant is a modular platform for enterprise container-native
-devops.  The OpenRadiant platform can be subsetted and/or extended to
-create the solution you desire.
+OpenRadiant is a modular platform for enterprise container-native devops. OpenRadiant supports kubernetes and docker APIs on the same infrastructure in a multi-tenant setting. It provides the ability to customize your deployment options in order to select the components to deploy from among Kubernetes, Mesos, and Swarm. Currently it supports Flannel for networking. Soon other networking options will be available to select from.
 
 Features of the OpenRadiant platform include:
 * Kubernetes
