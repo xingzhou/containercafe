@@ -60,11 +60,6 @@
   template: src={{ k8s_user_cn }}-kubeconfig.tmpl dest={{ k8s_etc_dir }}/{{ k8s_user_cn }}-kubeconfig
   when: not kubernetes_on_mesos_deploy|bool
 
-- name: Check if we have a kraken installed
-  stat: path=/root/stackrc
-  register: stackrc
-  when: not kubernetes_on_mesos_deploy|bool
-
 - name: Copy kubelet and kubectl from image to local (for bootstrapping)
   shell: "{{ item }} "
   with_items:
