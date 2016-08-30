@@ -124,7 +124,7 @@ on the localhost.
 ```bash
 ( cd ansible; \
   ansible-playbook -v -i ../examples/envs/dev-vbox/radiant01.hosts env-basics.yml \
-      -e "envs=../examples/envs cluster_name=dev-vbox-radiant01 network_kind=bridge" )
+      -e "envs=../examples/envs env_name=dev-vbox network_kind=bridge" )
 ```
 
 Use Ansible on the installer machine to deploy an OpenRadiant shard on
