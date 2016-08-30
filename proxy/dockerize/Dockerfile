@@ -19,14 +19,23 @@ LABEL git-commit-id=${git_commit_id} \
       jenkins-build-id=${jenkins_build_id} \
       jenkins-build-number=${jenkins_build_number}
 
-#install docker
-#RUN apt-get update && apt-get install -y golang
-RUN apt-get update && apt-get install -y wget curl git-all
-RUN wget --quiet https://storage.googleapis.com/golang/go1.5.1.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.5.1.linux-amd64.tar.gz && rm -f go1.5.1.linux-amd64.tar.gz 
-
-ADD src/ /api-proxy/src/
 WORKDIR /api-proxy
-RUN export PATH=$PATH:/usr/local/go/bin && export GOPATH=/api-proxy && go get "github.com/golang/glog" && go build -o bin/api-proxy src/api-proxy/api-proxy.go
+COPY src/ ./src/
+
+RUN apt-get update \
+ && apt-get -y install --no-install-recommends ca-certificates curl git \
+ && curl -sSLO https://storage.googleapis.com/golang/go1.5.1.linux-amd64.tar.gz \
+ && tar -C /usr/local -xzf go1.5.1.linux-amd64.tar.gz \
+ && rm -f go1.5.1.linux-amd64.tar.gz \
+ && export PATH=$PATH:/usr/local/go/bin \
+ && export GOPATH=/api-proxy \
+ && go get "github.com/golang/glog" \
+ && go build -o bin/api-proxy src/api-proxy/api-proxy.go \
+ && rm -rf /usr/local/go \
+ && apt-get -y remove git \
+ && apt-get clean autoclean \
+ && apt-get -y autoremove \
+ && rm -rf /var/lib/apt/lists/*
 
 ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
     docker_port="8089" \
@@ -55,11 +64,7 @@ ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
     log_verbosity=${log_verbosity}
 
 # copy all the scripts needed by proxy
-ADD create_tenant.sh /api-proxy/create_tenant.sh
-ADD mk_user_cert.sh /api-proxy/mk_user_cert.sh
-ADD mk_kubeconfig.sh /api-proxy/mk_kubeconfig.sh 
-
-ADD build.info /api-proxy/build.info
+COPY create_tenant.sh mk_user_cert.sh mk_kubeconfig.sh build.info ./
 
 EXPOSE 8087
 CMD ["/api-proxy/bin/api-proxy", "8087"]
