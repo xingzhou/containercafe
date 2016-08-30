@@ -127,7 +127,13 @@ using the operating system's package manager.
 
 ### Installing OpenRadiant
 
-To create/update an OpenRadiant environment, ...
+To create/update an OpenRadiant environment, invoke the `ansible/env-basics.yml`
+playbook.  Following is an example invocation.
+
+```bash
+cd ansible
+ansible-playbook -v env-basics.yml -e env_name==${env_name} -e envs=${envs} -e network_kind=flannel
+```
 
 To create/update an OpenRadiant shard, invoke the `ansible/shard.yml`
 playbook.  Following is an example invocation.
