@@ -66,7 +66,8 @@ var allowedResources = []userResource{
 	{name: "secrets", readOnly: false},
 	{name: "services", readOnly: false},
 	{name: "limitranges", readOnly: true},
-	{name: "quota", readOnly: true}}
+	{name: "quota", readOnly: true},
+	{name: "jobs", readOnly: false}}
 
 func New() *remoteABACServer {
 	return &remoteABACServer{
