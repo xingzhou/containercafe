@@ -347,7 +347,6 @@ func kubeUpdateBody(r *http.Request, namespace string) (body []byte, err error) 
 	// annotations might not be provided in the yaml file:
 	if annot == nil {
 		annotm = make(map[string]interface{})
-		metam["annotations"] = annotm
 	} else {
 		// convert the existing annotation interface{} to map
 		annotm = annot.(map[string]interface{})

@@ -1,64 +1,55 @@
 package httphelper
 
 import (
-	"bufio"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"sync"
-	"time"
 
 	"github.com/golang/glog"
+	"io"
 )
 
 func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id string, proto string) {
-	var cli_conn, srv_conn net.Conn
-	var cli_bufrw, srv_bufrw *bufio.ReadWriter
-	var srv_bufr *bufio.Reader
-	var err error = nil
-
-	//hijack client conn (act as server on this conn)
-	hj, ok := w.(http.Hijacker)
-	if !ok {
-		glog.Errorf("httproxy doesn't support hijacking\n")
-		http.Error(w, "httproxy doesn't support hijacking", http.StatusInternalServerError)
+	if proto != "TCP" {
+		glog.Errorf("hijack protocol %s not supported\n", proto)
 		return
 	}
-	cli_conn, cli_bufrw, err = hj.Hijack()
+
+	//hijack client conn (act as server on this conn)
+	cli_conn, _, err := w.(http.Hijacker).Hijack()
 	if err != nil {
 		glog.Errorf("httproxy hijacking error\n")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer cli_conn.Close()
+
+	cli_conn.Write([]byte{})
+	//cli_conn.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x74, 0x65, 0x73, 0x74, 0x0a})
 
 	//hijack server conn (act as client on this conn)
-	srv_conn, srv_bufr = cc.Hijack()
-	srv_bufrw = bufio.NewReadWriter(srv_bufr, bufio.NewWriter(srv_conn))
+	srv_conn, _ := cc.Hijack()
+	defer srv_conn.Close()
 
-	//call TCP hijack loop if upgrade proto is tcp
-	if proto == "TCP" {
-		tcpHijack(cli_conn, cli_bufrw, srv_conn, srv_bufrw, req_id)
-		time.Sleep(100 * time.Millisecond) //allow time for go routines to shutdown after hijack completion
-	} else {
-		glog.Errorf("hijack protocol %s not supported\n", proto)
-	}
+	glog.Infof("Client: (%s, %s) -> (%s, %s)", cli_conn.LocalAddr().Network(), cli_conn.LocalAddr().String(), cli_conn.RemoteAddr().Network(), cli_conn.RemoteAddr().String())
+	glog.Infof("Server: (%s, %s) -> (%s, %s)", srv_conn.LocalAddr().Network(), srv_conn.LocalAddr().String(), srv_conn.RemoteAddr().Network(), srv_conn.RemoteAddr().String())
+
+	tcpHijack(cli_conn, srv_conn, req_id)
+	//time.Sleep(100*time.Millisecond) //allow time for go routines to shutdown after hijack completion
 }
 
 //implement tcp hijack loop forwarding raw tcp messages between cli and srv
-func tcpHijack(cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Conn, srv_bufrw *bufio.ReadWriter,
-	req_id string) {
+func tcpHijack (client, server io.ReadWriter, req_id string) {
 	//start 2 blocking read/forward loops, BUT exit as soon as one of them exits
 	var wg sync.WaitGroup
-	defer cli_conn.Close()
-	defer srv_conn.Close()
 
 	wg.Add(1) //add 1 only not 2, to proceed when one of the two go routines finishes
 
 	prefix := "> (req id: " + req_id + ")"
-	go rwloop(cli_bufrw, srv_bufrw, cli_conn, srv_conn, prefix, &wg, false)
+	go tcpCopy(client, server, prefix, &wg, false)
 
 	prefix = "< (req id: " + req_id + ")"
-	go rwloop(srv_bufrw, cli_bufrw, srv_conn, cli_conn, prefix, &wg, true)
+	go tcpCopy(server, client, prefix, &wg, true)
 
 	//wait until one go routines finishes... the server read loop routine
 	//If the 2nd go routine calls wg.Done() at its exit (not our case) you need to increment wg.Add() so no panic happens
@@ -74,32 +65,16 @@ func tcpHijack(cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Conn
 	glog.Infof("%s Hijack exit and connections close\n", prefix)
 }
 
-func rwloop(src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
-	print_prefix string, wg *sync.WaitGroup, server_read_loop bool) {
-
+func tcpCopy(source io.Reader, dest io.Writer, print_prefix string, wg *sync.WaitGroup, server_read_loop bool) {
 	if server_read_loop {
 		// the caller, tcpHijack(), should exit only if the server is done
 		defer wg.Done()
 	}
 
 	glog.Infof("%s rwloop started\n", print_prefix)
-	//s, err := src_buf.ReadString('\n')
-	b, err := src_buf.ReadByte()
-	for err == nil {
-		//_, werr := dest_buf.WriteString(s)
-		werr := dest_buf.WriteByte(b)
-		dest_buf.Flush()
-		if werr != nil {
-			glog.Errorf("%s Error writing data: %v\n", print_prefix, werr)
-			//raise flag for other loop to exit
-			//dest_conn.Close()   // reader on this conn will get error and exit his loop as well
-			return
-		}
-		//s, err = src_buf.ReadString('\n')
-		b, err = src_buf.ReadByte()
-	}
+	written, err := io.Copy(dest, source)
 	if err != nil {
-		glog.Errorf("%s Error reading data: %v\n", print_prefix, err)
-		return
+		glog.Errorf("%s Error writing data: %v\n", print_prefix, err)
 	}
+	glog.Infof("%s %d bytes written", print_prefix, written)
 }
