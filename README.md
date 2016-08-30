@@ -49,12 +49,14 @@ devops service.
 One operating instantiation of the full platform is called an
 environment, and it contains one or more shards that operate
 independently of each other.  Each shard provides Kubernetes, Swarm,
-and/or Mesos service.  There is an outer control plane with a proxy
-API server that implements the Kubernetes and Swarm APIs --- with
-appropriate restrictions and extensions --- by appropriately
+and/or Mesos service (you can pick the subset you want, subject to
+reasonableness constraints).  There is an outer control plane with a
+proxy API server that implements the Kubernetes and Swarm APIs ---
+with appropriate restrictions and extensions --- by appropriately
 transforming each RPC and dispatching it to the appropriate shard.
 See
-[the picture of a deployed environment](docs/media/DeployedTopology.svg).
+[a picture of a deployed environment](docs/media/DeployedTopology.svg)
+and [a picture of a shard](docs/media/DeployedShard.svg).
 
 You can subset OpenRadiant so that it creates just one shard and there
 is no API proxy.
