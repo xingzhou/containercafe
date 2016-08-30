@@ -10,12 +10,14 @@ Syntax: ${0} <env_name> <-d>
 Where:
     env_name - name of the environment, e.g: dev-vbox
     -d - run api-proxy container in the background (optional)
+    -l - set the log level for the proxy: INFO, WARNING, ERROR, FATAL (optional)
+    -v - set the log verbosity for the proxy: non-negative integer (optional)
 
 HELPMEHELPME
 }
 
 function main {
-    if [[ "$1" == "" || "$1" == "-d" ]] ; then
+    if [[ "$1" == "" || "$1" == -* ]] ; then
         echo 'env_name must be set'
         helpme
         exit 1
@@ -31,27 +33,39 @@ function main {
       exit 99
     fi
 
-	# generte new api-proxy certs only if the hjproxy.cert is missing in $ACERTS
-	# assuming all the certs are delete when new CA is created 
-	if [ ! -e "$ACERTS/hjserver.pem" ]; then
-		cp -f ../ansible/roles/keygen-shard/files/api-proxy-openssl.cnf "$ACERTS/api-proxy-openssl.cnf"
-		# generate all proxy certs
-		./gen_server_certs.sh "$ACERTS"
-	else
-		echo "WARNING: using the existing api-proxy cert in $ACERTS"
-		echo "To recreate the api-proxy certs, delete $ACERTS/hjserver.pem"
-	fi
+    # generte new api-proxy certs only if the hjproxy.cert is missing in $ACERTS
+    # assuming all the certs are delete when new CA is created 
+    if [ ! -e "$ACERTS/hjserver.pem" ]; then
+        cp -f ../ansible/roles/keygen-shard/files/api-proxy-openssl.cnf "$ACERTS/api-proxy-openssl.cnf"
+        # generate all proxy certs
+        ./gen_server_certs.sh "$ACERTS"
+    else
+        echo "WARNING: using the existing api-proxy cert in $ACERTS"
+        echo "To recreate the api-proxy certs, delete $ACERTS/hjserver.pem"
+    fi
 
     # create an empty creds.json if necessary
     touch "$CERTS/creds.json"
 
     # to run container as a daemon use `-d` flag:
     local EXTRA_FLAGS=()
-    if [ "$2" == "-d" ] ; then
-        EXTRA_FLAGS+=("-d")
-    fi
-
-    set -x
+    shift
+    while test $# -gt 0; do
+        case "$1" in
+            -l)
+                EXTRA_FLAGS+=("-e" "log_level=$2")
+                shift 2
+                ;;
+            -v)
+                EXTRA_FLAGS+=("-e" "log_verbosity=$2")
+                shift 2
+                ;;
+            *)
+                EXTRA_FLAGS+=("$1")
+                shift
+                ;;
+        esac
+    done
 
     # remove the previous container instance 
     docker ps -a | grep api-proxy &> /dev/null
@@ -60,10 +74,11 @@ function main {
         docker rm -f api-proxy
     fi
     
+    set -x
     # start new container instance using public api proxy image. Map the volume to CERTS
     docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy containercafe/api-proxy
-	# to run your own image, built using `builddocker.sh` script, comment out the line above on un-comment below:
-    # docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy api-proxy
+    # to run your own image, built using `builddocker.sh` script, comment out the line above on un-comment below:
+    #docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy api-proxy
 }
 
 function copy_certs {
