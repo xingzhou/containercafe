@@ -164,7 +164,7 @@ kubectl create -f ../examples/apps/k8s/frontend-rs.yaml
 To run the proxy against a different OpenRadiant shard, pass the IP of this shard
 as additional parameter of the script `make_TLS_certs`. E.g:
 ```
-docker exec api-proxy /api-proxy/make_TLS_certs.sh test2 radiant02 92.168.10.11
+docker exec api-proxy /api-proxy/make_TLS_certs.sh test2 radiant02 192.168.10.11
 ```
 
 You can also manually change the values in "/api-proxy/creds.json" file that lists
