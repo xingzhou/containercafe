@@ -13,7 +13,7 @@
      - mk_kubeconfig.sh
 
   - name: build the {{proxy_image_name}} image (this may take a few minutes)
-    command: docker build -t "{{proxy_image_name}}" "../proxy/{{proxy_context}}/"
+    command: docker build -t "{{proxy_image_name}}" "../proxy/{{proxy_context}}"
 
   - debug: msg="Finished Building the image, now building the container"
 
@@ -38,7 +38,7 @@
 
   - name: set PASSWD when generating certs
     set_fact: PASSWD="DyJtZPNjkMeY7zgk"
-    when: hjs_pem.stat.exists == False
+    when: not hjs_pem.stat.exists|bool
 
   - name: generate certs when missing or changed
     command: "{{item}} chdir={{ACERTS}}/"
@@ -46,7 +46,7 @@
         - openssl genrsa -out hjserver.key 4096
         - openssl req -new -key hjserver.key -out hjserver.csr -subj "/CN=localhost" -config api-proxy-openssl.cnf
         - openssl x509 -req -in hjserver.csr -CA ca.pem -CAkey ca-key.pem -CAserial ca.srl -days 1500 -extensions v3_req -out hjserver.pem -passin pass:{{PASSWD}} -extfile api-proxy-openssl.cnf
-    when: hjs_pem.stat.exists == False
+    when: not hjs_pem.stat.exists|bool
 
   - name: create an empty creds.json if necessary
     file: path={{CERTS}}/creds.json  state=touch
@@ -68,7 +68,7 @@
      state: reloaded
      #pull: "{{image_pull_type}}"
      restart_policy: always
-     image: "containercafe/api-proxy"
+     image: "api-proxy"
      ports:
       - "8087:8087"
      volumes:
