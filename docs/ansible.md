@@ -268,9 +268,9 @@ Following are the six with no meaningful default.
   being deployed in an HA configuration.
 
 The settings for the master components VIP can be in the environment-
-and/or cluster-specific variables files.  The `cluster_name`, `envs`,
-and `network_kind` must be supplied on the command line invoking the
-playbook.
+and/or cluster-specific variables files (see next section).  The
+`cluster_name`, `envs`, and `network_kind` must be supplied on the
+command line invoking the playbook.
 
 
 #### Additional files for setting Ansible variable values
