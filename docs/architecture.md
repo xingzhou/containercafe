@@ -61,8 +61,14 @@ shown in that picture, because there are many options for how that is
 done.  The operator indicates her choice by appropriately populating
 the relevant inventory groups in her Ansible inventory for the shard;
 see
-[the inventory contractd for a shard](ansible.md#the-inventory-contract-for-a-shard)
+[the inventory contract for a shard](ansible.md#the-inventory-contract-for-a-shard)
 for details.
+
+Not clearly visible in that picture is the networking technology used
+for the workload (although the kube-proxy --- which is part of that in
+some cases --- _is_ shown).  As noted
+[elsewhere](ansible.md#networking-plugins), this is the purview of the
+_networking plugin_ chosen by the service operator.
 
 OpenRadiant includes Ansible-based installation technology to
 instantiate an OpenRadiant environment.  An installer machine acts as

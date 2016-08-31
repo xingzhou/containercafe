@@ -322,18 +322,26 @@ Following are the secondary variables of interest to a developer.
 
 ## Networking plugins
 
+The job of a networking plugin is to deploy the networking technology
+used for the workload.  This starts with the way containers are
+networked and includes, if Kubernetes is in the picture, the DNS
+service expected in a Kubernetes cluster and the implicit load
+balancers for non-headless Kubernetes services.
+
 As noted above, OpenRadiant includes the following networking plugins.
 
 * `bridge`: this uses Docker bridge networking and thus is not really
   functional when there are multiple worker nodes in a shard.
   Provides non-multi-tenant DNS to users via the kube DNS application.
+  Uses kube-proxy to provide implicit load balancers.
 
 * `flannel`: this uses Flannel networking with its `host-gw` backend.
   This supports multiple worker nodes and uses ordinary IP routing and
   connectivity.  It does not support the Kubernetes API for network
   filtering nor any implicit network filtering for containers created
   through the Docker API.  Provides non-multi-tenant DNS to users via
-  the kube DNS application.
+  the kube DNS application.  Uses kube-proxy to provide implicit load
+  balancers.
 
 To create a networking plugin, the developer needs to define three
 Ansible roles.  A networking plugin named `fred` supplies the
