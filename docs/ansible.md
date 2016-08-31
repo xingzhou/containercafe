@@ -267,6 +267,12 @@ Following are the six with no meaningful default.
   These two variables are needed only if the master components are
   being deployed in an HA configuration.
 
+The settings for the master components VIP can be in the environment-
+and/or cluster-specific variables files.  The `cluster_name`, `envs`,
+and `network_kind` must be supplied on the command line invoking the
+playbook.
+
+
 #### Additional files for setting Ansible variable values
 
 The OpenRadiant shard playbook follows a convention for reading
@@ -287,11 +293,6 @@ relevant to the settings of the Ansible variables.
   explicitly loads this, after the previous file --- so its settings
   override the others.  The platform operator is expected to provide
   this file.
-
-The settings for the master components VIP can be in the environment-
-and/or cluster-specific variables files.  The `cluster_name`, `envs`,
-and `network_kind` must be supplied on the command line invoking the
-playbook.
 
 
 #### Primary shard variables that have defaults
