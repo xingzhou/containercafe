@@ -52,12 +52,10 @@ reasonableness constraints).  There is an outer control plane with a
 proxy API server that implements the Kubernetes and Swarm APIs ---
 with appropriate restrictions and extensions --- by appropriately
 transforming each RPC and dispatching it to the appropriate shard.
-See
-[a picture of a deployed environment](docs/media/DeployedTopology.svg)
-and [a picture of a shard](docs/media/DeployedShard.svg).
 
-You can subset OpenRadiant so that it creates just one shard and there
-is no API proxy.
+You can subset OpenRadiant so that it creates just one shard.  You can
+subset OpenRadiant to omit API proxy if you are not interested in
+multi-sharding nor the conveniences it supplies for multi-tenancy.
 
 In a shard there are worker nodes and control plane nodes.  The
 Kubernetes and Swarm workload is dispatched to the worker nodes.  The
@@ -75,6 +73,8 @@ The Ansible playbooks strive to meet the Ansible ideal of achieving a
 prescribed desired state, and can thus be used to update as well as
 install.  However, there are limits to the space of initial states
 with which these playbooks can cope.
+
+See [the architecture doc](docs/architecture.md) for more details.
 
 
 ### Ansible principles
