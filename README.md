@@ -151,6 +151,9 @@ and this variable must be defined in the Ansible invocation.  Two
 other variables must also be defined, as mentioned in that document:
 `envs` and `network_kind`.
 
+See also [the deployment doc](docs/deploying.md).
+
+
 ### Live container crawling
 It is essentially an agentless system crawler that offers a
 native and seamless framework for operational visibility and analytics.
