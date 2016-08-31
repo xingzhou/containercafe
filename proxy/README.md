@@ -22,9 +22,9 @@ for /[DOCKER MACHINE] tag.
 If you have not done this already, clone the repository:
 
 ```bash
-git clone git@github.ibm.com:alchemy-containers/openradiant.git
+git clone git@github.com:containercafe/containercafe.git
 # or
-git clone https://github.ibm.com/alchemy-containers/openradiant.git
+git clone https://github.com/containercafe/containercafe.git
 ```
 
 #### Build proxy image
@@ -101,7 +101,7 @@ source ./set_local_env.sh
 ./start_proxy.sh
 ```
 NOTE: There is a problem when running the proxy as a script on mac. (See the
-issue [#256](https://github.ibm.com/alchemy-containers/openradiant/issues/256) Mac implements
+issue [#10](https://github.com/containercafe/containercafe/issues/10) Mac implements
 their own native SSL libraries for curl, therefore passing certs that are not
 in the keychain is a bit problematic. Install curl via Homebrew:
 `brew install curl`, keep the native curl, update your PATH to point at the new
@@ -211,7 +211,7 @@ There are 2 type of tests:
  In order to fix this problem, use `DOCKER_TLS_VERIFY=""` prefix for running 'docker' command
 
  * `docker: Error response from daemon: Task launched with invalid offers: Offer ea1a4d71-cf69-4292-90e7-530c77a5458b-O1 is no longer valid.`
- There is a caching problem on Mesos. Issue [#100](https://github.ibm.com/alchemy-containers/openradiant/issues/100)
+ There is a caching problem on Mesos. Issue [#33](https://github.com/containercafe/containercafe/issues/33)
  is tracking it. Simply just repeat your last command. It should purge the cache
  and work again.
 
