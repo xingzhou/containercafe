@@ -1,7 +1,7 @@
 # Deploying
 
-[General deployment flowchart](DeployingGeneral.svg)
+[General deployment flowchart](media/DeployingGeneral.svg)
 
-[Provisioning and Deployment driven by common files](DeploymentTypical.svg)
+[Provisioning and Deployment driven by common files](media/DeploymentTypical.svg)
 
-[Deployment Dependencies](DeployDepends.svg)
+[Deployment Dependencies](media/DeployDepends.svg)
