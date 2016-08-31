@@ -21,7 +21,7 @@
 
   - name: copy the api-proxy-openssl.cnf
     copy: src=../ansible/roles/keygen-shard/files/api-proxy-openssl.cnf dest=/{{ACERTS}}/api-proxy-openssl.cnf
-    when: hjs_pem.stat.exists == False
+    when: not hjs_pem.stat.exists|bool
 
   - name: set PASSWD when generating certs
     set_fact: PASSWD="DyJtZPNjkMeY7zgk"
