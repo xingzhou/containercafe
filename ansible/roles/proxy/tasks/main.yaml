@@ -1,6 +1,4 @@
 ---
-  - name: include vars
-    include_vars: roles/proxy/vars/main.yaml
 
 # Building the proxy image:
 
