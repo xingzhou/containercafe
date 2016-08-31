@@ -1,5 +1,16 @@
 # Ansible
 
+* [Overview](#overview)
+* [Ansible versions and bugs and configuration](#ansible-versions-and-bugs-and-configuration)
+* [The inventory contract](#the-inventory-contract)
+* [The playbooks](#the-playbooks)
+* [Ansible variables](#ansible-variables)
+* [Networking plugins](#networking-plugins)
+* [Temporary and not-so-temporary file locations on the installer](#temporary-and-not-so-temporary-file-locations-on-the-installer)
+
+
+## Overview
+
 The Ansible playbooks in OpenRadiant are modular in three dimensions.
 One is componentry: for each major component there is one or a few
 roles.  As part of this dimension, OpenRadiant is extensible regarding
@@ -158,7 +169,7 @@ There are also some requirements on the provisioned machines.
   from the Ansible controller machine to the configured user on the
   provisioned machines, and that user must be able to `sudo` to
   `root`, without supplying a password.  The configured user is the
-  remote uer determined by the usual Ansible rules --- including the
+  remote user determined by the usual Ansible rules --- including the
   settings (if any) of the `ansible_ssh_user`, `ansible_user`, and
   `remote_user` Ansible variable(s).
 
@@ -319,7 +330,7 @@ As noted above, OpenRadiant includes the following networking plugins.
 
 * `flannel`: this uses Flannel networking with its `host-gw` backend.
   This supports multiple worker nodes and uses ordinary IP routing and
-  connectivity.  It does not support the Kuernetes API for network
+  connectivity.  It does not support the Kubernetes API for network
   filtering nor any implicit network filtering for containers created
   through the Docker API.  Provides non-multi-tenant DNS to users via
   the kube DNS application.
