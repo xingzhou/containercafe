@@ -96,10 +96,10 @@
 - name: "Copy kubelet and kubectl from image to local (for bootstrapping)"
   shell: "{{ item }} "
   with_items:
-    - docker create --name this_is_a_temporary_container_i_will_delete {{ kube_image }}
-    - docker cp this_is_a_temporary_container_i_will_delete:/opt/kubernetes/bin/kubelet /usr/local/bin/kubelet
-    - docker cp this_is_a_temporary_container_i_will_delete:/opt/kubernetes/bin/kubectl /usr/local/bin/kubectl
-    - docker rm this_is_a_temporary_container_i_will_delete
+    - docker run --rm -v /tmp:/tmp --entrypoint cp {{ kube_image }} /opt/kubernetes/bin/kubelet /tmp
+    - mv /tmp/kubelet /usr/local/bin
+    - docker run --rm -v /tmp:/tmp --entrypoint cp {{ kube_image }} /opt/kubernetes/bin/kubectl /tmp
+    - mv /tmp/kubectl /usr/local/bin
 
 - name: "Create kubelet upstart service"
   template: src=kubelet.conf.tmpl dest=/etc/init/kubelet.conf mode=0644

@@ -116,15 +116,17 @@ pip install --upgrade ansible
 ```
 
 
-## Deploy an OpenRadiant shard
+## Deploy an OpenRadiant environment with one shard
 
-Use Ansible on the installer machine to deploy an OpenRadiant environment keys
-on the localhost.
+Use Ansible on the installer machine to begin the process of deploying
+an environment.  This will create the certificates and keys that are
+common throughout the environment.  Someday soon this will also deploy
+the API proxy.
 
 ```bash
 ( cd ansible; \
   ansible-playbook -v -i ../examples/envs/dev-vbox/radiant01.hosts env-basics.yml \
-      -e "envs=../examples/envs env_name=dev-vbox network_kind=bridge" )
+      -e "envs=../examples/envs env_name=dev-vbox" )
 ```
 
 Use Ansible on the installer machine to deploy an OpenRadiant shard on
@@ -133,7 +135,7 @@ the target machines.
 ```bash
 ( cd ansible; \
   ansible-playbook -v -i ../examples/envs/dev-vbox/radiant01.hosts shard.yml \
-      -e "envs=../examples/envs cluster_name=dev-vbox-radiant01 network_kind=bridge" )
+      -e "envs=../examples/envs cluster_name=dev-vbox-radiant01 network_kind=flannel" )
 ```
 
 The `cd` makes Ansible 2 find the `ansible.cfg` supplied by OpenRadiant.
@@ -141,7 +143,9 @@ The `cd` makes Ansible 2 find the `ansible.cfg` supplied by OpenRadiant.
 The `envs` variable tells the playbook where to find the files that
 define the environment and shard.
 
-The `cluster_name` variable tells the playbook which shard to deploy.
+The `env_name` variable in the first command tells the playbook which
+environment to deploy, and the `cluster_name` variable in the second
+command tells the playbook which shard to deploy.
 
 The `networking_kind` variable tells the playbook which networking
 plugin to deploy (Ansible technicalities make it impossible for the

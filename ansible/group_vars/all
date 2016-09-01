@@ -4,6 +4,10 @@
 # Network Interface (control plane)
 ################################################################
 
+# The network interface to use on the target machines, for all control
+# and data plane activity.  Yes, currently there is support only for
+# using a single network interface for all purposes.
+
 network_interface: eth1
 
 ################################################################
