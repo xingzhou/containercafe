@@ -30,7 +30,7 @@
 
   - name: Set secondary variables of networking to their initial values
     set_fact:
-      k8s_kubelet_network_args: []
+      k8s_worker_kubelet_network_args: []
       use_kube_system_kubedns: False
 
   roles:

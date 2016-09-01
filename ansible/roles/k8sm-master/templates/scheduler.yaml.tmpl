@@ -47,7 +47,7 @@ spec:
     - --kubelet-pod-infra-container-image={{ kube_infra_image }}
     - --proxy-kubeconfig={{ k8s_etc_dir }}/{{ k8s_kubelet_cn }}-kubeconfig
     - --proxy-logv=6
-    {% for netarg in k8s_kubelet_network_args %}
+    {% for netarg in k8s_worker_kubelet_network_args %}
     - {{ netarg }}
     {% endfor %}
     {% else %}

@@ -13,7 +13,6 @@ pre-start script
 		  --file-check-frequency=5s \
 		  --hostname-override="{{ inventory_hostname }}" \
 		  --pod-infra-container-image="{{ kube_infra_image }}" \
-		  {% for netarg in k8s_kubelet_network_args %} {{netarg}}{% endfor %} \
 		  1>/var/log/kubernetes/kubelet.log 2>&1 &
 end script
 
