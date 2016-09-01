@@ -63,7 +63,7 @@
 - name: Copy kubelet and kubectl from image to local (for bootstrapping)
   shell: "{{ item }} "
   with_items:
-    - docker run --rm -v /tmp:/tmp --entrypoint cp {{ kube_image }} /opt/kubernetes/bin/kubelet /tmp 
+    - docker run --rm -v /tmp:/tmp --entrypoint cp {{ kube_image }} /opt/kubernetes/bin/kubelet /tmp
     - mv /tmp/kubelet /usr/local/bin
   when: not kubernetes_on_mesos_deploy|bool
 
