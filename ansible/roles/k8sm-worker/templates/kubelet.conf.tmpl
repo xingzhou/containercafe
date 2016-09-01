@@ -21,6 +21,7 @@ pre-start script
           --pod-infra-container-image="{{ kube_infra_image }}" \
           --tls-cert-file={{k8s_cert_dir}}/{{k8s_kubelet_cn}}.pem \
           --tls-private-key-file={{k8s_cert_dir}}/{{k8s_kubelet_cn}}-key.pem \
+          {% for netarg in k8s_worker_kubelet_network_args %}{{netarg}} {% endfor %} \
           1>/var/log/kubernetes/kubelet.log 2>&1 &
 end script
 
