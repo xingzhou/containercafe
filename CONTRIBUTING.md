@@ -17,39 +17,59 @@ We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) pro
 
 To work on something, whether a new feature or a bugfix:
   1. Create a [fork](https://help.github.com/articles/fork-a-repo/) (if you haven't already)
-
-  2. Clone it locally
+  1. Setup local variable that represents your github organization (github username)
+  ```bash
+  export $ORG=<github_username>
   ```
-  git clone https://github.ibm.com/alchemy-containers/openradiant.git
+  1. Clone it locally
+  ```bash
+  git clone https://github.ibm.com/$ORG/containercafe.git
   ```
-  3. Add the upstream repository as a remote
+  1. Add the upstream repository as a remote
+  ```bash
+  cd containercafe
+  git remote add upstream git@github.com:containercafe/containercafe.git
   ```
-  git remote add upstream https://github.ibm.com/alchemy-containers/openradiant.git
+  1. Update your master
+  ```bash
+  git checkout master
+  git fetch upstream master --tags
+  git merge --ff-only upstream/master
+  git push origin master
   ```
-  4. Create a branch
 
   Create a descriptively-named branch off of your cloned fork ([more detail here](https://help.github.com/articles/syncing-a-fork/))
-  ```
-  cd fabric
+  ```bash
   git checkout -b issue-nnnn
   ```
-  5. Commit your code
+  1. Work on your code updates, then commit to that branch locally. Regularly push
+  your work to the same branch on the server.
 
-  Commit to that branch locally, and regularly push your work to the same branch on the server.
+  1. Commit messages
 
-  6. Commit messages
+  Commit messages must have a short description no longer than 50 characters
+  followed by a blank line and a longer, more descriptive message that includes
+  reference to issue(s) being addressed so that they will be automatically
+  closed on a merge e.g. ```Closes #1234``` or ```Fixes #1234```.
 
-  Commit messages must have a short description no longer than 50 characters followed by a blank line and a longer, more descriptive message that includes reference to issue(s) being addressed so that they will be automatically closed on a merge e.g. ```Closes #1234``` or ```Fixes #1234```.
+  ```bash
+  git commit -m "msg"
+  git push -u origin issue-nnnn
+  ```
 
-  7. Pull Request (PR)
+  1. Open PR (Pull Request)
 
-  When you need feedback or help, or you think the branch is ready for merging, open a pull request (make sure you have first successfully built and tested your changes.
+  When you need feedback or help, or you think the branch is ready for merging,
+  open a pull request (make sure you have first successfully built and tested
+  your changes.
 
-   _Note: if your PR does not merge cleanly, use ```git rebase master``` in your feature branch to update your pull request rather than using ```git merge master```_.
+   _Note: if your PR does not merge cleanly, follow the steps above to update
+   your master, then ```git rebase master``` in your feature branch, fix the conflicts
+   and ```git push origin issue-nnnn``` again_.
 
   8. Did we mention tests? All code changes should be accompanied by new or modified tests.
 
-  9. Continuous Integration (CI): Be sure to check [Travis](https://travis-ci.org/) or the Slack \[TODO] [#ci-status](https://OpenRadiant.slack.com/messages/ci-status) channel for status of your build.
+  9. Continuous Integration (CI): Be sure to check [Travis](https://travis-ci.org/) or the Slack \[TODO] [#ci-status](https://containercafe.slack.com/messages/ci-status) channel for status of your build.
 
   10. Any code changes that affect documentation should be accompanied by corresponding changes (or additions) to the documentation and tests. This will ensure that if the merged PR is reversed, all traces of the change will be reversed as well.
 
