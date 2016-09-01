@@ -56,7 +56,7 @@
   lineinfile: dest=/etc/default/docker
               regexp='^DOCKER_OPTS="\$DOCKER_OPTS --userland'
               insertafter=EOF
-              line='DOCKER_OPTS="$DOCKER_OPTS --userland-proxy=false {% if infra_docker_private_registry is defined %}--insecure-registry {{infra_docker_private_registry}} {% endif %}"'
+              line='DOCKER_OPTS="$DOCKER_OPTS {% if infra_docker_private_registry is defined %}--insecure-registry {{infra_docker_private_registry}} {% endif %}"'
   when: infra_docker_private_registry is defined
   register: docker_configured
 

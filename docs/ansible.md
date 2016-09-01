@@ -1,16 +1,28 @@
 # Ansible
 
+* [Overview](#overview)
+* [Ansible versions and bugs and configuration](#ansible-versions-and-bugs-and-configuration)
+* [The inventory contract](#the-inventory-contract)
+* [The playbooks](#the-playbooks)
+* [Ansible variables](#ansible-variables)
+* [Networking plugins](#networking-plugins)
+* [Temporary and not-so-temporary file locations on the installer](#temporary-and-not-so-temporary-file-locations-on-the-installer)
+
+
+## Overview
+
 The Ansible playbooks in OpenRadiant are modular in three dimensions.
-One is componentry: for each major component there is one or a few
-roles.  As part of this dimension, OpenRadiant is extensible regarding
-the networking technology used.  OpenRadiant has the concept of a
-"networking plugin", which supplies the Ansible roles that deploy the
-chosen networking technology.  OpenRadiant includes two networking
-plugins: (a) one that uses Docker bridge networking (which is not
-really functional if you have more than one worker) and (b) one that
-uses Flannel with its "host-gw" backend.  As a solution developer you
-can supply and configure OpenRadiant to use an alternate networking
-plugin that you supply.
+One is componentry: for each major deployed component there is one or
+a few roles, and an Ansible variable that controls whether that
+component is deployed.  As part of this dimension, OpenRadiant is
+extensible regarding the networking technology used.  OpenRadiant has
+the concept of a "networking plugin", which supplies the Ansible roles
+that deploy the chosen networking technology.  OpenRadiant includes
+two networking plugins: (a) one that uses Docker bridge networking
+(which is not really functional if you have more than one worker) and
+(b) one that uses Flannel with its "host-gw" backend.  As a solution
+developer you can supply and configure OpenRadiant to use an alternate
+networking plugin that you supply.
 
 The second dimension is the inventory: the playbooks do *not* assume
 that your inventory is entirely dedicated to one shard or environment
@@ -61,8 +73,8 @@ bugs and configuration.
 
 OpenRadiant includes an `ansible.cfg` that sets `roles_path` to the
 OpenRadiant roles directory and has some other settings whose purpose
-is speeding up the Ansible execution.  A deployer is free to use a
-different `ansible.cfg`, provided `roles_path` is set if and as
+is speeding up the Ansible execution.  A platform operator is free to
+use a different `ansible.cfg`, provided `roles_path` is set if and as
 necessary.
 
 If you use OpenRadiant with a provisioning technology that involves a
@@ -91,6 +103,9 @@ Because the playbooks support multiple environments and shards, the
 inventory contract applies to a given environment or shard.  A shard
 is also known as a cluster.
 
+
+### The structure of environment and shard names
+
 To support the structure of environments and shards, an environment's
 name must have the form
 `{{environment_role}}-{{environment_location}}` and a shard (AKA cluster) name
@@ -102,16 +117,19 @@ There may be no dash in the `environment_kind` nor the
 decide how to choose the environment role and location names.  In the
 tiny example you find a cluster named `dev-vbox-radiant01`.
 
-Because a shard (cluster) name contributes to host names, to Ansible
-group names, and to various things in various compute provider clouds
-(all of which impose restrictions on the characters used), a cluster
-name should start with a lowercase letter and only contain lower case
-letters, numbers, and the hyphen ('-').
+Because a shard (cluster) name contributes to host names, to file
+names, to Ansible group names, and to various things in various
+compute provider clouds (all of which impose restrictions on the
+characters used), a shard name should start with a lowercase letter
+and only contain lower case letters, numbers, and the hyphen ('-').
+
 
 ### The inventory contract for a shard
 
 The contract for a shard specifies that certain inventory groups
-exist.  They are as follows.
+exist.  All these groups are required, even if their purpose is
+related to a component that is not being deployed.  The groups are as
+follows.
 
 * `cluster-{{cluster_name}}`: all the machines in the cluster ---
   i.e., the union of the following groups
@@ -156,11 +174,12 @@ There are also some requirements on the provisioned machines.
 
 * You (the user running the Ansible playbook) must be able to `ssh`
   from the Ansible controller machine to the configured user on the
-  provisioned machines, and that user must be able to `sudo` to
-  `root`, without supplying a password.  The configured user is the
-  remote uer determined by the usual Ansible rules --- including the
+  provisioned machines, and that user must be able to `sudo` to `root`
+  without supplying a password.  The configured user is the remote
+  user determined by the usual Ansible rules --- including the
   settings (if any) of the `ansible_ssh_user`, `ansible_user`, and
-  `remote_user` Ansible variable(s).
+  `remote_user` Ansible variable(s) in any of the places where Ansible
+  allows them to be set.
 
 
 ### The inventory contract for an environment
@@ -179,11 +198,12 @@ The requirements on machines on that group are as follows.
 
 * You (the user running the Ansible playbook) must be able to `ssh`
   from the Ansible controller machine to the configured user on the
-  provisioned machines, and that user must be able to `sudo` to
-  `root`, without supplying a password.  The configured user is the
-  remote user determined by the usual Ansible rules --- including the
+  provisioned machines, and that user must be able to `sudo` to `root`
+  without supplying a password.  The configured user is the remote
+  user determined by the usual Ansible rules --- including the
   settings (if any) of the `ansible_ssh_user`, `ansible_user`, and
-  `remote_user` Ansible variable(s).
+  `remote_user` Ansible variable(s) in any of the places where Ansible
+  allows them to be set.
 
 * The proxy machines must be able to open TCP connections into the
   shards using the Ansible inventory hostnames (which are IPv4
@@ -193,27 +213,26 @@ The requirements on machines on that group are as follows.
 ## The playbooks
 
 OpenRadiant currently includes no playbooks for provisioning machines,
-and two playbook for installing software one them.  These are
-`ansible/env-basics.yml` and `ansible/shard.yml`.  We are creating additional playbooks for use at
-the environment level.
+and two playbooks for installing software one them.  These are
+`ansible/env-basics.yml` and `ansible/shard.yml`.  We are creating
+additional playbooks for use at the environment level.
 
 
 ## Ansible variables
 
 The playbooks that deploy software on machines are parameterized by a
 large collection of Ansible variables.  OpenRadiant introduces a
-distinction between _primary_ variables, which a deployer may set, and
-_secondary_ variables, which are really just intermediates in the
-logic of the Ansible roles.
+distinction between _primary_ variables, which a platform operator may
+set, and _secondary_ variables, which are really just intermediates in
+the logic of the Ansible roles.
 
 ### Primary Ansible variables for the shard playbook
 
 Six have no meaningful defaults.  The others are defined by defaults
 in `ansible/group_vars/all` and can be overridden by settings in an
-environment-specific file and a cluster-specific file.  These are the
-most important of those variables: `kubernetes_deploy`,
-`swarm_deploy`, `mesos_deploy`, `ha_deploy`, and `network_interface`;
-see `ansible/group_vars/all` for their definitions and defaults.
+environment-specific file and a cluster-specific file.
+
+#### Primary shard variables that have no default
 
 Following are the six with no meaningful default.
 
@@ -221,10 +240,11 @@ Following are the six with no meaningful default.
   discussed above.
 
 * `envs`: an absolute or relative pathname for the directory under
-  which the environment- and cluster-specific files are found.  If
+  which the environment- and shard-specific files are found (see
+  [below](#additional-files-for-setting-ansible-variable-values)).  If
   relative then it is interpreted relative to the directory containing
-  the shard playbook.  The settings for the environment named `A-B`
-  are found in `{{envs}}/A-B/defaults.yml`.
+  the shard playbook.  The settings for the shard named `A-B-C` are
+  found in `{{envs}}/A-B/C.yml`.
 
 * `network_kind`: this is the name of the network plugin to use.  This
   must be supplied on the Ansible command line (because an Ansible
@@ -247,25 +267,52 @@ Following are the six with no meaningful default.
   These two variables are needed only if the master components are
   being deployed in an HA configuration.
 
-When working on a cluster named `{{env_name}}-{{cluster_short_name}}`,
-the following files are relevant to the settings of the Ansible
-variables.
+The settings for the master components VIP can be in the environment-
+and/or cluster-specific variables files (see next section).  The
+`cluster_name`, `envs`, and `network_kind` must be supplied on the
+command line invoking the playbook.
+
+
+#### Additional files for setting Ansible variable values
+
+The OpenRadiant shard playbook follows a convention for reading
+variable values from additional files.  When working on a cluster
+named `{{env_name}}-{{cluster_short_name}}`, the following files are
+relevant to the settings of the Ansible variables.
 
 * `ansible/group_vars/all` (and all the rest of the usual Ansible
   story, which is mostly not exercised).  This provides the baseline
-  defaults.
+  defaults.  This is maintained by the OpenRadiant developers and is
+  not expected to be modified by the platform operator.
 
 * `{{envs}}/{{env_name}}/defaults.yml`.  The playbook explicitly loads
   this, and its settings override those from `ansible/group_vars/all`.
+  The platform operator is expected to provide this file.
 
 * `{{envs}}/{{env_name}}/{{cluster_short_name}}.yml`.  The playbook
   explicitly loads this, after the previous file --- so its settings
-  override the others.
+  override the others.  The platform operator is expected to provide
+  this file.
 
-The settings for the master components VIP can be in the environment-
-and/or cluster-specific variables files.  The `cluster_name`, `envs`,
-and `network_kind` must be supplied on the command line invoking the
-playbook.
+
+#### Primary shard variables that have defaults
+
+Following are the most important of those variables.
+
+* `kubernetes_deploy`, `swarm_deploy`, `mesos_deploy`: these control
+  which of these three components are deployed.  The usual Ansible
+  conventions for values for booleans apply.
+
+* `ha_deploy`: controls whether the master components are deployed in
+  a highly available manner; defaults to true.
+
+* `network_interface`: the network interface to use on the target
+  machines, for all control and data plane activity.  Yes, currently
+  there is support only for using a single network interface for all
+  purposes.
+
+See `ansible/group_vars/all` for the definitions and defaults of all
+the variables that have defaults.
 
 
 ### Secondary Ansible variables for the shard playbook
@@ -306,23 +353,42 @@ Following are the secondary variables of interest to a developer.
 
 ### Primary Ansible variables for the enviornment playbooks
 
-* `env_name`: a string of the sort discussed above
+* `env_name`: a string of the sort discussed above.  Must be supplied
+  by the platform operator in the command that invokes the environment
+  playbook.
+
+* `proxy_deploy`: controls whether the API proxy is deployed in the
+  environment.  *NB*: this is a hypothetical, not implemented right
+  now.
+
+The environment playbook(s) follow a convention for reading variable
+values from an additional file --- the environment-specific file
+discussed
+[above](#additional-files-for-setting-ansible-variable-values).
 
 
 ## Networking plugins
+
+The job of a networking plugin is to deploy the networking technology
+used for the workload.  This starts with the way containers are
+networked and includes, if Kubernetes is in the picture, the DNS
+service expected in a Kubernetes cluster and the implicit load
+balancers for non-headless Kubernetes services.
 
 As noted above, OpenRadiant includes the following networking plugins.
 
 * `bridge`: this uses Docker bridge networking and thus is not really
   functional when there are multiple worker nodes in a shard.
   Provides non-multi-tenant DNS to users via the kube DNS application.
+  Uses kube-proxy to provide implicit load balancers.
 
 * `flannel`: this uses Flannel networking with its `host-gw` backend.
   This supports multiple worker nodes and uses ordinary IP routing and
-  connectivity.  It does not support the Kuernetes API for network
+  connectivity.  It does not support the Kubernetes API for network
   filtering nor any implicit network filtering for containers created
   through the Docker API.  Provides non-multi-tenant DNS to users via
-  the kube DNS application.
+  the kube DNS application.  Uses kube-proxy to provide implicit load
+  balancers.
 
 To create a networking plugin, the developer needs to define three
 Ansible roles.  A networking plugin named `fred` supplies the
@@ -351,8 +417,8 @@ persist throughout all the playbook runs regarding a given
 environment.
 
 The temporary files are kept in `{{ lookup('env','HOME') }}/tmp/`.
-The deployer is allowed to retain them between playbook runs, and is
-allowed to delete them between playbook runs.  To allow the deployer
+The platform operator is allowed to retain them between playbook runs, and is
+allowed to delete them between playbook runs.  To allow the operator
 to work on multiple deployments concurrently, it is recommended that
 the temporary files be kept in a subdirectory that is specific to the
 environment or shard being deployed.
@@ -371,7 +437,7 @@ specific to each shard, and they are kept in `{{ lookup('env','HOME')
 }}/.openradiant/envs/{{ env_name }}/{{cluster_tail}}/admin-certs/`
 (even though none of them is for "admin").
 
-The deployer is responsible for keeping the contents of
+The platform operator is responsible for keeping the contents of
 `~/.openradiant/envs/{{ env_name }}/` persistent throughout the
 lifetime of the named environment and sharing it among all the
 installer machine(s) for that environment.
