@@ -28,6 +28,12 @@
 [workers-dev-vbox-radiant01]
 192.168.10.3
 
+# The following inventory group defines the set of machines where
+# the api-proxy is deployed
+
+[proxy-dev-vbox]
+192.168.10.4
+
 # The following inventory group defines the full set of machines in
 # the shard. By using the keyword 'children' we can aggregrate multiple groups
 
