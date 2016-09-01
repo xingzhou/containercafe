@@ -18,19 +18,23 @@ We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) pro
 To work on something, whether a new feature or a bugfix:
   1. Create a [fork](https://help.github.com/articles/fork-a-repo/) (if you haven't already)
   1. Setup local variable that represents your github organization (github username)
+
   ```bash
   export $ORG=<github_username>
   ```
   1. Clone it locally
+
   ```bash
   git clone https://github.ibm.com/$ORG/containercafe.git
   ```
   1. Add the upstream repository as a remote
+
   ```bash
   cd containercafe
   git remote add upstream git@github.com:containercafe/containercafe.git
   ```
   1. Update your master
+
   ```bash
   git checkout master
   git fetch upstream master --tags
@@ -39,6 +43,7 @@ To work on something, whether a new feature or a bugfix:
   ```
 
   Create a descriptively-named branch off of your cloned fork ([more detail here](https://help.github.com/articles/syncing-a-fork/))
+
   ```bash
   git checkout -b issue-nnnn
   ```
