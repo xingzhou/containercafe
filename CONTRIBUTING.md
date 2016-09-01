@@ -17,21 +17,16 @@ We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) pro
 
 To work on something, whether a new feature or a bugfix:
   1. Create a [fork](https://help.github.com/articles/fork-a-repo/) (if you haven't already)
-  1. Setup local variable that represents your github organization (github username)
-
-  ```bash
-  export $ORG=<github_username>
-  ```
   1. Clone it locally
 
   ```bash
-  git clone https://github.ibm.com/$ORG/containercafe.git
+  git clone https://github.com/<github_username>/containercafe.git
   ```
   1. Add the upstream repository as a remote
 
   ```bash
   cd containercafe
-  git remote add upstream git@github.com:containercafe/containercafe.git
+  git remote add upstream https://github.com/containercafe/containercafe.git
   ```
   1. Update your master
 
@@ -57,6 +52,8 @@ To work on something, whether a new feature or a bugfix:
   reference to issue(s) being addressed so that they will be automatically
   closed on a merge e.g. ```Closes #1234``` or ```Fixes #1234```.
 
+  Here is a handy [list of keywords](https://help.github.com/articles/closing-issues-via-commit-messages/)
+
   ```bash
   git commit -m "msg"
   git push -u origin issue-nnnn
@@ -68,15 +65,21 @@ To work on something, whether a new feature or a bugfix:
   open a pull request (make sure you have first successfully built and tested
   your changes.
 
-   _Note: if your PR does not merge cleanly, follow the steps above to update
-   your master, then ```git rebase master``` in your feature branch, fix the conflicts
-   and ```git push origin issue-nnnn``` again_.
+   _Note: if your PR does not merge cleanly or needs to be updated,
+    follow the steps below:_
 
-  8. Did we mention tests? All code changes should be accompanied by new or modified tests.
+      ```bash
+      git checkout issue-nnnn
+      git fetch upstream
+      git rebase upstream/master
+      git push -f origin issue-nnnn
+      ```
 
-  9. Continuous Integration (CI): Be sure to check [Travis](https://travis-ci.org/) or the Slack \[TODO] [#ci-status](https://containercafe.slack.com/messages/ci-status) channel for status of your build.
+  1. Did we mention tests? All code changes should be accompanied by new or modified tests.
 
-  10. Any code changes that affect documentation should be accompanied by corresponding changes (or additions) to the documentation and tests. This will ensure that if the merged PR is reversed, all traces of the change will be reversed as well.
+  1. Continuous Integration (CI): Be sure to check [Travis](https://travis-ci.org/) or the Slack \[TODO] [#ci-status](https://containercafe.slack.com/messages/ci-status) channel for status of your build.
+
+  1. Any code changes that affect documentation should be accompanied by corresponding changes (or additions) to the documentation and tests. This will ensure that if the merged PR is reversed, all traces of the change will be reversed as well.
 
 After your Pull Request (PR) has been reviewed and signed off, a maintainer will merge it into the master branch.
 
