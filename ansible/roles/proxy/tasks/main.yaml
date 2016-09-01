@@ -6,15 +6,22 @@
 
 # Setting up the certs for the Proxy container
 
-  - name: setting CERTS
-    set_fact: CERTS="{{ansible_env.HOME}}/.openradiant/envs/{{env_name}}"
+  - name: setting local CERTS
+    set_fact: local_CERTS="{{lookup('env', 'HOME')}}/.openradiant/envs/{{env_name}}/"
+
+  - name: setting remote CERTS
+    set_fact: CERTS="{{ansible_env.HOME}}/.openradiant/envs/{{env_name}}/"
 
   - name: setting ACERTS
     set_fact: ACERTS="{{CERTS}}/admin-certs"
 
-  - name: create envs directory
+
+  - name: creating CERTS directory
     file: path={{CERTS}} state=directory mode=0755
 
+
+  - name: copy local envs directory
+    copy: src={{local_CERTS}} dest={{CERTS}}
 
   - stat: path={{ACERTS}}/hjserver.pem
     register: hjs_pem
@@ -49,13 +56,14 @@
     shell: docker rm -f api-proxy
     when: result.stdout !=""
 
-  - name: start the api-proxy container
+  - name: start the api-proxy container, may take a few minutes to fetch the image...
+    become: yes
     docker:
      name: api-proxy
      state: reloaded
      #pull: "{{image_pull_type}}"
      restart_policy: always
-     image: "api-proxy"
+     image: "{{proxy_image_name}}"
      ports:
       - "8087:8087"
      volumes:
