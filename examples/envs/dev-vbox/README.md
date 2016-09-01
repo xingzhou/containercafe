@@ -1,6 +1,9 @@
 ###Overview
 
-This is a directory defined for the tiny example, it includes the configuration files that are specific to a given shard. In the tiny example, the shard is named `dev-vbox-radiant01`:
+This is a directory defined for the tiny example, it includes the configuration files that are specific to a given shard. 
+You can define your own configuration by making a copy of this folder and setting the value of the environment variable `ENV_NAME`
+to the name of the folder before running `vagrant up`. For the tiny example `ENV_NAME` is `dev-vbox`.
+In the tiny example, the shard is named `dev-vbox-radiant01`:
 
 #####defaults.yml
 Specifies the variable settings that are particular to the tiny example’s environment. In our example these settings include the ssh information that ansible uses for the deployment within the machines (or virtual machines) of the shard. 
