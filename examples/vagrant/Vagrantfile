@@ -7,16 +7,11 @@ VAGRANTFILE_API_VERSION = "2"
 
 #Checking if a configuration file exists, if it does, then read its attribute values
 #Otherwise use default values
-env_name = ENV['ENV_NAME']
-if env_name == nil || env_name == ''
-    env_name = 'dev-vbox'
-end
-
-pn = Pathname.new("../envs/#{env_name}/vagrant_config.rb")
+pn = Pathname.new("../envs/dev-vbox/vagrant_config.rb")
 CONFIG = File.expand_path(pn)
 if File.exist?(CONFIG)
   require CONFIG
-  puts "Info: vagrant_config file is found in #{CONFIG}, and will be used" if ARGV[0] == "up"
+  puts "Info: vagrant_config file is found, and will be used" if ARGV[0] == "up"
   VM_COUNT=$vm_count
   VM_MEMORY=$vm_memory
   VM_CPU=$vm_cpu
@@ -97,8 +92,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       installer.vm.provision "shell", inline: "apt-get -qq update && apt-get -qq -y install python-pip build-essential libssl-dev libffi-dev python-dev && cd /home/vagrant/openradiant && pip install -r requirements.txt"
 
       if name == 'active-installer-tiny'
-        installer.vm.provision "shell", privileged: false, inline: "cd /home/vagrant/openradiant/ansible && ansible-playbook -v -i /home/vagrant/openradiant/examples/envs/#{env_name}/radiant01.hosts env-basics.yml -e envs=/home/vagrant/openradiant/examples/envs -e env_name=#{env_name} -e network_kind=bridge"
-        installer.vm.provision "shell", privileged: false, inline: "cd /home/vagrant/openradiant/ansible && ansible-playbook -v -i /home/vagrant/openradiant/examples/envs/#{env_name}/radiant01.hosts shard.yml -e envs=/home/vagrant/openradiant/examples/envs -e cluster_name=#{env_name}-radiant01 -e network_kind=bridge"
+        installer.vm.provision "shell", privileged: false, inline: "cd /home/vagrant/openradiant/ansible && ansible-playbook -v -i /home/vagrant/openradiant/examples/envs/dev-vbox/radiant01.hosts env-basics.yml -e envs=/home/vagrant/openradiant/examples/envs -e env_name=dev-vbox -e network_kind=bridge"
+        installer.vm.provision "shell", privileged: false, inline: "cd /home/vagrant/openradiant/ansible && ansible-playbook -v -i /home/vagrant/openradiant/examples/envs/dev-vbox/radiant01.hosts shard.yml -e envs=/home/vagrant/openradiant/examples/envs -e cluster_name=dev-vbox-radiant01 -e network_kind=bridge"
       end
 
       installer.vm.provider "virtualbox" do |installer_node|
