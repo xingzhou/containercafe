@@ -48,11 +48,13 @@
 # starting the proxy container
 
   - name: check if the proxy container exists
+    become: yes
     command: docker ps -aqf "name=api-proxy"
     register: result
 
 
   - name: remove api-proxy container if a previous instance already exists
+    become: yes
     shell: docker rm -f api-proxy
     when: result.stdout !=""
 

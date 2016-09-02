@@ -1,6 +1,7 @@
 ---
 
 - hosts:
+    - proxy-{{env_name}}
     - localhost
   gather_facts: no
   tasks:
