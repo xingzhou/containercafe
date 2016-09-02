@@ -1,6 +1,10 @@
 ---
 - include: ./load-vars-cluster.yml
 
+- hosts: localhost
+  tasks:
+  - debug: var=ansible_version
+
 - hosts:
     - cluster-{{cluster_name}}
   tasks:
