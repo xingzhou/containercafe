@@ -35,17 +35,18 @@ function main {
 
     # generte new api-proxy certs only if the hjproxy.cert is missing in $ACERTS
     # assuming all the certs are delete when new CA is created 
-    if [ ! -e "$ACERTS/hjserver.pem" ]; then
-        cp -f ../ansible/roles/keygen-shard/files/api-proxy-openssl.cnf "$ACERTS/api-proxy-openssl.cnf"
-        # generate all proxy certs
-        ./gen_server_certs.sh "$ACERTS"
-    else
-        echo "WARNING: using the existing api-proxy cert in $ACERTS"
-        echo "To recreate the api-proxy certs, delete $ACERTS/hjserver.pem"
-    fi
+	if [ ! -e "$ACERTS/hjserver.pem" ]; then
+		echo "ERROR: missing API Proxy server certs in $ACERTS"
+		echo "       execute \"setupdocker.sh $env_name\" first"
+		exit 98
+	fi
 
-    # create an empty creds.json if necessary
-    touch "$CERTS/creds.json"
+	# check if creds.json was created
+	if [ ! -e "$CERTS/creds.json" ]; then
+		echo "ERROR: missing $CERTS/creds.json file"
+		echo "       execute \"setupdocker.sh $env_name\" first"
+		exit 97
+	fi
 
     # to run container as a daemon use `-d` flag:
     local EXTRA_FLAGS=()
