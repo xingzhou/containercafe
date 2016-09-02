@@ -226,3 +226,11 @@ flannel_version: "0.5.5"
 infrastructure_docker_registry_type: v2
 # use 'always' with v2 and 'missing' with v1
 image_pull_type: always
+
+###############################################################
+# Api-proxy variables
+################################################################
+
+proxy_image_name: containercafe/api-proxy
+build_proxy_image_locally: False
+proxy_context: dockerize
