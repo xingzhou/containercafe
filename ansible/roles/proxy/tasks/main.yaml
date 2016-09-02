@@ -1,5 +1,5 @@
 ---
-# Setting up the certs for the Proxy container
+
   - name: build the proxy image locally
     include: tasks/build_image.yml
     when: build_proxy_image_locally|bool
