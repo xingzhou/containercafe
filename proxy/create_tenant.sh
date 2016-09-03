@@ -100,8 +100,6 @@ cat <<ENV
 Certificates created for Apikey $API_KEY
 Located at $TLS_dir
 
-NOTE: the following commands must be executed from openradiant/proxy directory
-
 # Setup docker environment:
 export DOCKER_HOST=$DOCKER_HOST
 export DOCKER_TLS_VERIFY=$DOCKER_TLS_VERIFY
