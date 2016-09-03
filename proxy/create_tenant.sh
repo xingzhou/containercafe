@@ -5,11 +5,12 @@ helpme()
 {
     cat <<HELPMEHELPME
 
-Syntax: ${0} <tenant_id> <shard_name> <shard_ip>
+Syntax: ${0} <tenant_id> <shard_name> <shard_ip> <api_proxy_ip>
 Where:
     tenant_id = id of the desired tenant
     shard_name = name of the shard, e.g: radiant01
-    shard_ip = ip address of sharder, e.g: 192.168.10.2
+    shard_ip = IP address of the shard, e.g: 192.168.10.2
+    api_proxy_ip = IP address of API Proxy, e.g: 192.168.10.4
 
  Note: $env_name must be defined via environment variable
  
@@ -37,7 +38,7 @@ function append_to_creds {
 if [[ "$1" == "-?" || "$1" == "-h" || "$1" == "--help" || "$1" == "help" ]] ; then
     helpme
     exit 1
-elif [[ "$3" == "" ]] ; then
+elif [[ "$4" == "" ]] ; then
     echo "Incorrect number of arguments"
     helpme
     exit 1
@@ -54,6 +55,7 @@ STATUS=200
 
 SHARD_IP="$3"
 SHARD_NAME="$2"
+PROXY_IP="$4"
 
 DOCKER_ID=""
 CONTAINER=""
@@ -84,7 +86,7 @@ fi
 append_to_creds "$stub_auth_file"
 
 # Setup the environment
-DOCKER_HOST="localhost:8087"
+DOCKER_HOST="$PROXY_IP:8087"
 DOCKER_TLS_VERIFY=1
 if [ "$CERT_ROOT" = "" ] ; then
     # when running from the container, specify the path to shared volume
@@ -108,7 +110,7 @@ export DOCKER_CERT_PATH=$DOCKER_CERT_PATH
 ENV
 
 # Make kube-config
-./mk_kubeconfig.sh "$TLS_dir" "$SPACE_ID"
+./mk_kubeconfig.sh "$TLS_dir" "$SPACE_ID" "$PROXY_IP"
 if [ $? -eq 1 ]; then
     echo "Unable to create kube-config file. Terminating."
     exit 1

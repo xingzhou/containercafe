@@ -3,12 +3,13 @@
 function make_kubeconfig {
     local CONFIG_DIR="$1"
     local TENANT_ID="$2"
+    local PROXY_IP="$3"
 
     cat > "$CONFIG_DIR/kube-config" <<YAML
 apiVersion: v1
 clusters:
 - cluster:
-    server: https://localhost:8087
+    server: https://${PROXY_IP}:8087
     certificate-authority: ca.pem
   name: radiant
 contexts:
