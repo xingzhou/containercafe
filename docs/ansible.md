@@ -7,6 +7,7 @@
 * [Ansible variables](#ansible-variables)
 * [Networking plugins](#networking-plugins)
 * [Temporary and not-so-temporary file locations on the installer](#temporary-and-not-so-temporary-file-locations-on-the-installer)
+* [Considerations for deploying on machines that can not pull software from public sources](#considerations-for-deploying-on-machines-that-can-not-pull-software-from-public-sources)
 
 
 ## Overview
@@ -442,3 +443,31 @@ The platform operator is responsible for keeping the contents of
 `~/.openradiant/envs/{{ env_name }}/` persistent throughout the
 lifetime of the named environment and sharing it among all the
 installer machine(s) for that environment.
+
+
+## Considerations for deploying on machines that can not pull software from public sources
+
+There are two sorts of sources considered here: apt repositories and
+Docker registries (is it really true that there is no solution for
+pypi here?).  In both cases the platform operator must create a mirror
+from which the target machines _can_ pull.  The operator also needs to
+configures OpenRadiant to use those mirrors.
+
+For apt the answer is to configure an Ansible variable named `repos`
+that contains a list of records, one for each alternate apt repo to
+use.  Each record must contain a field that is named `repo` and has a
+value like `deb http://10.20.30.40:8082/ trusty main`.  A record may
+also have a field named `validate_certs`.  These two fields are used
+as the values of the corresponding arguments of the `apt_repository`
+module in Ansible.  A record may also have a field that is named
+`key_url` and has a value like `http://10.20.30.40:8082/Release.pgp`;
+in this case the `key_url` and `validate_certs` (if any) fields are
+used as the `url` and `validate_certs` (respectively) arguments of the
+`apt_key` module in Ansible.  Additionally, a record may also have a
+field that is named `key_package`; in this case Ansible's `apt` module
+is invoked with the `key_package` value passed through the `pkg`
+argument.
+
+For Docker the answer is to redefine the relevant Ansible variables
+that indicate the name and tag of the image to pull.  These variables
+appear in `ansible/group_vars/all`.
