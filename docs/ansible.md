@@ -455,11 +455,18 @@ configures OpenRadiant to use those mirrors.
 
 For apt the answer is to configure an Ansible variable named `repos`
 that contains a list of records, one for each alternate apt repo to
-use.  Each record must contain a field named `key_url` having a value
-like `http://10.140.132.215:8082/Release.pgp`.  A record may also have
-a field named `validate_certs`.  These two fields are used as the
-values of the `url` and `validate_certs` (respectively) arguments of
-the `apt_key` module in Ansible.
+use.  Each record must contain a field that is named `repo` and has a
+value like `deb http://10.20.30.40:8082/ trusty main`.  A record may
+also have a field named `validate_certs`.  These two fields are used
+as the values of the corresponding arguments of the `apt_repository`
+module in Ansible.  A record may also have a field that is named
+`key_url` and has a value like `http://10.20.30.40:8082/Release.pgp`;
+in this case the `key_url` and `validate_certs` (if any) fields are
+used as the `url` and `validate_certs` (respectively) arguments of the
+`apt_key` module in Ansible.  Additionally, a record may also have a
+field that is named `key_package`; in this case Ansible's `apt` module
+is invoked with the `key_package` value passed through the `pkg`
+argument.
 
 For Docker the answer is to redefine the relevant Ansible variables
 that indicate the name and tag of the image to pull.  These variables
