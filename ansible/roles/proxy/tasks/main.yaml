@@ -31,7 +31,7 @@
     when: not hjs_pem.stat.exists|bool
 
   - name: set PASSWD when generating certs
-    set_fact: PASSWD="DyJtZPNjkMeY7zgk"
+    set_fact: PASSWD="thesecret"
     when: not hjs_pem.stat.exists|bool
 
   - name: generate certs when missing or changed
