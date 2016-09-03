@@ -66,6 +66,15 @@ ssh -i ~/.vagrant.d/insecure_private_key vagrant@192.168.10.2
 ```
 
 
+## FYI on using Docker in the deployed environment
+
+In this example's VMs, the `vagrant` user is not authorized to use
+docker.  If you `ssh` to one of these VMs and try to use raw Docker
+engine commands (i.e., without the settings explained
+[below](#exercise-the-shard-directly)) then you will need to `sudo`
+them.
+
+
 ## Prepare the installer machine
 
 To create an installer machine, you can either (1) use another Vagrant

@@ -84,8 +84,12 @@ conventions for how environments and shards are organized and how they
 are described by files, are important parts of OpenRadiant's
 modularity.  This includes the inventory contracts that establish the
 orthogonality between (a) how machines are provisioned and (b) how
-software is installed on them.  See [the Ansible doc](docs/ansible.md)
-for details.
+software is installed on them.  This also includes the concept of
+networking plugins, the convention for where temporary and
+not-temporary files are kept on the installer machine(s), and the
+considerations for deploying in a context where external repositories
+can not be reached.  See [the Ansible doc](docs/ansible.md) for
+details.
 
 
 ### The installer machine
