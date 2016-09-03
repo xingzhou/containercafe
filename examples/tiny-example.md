@@ -40,8 +40,8 @@ provisioning technology you like.  See
 [the inventory contract](../docs/ansible.md#the-inventory-contract) for
 the key idea.
 
-Create target machines with Vagrant.  The following creates two, named
-`radiant2` and `radiant3`.
+Create target machines with Vagrant.  The following creates three, named
+`radiant2`, `radiant3` and `proxy`.
 
 ```bash
 ( cd examples/vagrant; vagrant up )
@@ -49,7 +49,7 @@ Create target machines with Vagrant.  The following creates two, named
 In case you face any issues, please follow [vagrant troubleshooting](vagrant/README.md)
 
 
-## FYI on SSH to Vagrant/VirtualBox VMs
+### FYI on SSH to Vagrant/VirtualBox VMs
 
 There are two easy ways to open a connection to a shell in a
 Vagrant/VirtualBox VM.  One is provided by Vagrant:
@@ -115,7 +115,7 @@ Install ansible and its `netaddr` module:
 pip install -r requirements.txt
 ```
 
-Ansible version 1.9.6 or the latest is reccomended. See
+Ansible version 2.1.1 or the latest is recommended. See
 [our Ansible documentation](../docs/ansible.md#ansible-versions-and-bugs-and-configuration)
 for more details.  If you have a different version and run into issues
 try the following:
