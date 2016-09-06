@@ -61,7 +61,7 @@ We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) pro
       descriptive message. It should briefly describe what you changed
       and why. Include reference(s) to issue(s) being addressed. Don't
       use ```Closes #1234``` or ```Fixes #1234``` because they cause
-      the issue to be closed after merging and we want them in 'done'
+      the issue to be closed after merging but we want them in 'done'
       state in ZenHub for further validation.  See
       [the list of auto-close keywords of github](https://help.github.com/articles/closing-issues-via-commit-messages/)
       and avoid them because we use ZenHub.
