@@ -47,8 +47,8 @@ devops service.
 One operating instantiation of the full platform is called an
 environment, and it contains one or more shards that operate
 independently of each other.  Each shard provides Kubernetes, Swarm,
-and/or Mesos service (you can pick the subset you want, subject to
-reasonableness constraints).  There is an outer control plane with a
+and/or Mesos service --- you can pick the subset you want, subject to
+reasonableness constraints.  There is an outer control plane with a
 proxy API server that implements the Kubernetes and Swarm APIs ---
 with appropriate restrictions and extensions --- by appropriately
 transforming each RPC and dispatching it to the appropriate shard.
@@ -68,6 +68,13 @@ instantiate an OpenRadiant environment.  An installer machine acts as
 Ansible controller to install OpenRadiant in a target environment.
 The installation is parameterized by some Ansible variables files that
 describe the desired target environment.
+
+OpenRadiant deploys Kubernetes, Swarm, and Mesos in containers.  You
+can choose whatever version of each that you want.  Your configure
+your choice of images and tags.  See the doc about
+[the relevant configuration variables](#docs/ansible.md#primary-shard-variables-that-have-defaults)
+and
+[where to put your settings for those variables](docs/ansible.md#additional-files-for-setting-Ansible-variable-values).
 
 The Ansible playbooks strive to meet the Ansible ideal of achieving a
 prescribed desired state, and can thus be used to update as well as

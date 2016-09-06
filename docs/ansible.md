@@ -304,8 +304,21 @@ Following are the most important of those variables.
   which of these three components are deployed.  The usual Ansible
   conventions for values for booleans apply.
 
-* `ha_deploy`: controls whether the master components are deployed in
-  a highly available manner; defaults to true.
+* `k8s_hyperkube_image`, `k8s_hyperkube_version`, `kube_image`: these
+  configure the kubernetes image to use; the first two are put
+  together as image name and tag when Mesos is *not* involve; the
+  third contains both image name and tag and is used when Mesos *is*
+  involved.
+
+* `mesos_master_image`, `mesos_slave_image`: image name and tag to use
+  for Mesos on master and worker nodes.
+
+* `swarm_image`: image name and tag to use for the Swarm manager.
+
+* `ha_deploy`: controls whether a load balancer is deployed in front
+  of the master components.  You pretty much want this when the master
+  components are deployed in a highly available manner; defaults to
+  true.
 
 * `network_interface`: the network interface to use on the target
   machines, for all control and data plane activity.  Yes, currently

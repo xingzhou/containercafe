@@ -76,6 +76,13 @@ Ansible controller to install OpenRadiant in a target environment.
 The installation is parameterized by some Ansible variables files that
 describe the desired target environment.
 
+OpenRadiant deploys Kubernetes, Swarm, and Mesos in containers.  You
+can choose whatever version of each that you want.  Your configure
+your choice of images and tags.  See the doc about
+[the relevant configuration variables](#docs/ansible.md#primary-shard-variables-that-have-defaults)
+and
+[where to put your settings for those variables](docs/ansible.md#additional-files-for-setting-Ansible-variable-values).
+
 The Ansible playbooks strive to meet the Ansible ideal of achieving a
 prescribed desired state, and can thus be used to update as well as
 install.  However, there are limits to the space of initial states
