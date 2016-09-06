@@ -83,7 +83,9 @@ We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) pro
     multiple commits then you may choose to squash them together into
     one commit.  If the commit from which you started working was
     `deadbeef` then you can squash using interactive rebase as
-    follows.
+    follows.  If you are not familiar with interactive rebase then
+    here is the one clue you esperately need: *pick* the oldest commit
+    (which is listed first) and *squash* the rest.
 
     ```bash
     git rebase -i deadbeef
