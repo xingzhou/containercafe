@@ -138,7 +138,7 @@ playbook.  Following is an example invocation.
 
 ```bash
 cd ansible
-ansible-playbook -v env-basics.yml -e env_name==${env_name} -e envs=${envs} -e network_kind=flannel
+ansible-playbook -v env-basics.yml -e env_name==${env_name} -e envs=${envs}
 ```
 
 To create/update an OpenRadiant shard, invoke the `ansible/shard.yml`
