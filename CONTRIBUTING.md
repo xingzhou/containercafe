@@ -68,8 +68,14 @@ We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) pro
 
     ```bash
     git commit
-    git push origin issue-nnnn
+    git push -uorigin issue-nnnn
     ```
+
+    The `-u` means to establish a tracking relationship between the
+    `issue-nnnn` branch in your local repo and the same-named branch
+    in your remote repo.  This is not strictly necessary but is common
+    practice and makes `git status` more informative.  The `-u` is
+    only needed on the first push of the new branch.
 
   1. (Optionally) Squash
 
