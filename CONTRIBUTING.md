@@ -68,7 +68,7 @@ We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) pro
 
     ```bash
     git commit
-    git push -uorigin issue-nnnn
+    git push -u origin issue-nnnn
     ```
 
     The `-u` means to establish a tracking relationship between the
