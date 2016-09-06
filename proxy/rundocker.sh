@@ -6,12 +6,15 @@ helpme()
 {
     cat <<HELPMEHELPME
 
-Syntax: ${0} <env_name> <-d>
+Syntax: ${0} <env_name> [<args>]
 Where:
     env_name - name of the environment, e.g: dev-vbox
+    args:
     -d - run api-proxy container in the background (optional)
-    -l - set the log level for the proxy: INFO, WARNING, ERROR, FATAL (optional)
-    -v - set the log verbosity for the proxy: non-negative integer (optional)
+    -l [INFO, WARNING, ERROR, FATAL] - set the log level for the proxy (optional)
+    -v [non-negative integer] - set the log verbosity for the proxy (optional)
+    -n - configuration for running with Nginx, no-SSL (optional)
+    -i [image_name] - run local image (optional), instead of public image [containercafe/api-proxy] (default)
 
 HELPMEHELPME
 }
@@ -28,6 +31,7 @@ function main {
     #local CERT_MASTER="../ansible/certs/dev-vbox-radiant01"
     local CERTS="$HOME/.openradiant/envs/$env_name"
     local ACERTS="$CERTS/admin-certs"
+    local IMG="containercafe/api-proxy"
     if [ ! -d "$ACERTS" ]; then
       echo "missing $ACERTS directory. Execute ansible scripts first"
       exit 99
@@ -61,6 +65,15 @@ function main {
                 EXTRA_FLAGS+=("-e" "log_verbosity=$2")
                 shift 2
                 ;;
+            -i)
+                IMG=$2
+                echo "Using $IMG image"
+                shift 2
+                ;;
+            -n)
+                EXTRA_FLAGS+=("-e" "use_api_key_header=true" "-e" "use_api_key_cert=false" "-e" "tls_inbound=false")
+                shift
+                ;;
             *)
                 EXTRA_FLAGS+=("$1")
                 shift
@@ -77,9 +90,9 @@ function main {
     
     set -x
     # start new container instance using public api proxy image. Map the volume to CERTS
-    docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy containercafe/api-proxy
+    #docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy containercafe/api-proxy
     # to run your own image, built using `builddocker.sh` script, comment out the line above on un-comment below:
-    #docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy api-proxy
+    docker run "${EXTRA_FLAGS[@]}" -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy $IMG
 }
 
 function copy_certs {

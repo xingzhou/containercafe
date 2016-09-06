@@ -11,6 +11,9 @@ import (
 //ENV defaults
 var env_name = ""
 var api_key_header = "X-Tls-Client-Dn"
+var use_api_key_header = "false"
+var use_api_key_cert = "true"
+
 var docker_port = "8089"
 var docker_api_ver = ""    // "/v1.18"
 
@@ -87,6 +90,11 @@ func init() {
 		glog.Fatal("Error: env_name variable must be set for api-proxy container or script")
 		os.Exit(1)
 	}
+	
+	if IsApiKeyHeaderEnabled() == IsApiKeyCertEnabled() {
+		glog.Fatal("Error: variable 'use_api_key_header' cannot be equal to 'use_api_key_cert'. Only one must be set to true")
+		os.Exit(1)
+	}
 }
 
 func load_env_var(env_name string, target *string) {
@@ -108,6 +116,8 @@ func load_int_env_var(env_name string, target *int) {
 func LoadEnv(){
 	load_env_var("env_name", &env_name)
 	load_env_var("api_key_header", &api_key_header)
+	load_env_var("use_api_key_header", &use_api_key_header)
+	load_env_var("use_api_key_cert", &use_api_key_cert)
 	load_env_var("docker_port", &docker_port)
 	load_env_var("docker_api_ver", &docker_api_ver)
 	load_env_var("tls_inbound", &tls_inbound)
@@ -187,6 +197,20 @@ func IsTlsOutbound() bool {
 	} else {
 		return false
 	}
+}
+
+func IsApiKeyHeaderEnabled() bool {
+	if use_api_key_header == "true" {
+		return true
+	} 
+	return false
+}
+
+func IsApiKeyCertEnabled() bool {
+	if use_api_key_cert == "true" {
+		return true
+	} 
+	return false
 }
 
 func GetClientCertFile() string{
