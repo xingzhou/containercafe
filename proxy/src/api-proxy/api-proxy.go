@@ -1,22 +1,23 @@
 package main
 
 import (
-	"net/http"
-	"strconv"
-	"strings"
-	"os"
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
 
 	// _ "net/http/pprof" //for profiling only
 
+	"conf"    // my conf package
+	"handler" // my handlers
+
 	"github.com/golang/glog"
-	"conf"   	// my conf package
-	"handler" 	// my handlers
 )
 
-func init(){
+func init() {
 	//logger package TeeLog var initialization and init() will take place before this main package init() is executed
 	//conf.LoadEnv() is called in init() of conf package, before this main package init() is executed
 	glog.Info(conf.GetVerStr())
@@ -29,7 +30,7 @@ func main() {
 	//parse args
 	nargs := len(os.Args)
 	if nargs > 1 {
-		listen_port, _=strconv.Atoi(os.Args[1])
+		listen_port, _ = strconv.Atoi(os.Args[1])
 	}
 	glog.Infof("Listening on port %d", listen_port)
 	if nargs > 2 {
@@ -67,8 +68,7 @@ func main() {
 	//Rely on NGINX to route accepted docker/swarm url paths only to hijackproxy
 	http.HandleFunc("/", handler.DockerEndpointHandler)
 	glog.Infof("All handlers registered")
-	
-	
+
 	/*for profiling only
 	go func() {
 		Log.Println(http.ListenAndServe("localhost:6060", nil))
@@ -81,7 +81,7 @@ func main() {
 		glog.Info("Starting TLS listener service")
 		// Here is how started the server earlier, before parsing the user certs:
 		//	err = http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), conf.GetServerCertFile(), conf.GetServerKeyFile(), nil)
-		
+
 		// Validate that all the required certs and keys are available (server and kube admin):
 		_, err := ioutil.ReadFile(conf.GetServerCertFile())
 		if err != nil {
@@ -91,7 +91,7 @@ func main() {
 		if err != nil {
 			glog.Error(err)
 		}
-		
+
 		_, err = ioutil.ReadFile(conf.GetKadminCertFile())
 		if err != nil {
 			glog.Error(err)
@@ -100,7 +100,7 @@ func main() {
 		if err != nil {
 			glog.Error(err)
 		}
-		
+
 		// Here is the new server setup
 		caCert, err := ioutil.ReadFile(conf.GetCaCertFile())
 		if err != nil {
@@ -108,7 +108,7 @@ func main() {
 		}
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
-		
+
 		// Setup HTTPS client
 		tlsConfig := &tls.Config{
 			ClientCAs: caCertPool,
@@ -120,13 +120,13 @@ func main() {
 			ClientAuth: tls.RequireAndVerifyClientCert,
 		}
 		tlsConfig.BuildNameToCertificate()
-		
+
 		server := &http.Server{
-			Addr:      ":"+strconv.Itoa(listen_port),
+			Addr:      ":" + strconv.Itoa(listen_port),
 			TLSConfig: tlsConfig,
 		}
-		
-		server.ListenAndServeTLS(conf.GetServerCertFile(), conf.GetServerKeyFile()) 
+
+		server.ListenAndServeTLS(conf.GetServerCertFile(), conf.GetServerKeyFile())
 	} else {
 		glog.Info("Starting non-TLS listener service")
 		err = http.ListenAndServe(":"+strconv.Itoa(listen_port), nil)
