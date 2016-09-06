@@ -32,7 +32,7 @@ We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) pro
 
 ## To work on something, whether a new feature or a bugfix:
 
-  1. Always update your master [more detail here](https://help.github.com/articles/syncing-a-fork/)
+  1. Always update your master ([more detail here](https://help.github.com/articles/syncing-a-fork/))
 
   ```bash
   git checkout master
@@ -41,50 +41,72 @@ We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) pro
   git push origin master
   ```
 
-  1. Create a descriptively-named branch off of your cloned fork, called
-  *feature branch* (reference the corresponding issue id)
+  1. Create a descriptively-named branch off of your cloned fork, called a
+  *feature branch* (reference the corresponding issue id when fixing an issue)
 
   ```bash
   git checkout -b issue-nnnn
   ```
-Repeat the following steps until you are ready to submit for review.
+  
+  1. Repeat the following steps until you are ready to submit for review.
 
-  1. Work on your code updates, then commit to that branch locally. Regularly push
-  your work to the same feature branch in your fork in github.
+    1. Work on your code updates, then commit to that branch
+    locally. Regularly push your work to the same feature branch in
+    your fork in github.
 
-  1. Commit messages
+    1. Commit messages
 
-  Commit messages must have a short description no longer than 50 characters
-  followed by a blank line and a longer, more descriptive message. It should briefly
-  describe what you changed and why. Include reference(s) to issue(s) being
-  addressed. Don't use ```Closes #1234``` or ```Fixes #1234``` because they
-  cause the issue to be closed after merging and we want them in 'done'
-  state for further validation.
+      Commit messages must have a short description, no longer than 50
+      characters, followed by a blank line and a longer, more
+      descriptive message. It should briefly describe what you changed
+      and why. Include reference(s) to issue(s) being addressed. Don't
+      use ```Closes #1234``` or ```Fixes #1234``` because they cause
+      the issue to be closed after merging but we want them in 'done'
+      state in ZenHub for further validation.  See
+      [the list of auto-close keywords of github](https://help.github.com/articles/closing-issues-via-commit-messages/)
+      and avoid them because we use ZenHub.
 
-  Here is a handy [list of keywords](https://help.github.com/articles/closing-issues-via-commit-messages/)
-  to avoid because we use ZenHub.
+    ```bash
+    git commit
+    git push -u origin issue-nnnn
+    ```
 
-  ```bash
-  git commit
-  git push origin issue-nnnn
-  ```
-Once you are ready to submit PR:
+    The `-u` means to establish a tracking relationship between the
+    `issue-nnnn` branch in your local repo and the same-named branch
+    in your remote repo.  This is not strictly necessary but is common
+    practice and makes `git status` more informative.  The `-u` is
+    only needed on the first push of the new branch.
+
+  1. (Optionally) Squash
+
+    Once you are ready to open a PR for your work, if you have made
+    multiple commits then you may choose to squash them together into
+    one commit.  If the commit from which you started working was
+    `deadbeef` then you can squash using interactive rebase as
+    follows.  If you are not familiar with interactive rebase then
+    here is the one clue you desperately need: *pick* the oldest
+    commit (which is listed first) and *squash* the rest.
+
+    ```bash
+    git rebase -i deadbeef
+    ```
 
   1. Open PR (Pull Request)
 
-  When you need feedback or help, or you think the branch is ready for merging,
-  open a pull request (make sure you have first successfully built and tested
-  your changes)
+    When you need feedback or help, or you think the branch is ready
+    for merging, open a pull request.  Make sure you have first
+    successfully built and tested your changes; explicitly state in
+    your PR whether you have done so.
 
-   _Note: if your PR does not merge cleanly or your feature branch needs to be
-   updated, follow the steps below:_
+     _Note: if your PR does not merge cleanly or your feature branch needs to be
+     updated, follow the steps below:_
 
-      ```bash
-      git checkout issue-nnnn
-      git fetch upstream
-      git rebase upstream/master
-      git push -f origin issue-nnnn
-      ```
+        ```bash
+        git checkout issue-nnnn
+        git fetch upstream
+        git rebase upstream/master
+        git push -f origin issue-nnnn
+        ```
 
   1. Did we mention tests? All code changes should be accompanied by new or modified tests.
 
