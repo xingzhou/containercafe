@@ -137,6 +137,9 @@ Another way is to use Python's `easy_install` to install `pip`.
 Another way to get the `netaddr` module is to install `python-netaddr`
 using the operating system's package manager.
 
+If the installer machine is running MacOS 10 then it needs to have
+done `brew install gnu-tar`, for mysterious reasons.
+
 
 ### Installing OpenRadiant
 
