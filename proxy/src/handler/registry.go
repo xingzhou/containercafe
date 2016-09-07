@@ -1,48 +1,49 @@
 package handler
 
 import (
-	"net/http"
-	"net/url"
-	"io"
-	"io/ioutil"
-	"strings"
-	"fmt"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
 
 	"auth"
 	"conf"
 	"httphelper"
+
 	"github.com/golang/glog"
 )
 
-var _REG_ADMIN_CREDS_  bool = true   //feature flag
+var _REG_ADMIN_CREDS_ bool = true //feature flag
 
 func InjectRegAuthHeader(r *http.Request, creds auth.Creds) {
 	//Use admin base64 encoded psswd
 	//tok := conf.GetRegAuthToken()
 
- 	var user, psswd string
- 	if _REG_ADMIN_CREDS_ {
+	var user, psswd string
+	if _REG_ADMIN_CREDS_ {
 		user = "admin"
 		psswd = conf.GetRegAdminPsswd()
-	}else{
+	} else {
 		user = "apikey"
 		psswd = creds.Apikey
 	}
-	reg:=conf.GetRegLocation()
+	reg := conf.GetRegLocation()
 
 	//create X-Registry-Auth object out of apikey in creds
 	// {"username":"admin","password":"230189","auth":"","email":"swarm@dev.test","serveraddress":"registry-ice-dev-test.stage1.ng.bluemix.net"}
 	auth_str := fmt.Sprintf("{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"\",\"email\":\"swarm@dev.test\",\"serveraddress\":\"%s\"}", user, psswd, reg)
-    	auth_bytes := []byte(auth_str)
-	tok := base64.StdEncoding.EncodeToString( auth_bytes )
+	auth_bytes := []byte(auth_str)
+	tok := base64.StdEncoding.EncodeToString(auth_bytes)
 
 	glog.Infof("InjectRegAuthHeader:  auth_str=%s  tok=%s", auth_str, tok)
 	r.Header.Set("X-Registry-Auth", tok)
 }
 
-func GetRegistryApiHosts() (hosts []string){
+func GetRegistryApiHosts() (hosts []string) {
 	// get service host from Consul
 	service := "registry-api"
 	hosts = conf.GetServiceHosts(service)
@@ -50,13 +51,13 @@ func GetRegistryApiHosts() (hosts []string){
 		glog.Errorf("Failed to get Registry API host  service=%s", service)
 		return
 	}
-	for _,v := range hosts{
+	for _, v := range hosts {
 		glog.Infof("Found Registry api host=%s", v)
 	}
 	return
 }
 
-func AddCredsHeaders(req *http.Request, creds auth.Creds){
+func AddCredsHeaders(req *http.Request, creds auth.Creds) {
 	req.Header.Add("namespace", creds.Reg_namespace)
 	req.Header.Add("apikey", creds.Apikey)
 	req.Header.Add("orguuid", creds.Orguuid)
@@ -67,15 +68,15 @@ func AddCredsHeaders(req *http.Request, creds auth.Creds){
 }
 
 // using internal api exposed by registry microservice
-func DoRegistryCall(w http.ResponseWriter, r *http.Request, uriPath string, method string, creds auth.Creds, req_id string){
+func DoRegistryCall(w http.ResponseWriter, r *http.Request, uriPath string, method string, creds auth.Creds, req_id string) {
 	// get service host from Consul
 	hosts := GetRegistryApiHosts()
-	if (len(hosts) == 0){
+	if len(hosts) == 0 {
 		ErrorHandlerWithMsg(w, r, 500, "Failed to get Registry API host")
 		return
 	}
-		//Call service endpoint
-	for i:=0; i<len(hosts); i++ {
+	//Call service endpoint
+	for i := 0; i < len(hosts); i++ {
 		url := "http://" + hosts[i] + uriPath
 		glog.Infof("Will call Registry... url=%s req_id=%s", url, req_id)
 		client := &http.Client{}
@@ -100,8 +101,8 @@ func DoRegistryCall(w http.ResponseWriter, r *http.Request, uriPath string, meth
 }
 
 // call internal registry api server to get image metadata
-func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, creds auth.Creds, req_id string){
-	uriPath := "/v1/imageJson?imageName="+img
+func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, creds auth.Creds, req_id string) {
+	uriPath := "/v1/imageJson?imageName=" + img
 	method := r.Method
 	DoRegistryCall(w, r, uriPath, method, creds, req_id)
 }
@@ -109,7 +110,7 @@ func invoke_reg_inspect(w http.ResponseWriter, r *http.Request, img string, cred
 //implement image list by invoking search api of Containers registry
 //return json to docker cli
 //DockerHandler will print req processing completion message and exit right after this method
-func invoke_reg_list(w http.ResponseWriter, r *http.Request, creds auth.Creds, req_id string){
+func invoke_reg_list(w http.ResponseWriter, r *http.Request, creds auth.Creds, req_id string) {
 	//Not recommended approach. These urls go to registry.ng.bluemix.net
 	//ns_url := "http://" + conf.GetRegLocation() + "/v1/namespaces/" + namespace
 	//lib_url := "http://" + conf.GetRegLocation() + "/v1/namespaces/library"
@@ -120,10 +121,10 @@ func invoke_reg_list(w http.ResponseWriter, r *http.Request, creds auth.Creds, r
 }
 
 //TODO: reimplement using micrservice when available
-func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds auth.Creds, req_id string){
+func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds auth.Creds, req_id string) {
 	//img valid format:  host/namespace/name:tag
 	sl := strings.Split(img, "/")
-	if len(sl) != 3  {
+	if len(sl) != 3 {
 		glog.Errorf("Not valid image name  img=%s req_id=%s", img, req_id)
 		ErrorHandlerWithMsg(w, r, 500, "Not valid image name")
 		return
@@ -140,30 +141,30 @@ func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds au
 	img_tag := img_name_and_tag[1]
 
 	// Construct the request to registry.
-    	url := fmt.Sprintf("https://%s/v1/repositories/%s/%s/tags/%s", reg, namespace, img_name, img_tag)
+	url := fmt.Sprintf("https://%s/v1/repositories/%s/%s/tags/%s", reg, namespace, img_name, img_tag)
 	glog.Infof("Will call Registry... url=%s req_id=%s", url, req_id)
 	client := &http.Client{}
-	req, _ := http.NewRequest("DELETE",url, nil)
+	req, _ := http.NewRequest("DELETE", url, nil)
 	//TODO: when rmi is implemented by reg microservice 	AddCredsHeaders(req, creds)
 	req.Header.Add("Accept", "application/json")
 
- 	if _REG_ADMIN_CREDS_ {
+	if _REG_ADMIN_CREDS_ {
 		req.SetBasicAuth("admin", conf.GetRegAdminPsswd())
-	}else{
+	} else {
 		req.SetBasicAuth("apikey", creds.Apikey)
 	}
 
 	resp, _ := client.Do(req)
 	defer resp.Body.Close()
-	body,_:=ioutil.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(resp.Body)
 	glog.Infof("Registry status code: %d", resp.StatusCode)
 	glog.Infof("Registry response: %s", httphelper.PrettyJson(body))
 
 	//send response back to client
 	body_str := ""
-	if resp.StatusCode == 200{
+	if resp.StatusCode == 200 {
 		body_str = fmt.Sprintf("[{\"Deleted\":\"%s\"}]", img)
-	}else{
+	} else {
 		body_str = string(body)
 	}
 	w.WriteHeader(resp.StatusCode)
@@ -173,7 +174,7 @@ func invoke_reg_rmi(w http.ResponseWriter, r *http.Request, img string, creds au
 
 //////////////////////////// image names extraction and validation ops
 
-func is_img_valid(img string, namespace string) bool{
+func is_img_valid(img string, namespace string) bool {
 	if img == "" {
 		return true
 	}
@@ -193,23 +194,23 @@ func is_img_valid(img string, namespace string) bool{
 
 	// we have a Containers reg img with namespace
 	// limit access only to this environment's registry
-	if namespace == sl[1] && conf.GetRegLocation() == sl[0]{
+	if namespace == sl[1] && conf.GetRegLocation() == sl[0] {
 		return true
 	}
 	return false
 }
 
-func get_image_from_container_create(body []byte) (img string){
+func get_image_from_container_create(body []byte) (img string) {
 	// look for "Image":"..."
 	var f interface{}
 	err := json.Unmarshal(body, &f)
-	if err != nil{
+	if err != nil {
 		glog.Errorf("get_image_from_container_create: error in json unmarshalling, err=%v", err)
 		return
 	}
 	m := f.(map[string]interface{})
 	for k, v := range m {
-		if (k == "Image") {
+		if k == "Image" {
 			img = v.(string)
 			glog.Infof("get_image_from_container_create: found img=%s", img)
 			return
@@ -219,7 +220,7 @@ func get_image_from_container_create(body []byte) (img string){
 	return
 }
 
-func getImageFullnameFromVars(vars map[string]string)(fullname string){
+func getImageFullnameFromVars(vars map[string]string) (fullname string) {
 	if _, ok := vars["{img}"]; !ok {
 		return
 	}
@@ -233,24 +234,24 @@ func getImageFullnameFromVars(vars map[string]string)(fullname string){
 	return
 }
 
-func get_image_from_image_create(reqUri string) (img string){
+func get_image_from_image_create(reqUri string) (img string) {
 	//look for ?fromImage=...&registry=...
 	u, err := url.Parse(reqUri)
 	if err != nil {
 		glog.Error(err)
 		return
 	}
-	q := u.Query()  // q is map[string][]string
+	q := u.Query() // q is map[string][]string
 	fromImage := q.Get("fromImage")
 	registry := q.Get("registry)")
-	if (registry == ""){
+	if registry == "" {
 		img = fromImage
 		return
 	}
-	if strings.Contains(fromImage, registry){
+	if strings.Contains(fromImage, registry) {
 		img = fromImage
 		return
 	}
-	img = registry+"/"+fromImage
+	img = registry + "/" + fromImage
 	return
 }

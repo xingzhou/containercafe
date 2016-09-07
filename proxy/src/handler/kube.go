@@ -3,27 +3,27 @@
 package handler
 
 import (
-	"net/http"
 	"fmt"
-	"net/http/httputil"
 	"io/ioutil"
-	"time"
-	"strings"
+	"net/http"
+	"net/http/httputil"
 	"strconv"
+	"strings"
+	"time"
 
+	"auth"
+	"conf"
 	"encoding/json"
 	"httphelper"
-	"conf"
-	"auth"
-//	"reflect"
+	//	"reflect"
 	"errors"
+
 	"github.com/golang/glog"
 )
 
-
 // supported Kubernetes api uri prefix patterns
 // these kube url patterns require namespaces:
-var kubePrefixPatterns = []string {
+var kubePrefixPatterns = []string{
 	"/apis/",
 	"/api/v1/namespaces/",
 	"/api/v1/watch/namespaces/",
@@ -34,7 +34,7 @@ var kubePrefixPatterns = []string {
 	"/swaggerapi/",
 }
 
-// TODO 
+// TODO
 // There is a problem with /apis, because it's handled by docker endpoint pattern
 //2016/04/18 15:58:51.066842 docker.go:75: ------> DockerEndpointHandler triggered, req_id=2, URI=/apis
 //2016/04/18 15:58:51.066883 docker.go:79: Docker pattern not accepted, req_id=2, URI=/apis
@@ -42,15 +42,14 @@ var kubePrefixPatterns = []string {
 //2016/04/18 15:58:51.066903 docker.go:81: ------ Completed processing of request req_id=2
 
 // these kube url patterns don't require namespaces
-var kubeExactPatterns = []string {
+var kubeExactPatterns = []string{
 	"/api",
 	"/apis",
 	"/version",
 }
 
-
 //called from init() of the package
-func InitKubeHandler(){
+func InitKubeHandler() {
 
 }
 
@@ -61,7 +60,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	glog.Infof("------> KubeEndpointHandler triggered, req_id=%s, URI=%s\n", req_id, r.RequestURI)
 
 	// check if URI supported and requires auth.
-	if IsExactPattern(r.RequestURI, kubeExactPatterns){
+	if IsExactPattern(r.RequestURI, kubeExactPatterns) {
 		glog.Infof("Kube exact pattern accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
 	} else if IsSupportedPattern(r.RequestURI, kubePrefixPatterns) {
 		glog.Infof("Kube prefix pattern accepted, req_id=%s, URI=%s", req_id, r.RequestURI)
@@ -76,10 +75,10 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	// body, _ := ioutil.ReadAll(r.Body)
 	// Log.Printf("**** %+v", r)
 	// Log.Printf("**** This is a request body: %+v", body)
-	
+
 	// read the credentials from the local file first
 	var creds auth.Creds
-	creds = auth.FileAuth(r) // So creds should now hold info FOR THAT space_id. 
+	creds = auth.FileAuth(r) // So creds should now hold info FOR THAT space_id.
 	if creds.Status == 200 {
 		glog.Infof("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
 		// Log.Printf("**** Creds %+v", creds)
@@ -100,7 +99,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorHandlerWithMsg(w, r, 404, "Incomplete data received from authentication component")
 		return
 	}
-	
+
 	// assigning a proper port for Kubernentes
 	// the target might or might not contain 'http://', strip it
 	redirectTarget := creds.Node
@@ -112,7 +111,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		redirectTarget = sp[0] + ":" + strconv.Itoa(conf.GetKubePort())
 	}
-	
+
 	glog.Infof("Assigning proper Kubernetes port. Old target: %v, New target: %v", creds.Node, redirectTarget)
 
 	// get user certificates from the CCSAPI server
@@ -123,7 +122,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler(w, r, creds.Status)
 	}
 	glog.Infof("Obtaining user certs successful for req_id=%s status=%d", req_id, status)
-	
+
 	// convert the Bluemix space id to namespace
 	namespace := auth.GetNamespace(creds.Space_id)
 	kubeHandler(w, r, redirectTarget, namespace, req_id, []byte(certs.User_cert), []byte(certs.User_key))
@@ -149,12 +148,12 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	body, err := kubeUpdateBody(r, namespace)
 	if err != nil {
 		glog.Errorf("Error %v", err.Error())
-		ErrorHandlerWithMsg(w, r, 500, "Error updating Kube body: " + err.Error())
+		ErrorHandlerWithMsg(w, r, 500, "Error updating Kube body: "+err.Error())
 	}
-	
+
 	//***** Filter req/headers here before forwarding request to server *****
 
-	if (httphelper.IsUpgradeHeader(r.Header)) {
+	if httphelper.IsUpgradeHeader(r.Header) {
 		glog.Infof("@ Upgrade request detected\n")
 		req_UPGRADE = true
 	}
@@ -162,24 +161,25 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	maxRetries := 1
 	backOffTimeout := 0
 
-	var (resp *http.Response
-		cc *httputil.ClientConn
+	var (
+		resp *http.Response
+		cc   *httputil.ClientConn
 	)
-	for i:=0; i<maxRetries; i++ {
+	for i := 0; i < maxRetries; i++ {
 		// resp, err, cc = redirect_random (r, body, redirect_host, redirect_resource_id,
 		resp, err, cc = redirect_with_cert(r, body, redirect_host, namespace,
 			kubeRewriteUri, false, cert, key /* override tls setting*/)
-			// kubeRewriteUri, true /* override tls setting*/) TODO MS
+		// kubeRewriteUri, true /* override tls setting*/) TODO MS
 		if err == nil {
-			break	
+			break
 		}
 		glog.Warningf("redirect retry=%d failed", i)
-		if (i+1) < maxRetries {
+		if (i + 1) < maxRetries {
 			glog.Warningf("will sleep secs=%d before retry", backOffTimeout)
-			time.Sleep( time.Duration(backOffTimeout) * time.Second)
+			time.Sleep(time.Duration(backOffTimeout) * time.Second)
 		}
 	}
-	if (err != nil) {
+	if err != nil {
 		glog.Errorf("Error in redirection, will abort req_id=%s ... err=%v\n", req_id, err)
 		ErrorHandlerWithMsg(w, r, 500, "Internal communication error. Check if the redirected host is active")
 		return
@@ -192,11 +192,11 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	//fmt.Printf("%s\n", string(data2))
 
 	glog.Infof("Resp Status: %s\n", resp.Status)
-	glog.Info( httphelper.DumpHeader(resp.Header) )
+	glog.Info(httphelper.DumpHeader(resp.Header))
 
 	httphelper.CopyHeader(w.Header(), resp.Header)
 
-	if (httphelper.IsUpgradeHeader(resp.Header)) {
+	if httphelper.IsUpgradeHeader(resp.Header) {
 		glog.Infof("@ Upgrade response detected\n")
 		resp_UPGRADE = true
 	}
@@ -229,13 +229,13 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		return
 	}
 
-	_KUBE_CHUNKED_READ_ := true   // new feature flag
+	_KUBE_CHUNKED_READ_ := true // new feature flag
 
 	if _KUBE_CHUNKED_READ_ {
 		//new code to test
 		//defer resp.Body.Close()   // causes this method to not return to caller IF closing while there is still data in Body!
 		chunkedRWLoop(resp, w, req_id)
-	}else {
+	} else {
 		resp_body, err := ioutil.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
@@ -251,28 +251,28 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		bodystr += httphelper.PrettyJson(resp_body)
 		glog.Info(bodystr)
 		/*
-		if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
-			httphelper.PrintJson(resp_body)
-		}else {
-			Log.Printf("\n%s\n", string(resp_body))
-		}
+			if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
+				httphelper.PrintJson(resp_body)
+			}else {
+				Log.Printf("\n%s\n", string(resp_body))
+			}
 		*/
 		//forward server response to calling client
 		fmt.Fprintf(w, "%s", resp_body)
 	}
 	return
 }
-	
-func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error) {
+
+func kubeUpdateBody(r *http.Request, namespace string) (body []byte, err error) {
 	body, _ = ioutil.ReadAll(r.Body)
 	if r.Method != "POST" {
 		// return the original body
 		return body, nil
 	}
-	// convert the body to string 
+	// convert the body to string
 	bodystr := httphelper.PrettyJson(body)
 	glog.Infof("Original JSON: %s", bodystr)
-	
+
 	// the request to create pod looks as follow:
 	//	 {
 	//	  	"kind":"Pod",
@@ -313,32 +313,32 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 	// get the label names
 	auth_label := conf.GetSwarmAuthLabel()
 	annot_label := conf.GetAnnotationExtLabel()
-	
-	// get the body of the request	
+
+	// get the body of the request
 	data := map[string]interface{}{}
 	json.Unmarshal(body, &data)
-	
+
 	// TODO the code below has to be revisited and simplified
 	// there should be a common method for injecting the annotations
-	// I just could get this working yet.... 
+	// I just could get this working yet....
 	//		fmt.Println(reflect.TypeOf(data))
 	//		meta := inject_annotation(data["metadata"])
-		
+
 	// get request type
 	kind := data["kind"]
-	
+
 	var metam map[string]interface{}
 	if kind == "Pod" {
-		meta :=  data["metadata"]
+		meta := data["metadata"]
 		// convert the interface{} to map
-		metam =meta.(map[string]interface{})
+		metam = meta.(map[string]interface{})
 	} else if kind == "Deployment" || kind == "ReplicaSet" || kind == "ReplicationController" || kind == "Job" {
 		spec := data["spec"]
 		specm := spec.(map[string]interface{})
 		templ := specm["template"]
 		templm := templ.(map[string]interface{})
-		meta :=  templm["metadata"]
-		metam =meta.(map[string]interface{})
+		meta := templm["metadata"]
+		metam = meta.(map[string]interface{})
 	}
 
 	annot := metam["annotations"]
@@ -350,9 +350,9 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 		metam["annotations"] = annotm
 	} else {
 		// convert the existing annotation interface{} to map
-		annotm =annot.(map[string]interface{})
-	}	
-	if annotm[annot_label]=="" || annotm[annot_label]==nil{
+		annotm = annot.(map[string]interface{})
+	}
+	if annotm[annot_label] == "" || annotm[annot_label] == nil {
 		glog.Infof("Annotation label does not exist")
 	} else {
 		glog.Infof("Annotation label %v already exists: %v", annot_label, annotm[annot_label])
@@ -360,36 +360,35 @@ func kubeUpdateBody(r *http.Request, namespace string)  (body []byte, err error)
 		return nil, err
 	}
 
-	new_value := "{ \"" + auth_label+ "\": \""+ namespace + "\" }"
+	new_value := "{ \"" + auth_label + "\": \"" + namespace + "\" }"
 	annotm[annot_label] = new_value
 	glog.Infof("Injecting annotation: %v with value: %v for kind: %v", annot_label, new_value, kind)
 
-	b, err := json.Marshal(data) 
+	b, err := json.Marshal(data)
 	if err != nil {
 		glog.Errorf("Error marshaling the updated json: %v ", err)
- 		return nil, err
- 	}
+		return nil, err
+	}
 	bodystr = httphelper.PrettyJson(b)
 	glog.Info("Updated JSON: %s", bodystr)
 	return b, nil
-}	
+}
 
-
-func kubeRewriteUri(reqUri string, namespace string) (redirectUri string){
+func kubeRewriteUri(reqUri string, namespace string) (redirectUri string) {
 	sl := strings.Split(reqUri, "/")
 	next := false
-	for i:=0; i < len(sl); i++{
-		if next{
+	for i := 0; i < len(sl); i++ {
+		if next {
 			redirectUri += namespace
 			next = false
-		}else{
+		} else {
 			redirectUri += sl[i]
 		}
-		if sl[i] == "namespaces"{
+		if sl[i] == "namespaces" {
 			next = true
 		}
 		//if not done
-		if i+1 < len(sl){
+		if i+1 < len(sl) {
 			redirectUri += "/"
 		}
 	}

@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"net/http"
 	"io"
+	"net/http"
+
 	"github.com/golang/glog"
 )
 
@@ -10,5 +11,5 @@ import (
 func ForbiddenOperationHandler(w http.ResponseWriter, r *http.Request, msg string) {
 	glog.Warningf("ForbiddenOperationHandler triggered, URI=%s, returning error 403, msg=%s", r.RequestURI, msg)
 	w.WriteHeader(403)
-	io.WriteString(w, msg +"\n")
+	io.WriteString(w, msg+"\n")
 }

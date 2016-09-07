@@ -1,25 +1,27 @@
 package conf
 
-import(
+import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"encoding/json"
+
 	"github.com/golang/glog"
 )
 
 const Version = 1.20
+
 var BuildId = ""
 var BuildDate = ""
 
-func GetVerStr() string{
+func GetVerStr() string {
 	buildId, buildDate := GetBuildInfo("build.info")
 	s := fmt.Sprintf("ver=%4.2f  build_id=%s  build_date=%s", Version, buildId, buildDate)
 	return s
 }
 
-func GetBuildInfo(fname string) (buildId string, buildDate string){
+func GetBuildInfo(fname string) (buildId string, buildDate string) {
 
-	if BuildDate != ""{
+	if BuildDate != "" {
 		//build info was loaded already, reuse
 		buildDate = BuildDate
 		buildId = BuildId
@@ -29,16 +31,16 @@ func GetBuildInfo(fname string) (buildId string, buildDate string){
 	b, err := ioutil.ReadFile(fname)
 	if err != nil {
 		glog.Errorf("error reading build info file %s", fname)
-		BuildDate = " "  //prevent future attempts to reload
+		BuildDate = " " //prevent future attempts to reload
 		return
 	}
 
 	// fill map
 	var f interface{}
 	err = json.Unmarshal(b, &f)
-	if err != nil{
+	if err != nil {
 		glog.Errorf("error in json unmarshalling, err=%v", err)
-		BuildDate = " "  //prevent future attempts to reload
+		BuildDate = " " //prevent future attempts to reload
 		return
 	}
 
@@ -48,7 +50,7 @@ func GetBuildInfo(fname string) (buildId string, buildDate string){
 		case "build-id":
 			buildId = v.(string)
 			break
-		case"build-date":
+		case "build-date":
 			buildDate = v.(string)
 			break
 		default:
