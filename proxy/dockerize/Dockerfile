@@ -46,7 +46,6 @@ ENV log_file_path="/tmp/feeds/logstash_api_proxy" \
     use_api_key_cert="true" \
     ca_cert_file="/opt/tls_certs/admin-certs/ca.pem" \
     client_cert_file="/opt/tls_certs/admin-certs/hjclient.pem" \
-    client_cert_file="/opt/tls_certs/admin-certs/hjclient.pem" \
     client_key_file="/opt/tls_certs/admin-certs/hjclient.key" \
     server_cert_file="/opt/tls_certs/admin-certs/hjserver.pem" \
     server_key_file="/opt/tls_certs/admin-certs/hjserver.key" \
