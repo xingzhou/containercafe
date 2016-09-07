@@ -1,18 +1,18 @@
 package httphelper
 
-import(
+import (
+	"bufio"
 	"net"
 	"net/http"
 	"net/http/httputil"
-	"bufio"
 	"sync"
 	"time"
 
 	"github.com/golang/glog"
 )
 
-func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id string, proto string){
-	var cli_conn, srv_conn  net.Conn
+func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id string, proto string) {
+	var cli_conn, srv_conn net.Conn
 	var cli_bufrw, srv_bufrw *bufio.ReadWriter
 	var srv_bufr *bufio.Reader
 	var err error = nil
@@ -31,23 +31,21 @@ func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id stri
 		return
 	}
 
-
 	//hijack server conn (act as client on this conn)
 	srv_conn, srv_bufr = cc.Hijack()
 	srv_bufrw = bufio.NewReadWriter(srv_bufr, bufio.NewWriter(srv_conn))
 
-
 	//call TCP hijack loop if upgrade proto is tcp
 	if proto == "TCP" {
 		tcpHijack(cli_conn, cli_bufrw, srv_conn, srv_bufrw, req_id)
-		time.Sleep(100*time.Millisecond) //allow time for go routines to shutdown after hijack completion
-	}else{
+		time.Sleep(100 * time.Millisecond) //allow time for go routines to shutdown after hijack completion
+	} else {
 		glog.Errorf("hijack protocol %s not supported\n", proto)
 	}
 }
 
 //implement tcp hijack loop forwarding raw tcp messages between cli and srv
-func tcpHijack (cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Conn, srv_bufrw *bufio.ReadWriter,
+func tcpHijack(cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Conn, srv_bufrw *bufio.ReadWriter,
 	req_id string) {
 	//start 2 blocking read/forward loops, BUT exit as soon as one of them exits
 	var wg sync.WaitGroup
@@ -76,7 +74,7 @@ func tcpHijack (cli_conn net.Conn, cli_bufrw *bufio.ReadWriter, srv_conn net.Con
 	glog.Infof("%s Hijack exit and connections close\n", prefix)
 }
 
-func rwloop (src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
+func rwloop(src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
 	print_prefix string, wg *sync.WaitGroup, server_read_loop bool) {
 
 	if server_read_loop {
@@ -87,7 +85,7 @@ func rwloop (src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
 	glog.Infof("%s rwloop started\n", print_prefix)
 	//s, err := src_buf.ReadString('\n')
 	b, err := src_buf.ReadByte()
-	for (err == nil) {
+	for err == nil {
 		//_, werr := dest_buf.WriteString(s)
 		werr := dest_buf.WriteByte(b)
 		dest_buf.Flush()
@@ -105,4 +103,3 @@ func rwloop (src_buf, dest_buf *bufio.ReadWriter, src_conn, dest_conn net.Conn,
 		return
 	}
 }
-

@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"net/http"
 	"io"
+	"net/http"
+
 	"github.com/golang/glog"
 )
 

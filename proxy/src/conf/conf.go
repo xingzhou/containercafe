@@ -1,8 +1,8 @@
 package conf
 
 import (
-	"os"
 	"flag"
+	"os"
 	"strconv"
 
 	"github.com/golang/glog"
@@ -15,7 +15,7 @@ var use_api_key_header = "false"
 var use_api_key_cert = "true"
 
 var docker_port = "8089"
-var docker_api_ver = ""    // "/v1.18"
+var docker_api_ver = "" // "/v1.18"
 
 var tls_inbound = "false"
 var tls_outbound = "false"
@@ -25,57 +25,57 @@ var server_key_file = "hjserver.key"
 var client_cert_file = "hjclient.pem"
 var client_key_file = "hjclient.key"
 
-var stub_auth_file="creds.json" 
+var stub_auth_file = "creds.json"
 
 var registry_location = ""
-var registry_admin_password=""
+var registry_admin_password = ""
 var consul_ip = ""
 var consul_port = 8500
 
-var max_container_conn = 0  	//max parallel conn allowed to a container, 0 means no max
-var max_node_conn = 0			//max parallel conn allowed to a node, 0 means no max
+var max_container_conn = 0 //max parallel conn allowed to a container, 0 means no max
+var max_node_conn = 0      //max parallel conn allowed to a node, 0 means no max
 
-var max_retries = 10		//max num of times to try connection to server, used in case of attach
-var back_off_timeout = 3	//backoff timeout in secs between retries, used in connection with max_retries
+var max_retries = 10     //max num of times to try connection to server, used in case of attach
+var back_off_timeout = 3 //backoff timeout in secs between retries, used in connection with max_retries
 
-var surrogate_ids = "true"	// us e surrogate vs random-encoded Ids
+var surrogate_ids = "true" // us e surrogate vs random-encoded Ids
 
 // kubernetes parameters:
-var kube_port = 443  // Kubernetes master listen port (443 kube-auth) 
+var kube_port = 443        // Kubernetes master listen port (443 kube-auth)
 var kube_authz_port = 8888 // KubeAuthz service port
-var kube_admin_key_file  = "admin-key.pem"
+var kube_admin_key_file = "admin-key.pem"
 var kube_admin_cert_file = "admin.pem"
 var service_user_template = "system:serviceaccount:$namespace:default"
 
 // swarm parameters:
-var swarm_master_port = 2375 // swarm master port
-var swarm_node_port = 2375  // swarm slave nodes port
-var swarm_auth_header = "X-Auth-TenantId"// header name required by swarm-auth
+var swarm_master_port = 2375                      // swarm master port
+var swarm_node_port = 2375                        // swarm slave nodes port
+var swarm_auth_header = "X-Auth-TenantId"         // header name required by swarm-auth
 var swarm_auth_label = "com.ibm.radiant.tenant.0" // the label that is used by swarm to select tenants
 
 // parameter name used for injecting label to kubernetes pods
 var annotation_ext_label = "containers-annotations.alpha.kubernetes.io"
 
 var default_listen_port = 8087
-var Default_redirect_host = ""		//TODO remove this testing default
+var Default_redirect_host = "" //TODO remove this testing default
 
 func init() {
 	// configure the logging framework
 	flag.Parse()
 
-	log_file_path:=os.Getenv("log_file_path")
+	log_file_path := os.Getenv("log_file_path")
 	if log_file_path != "" {
 		flag.Lookup("log_dir").Value.Set(log_file_path)
 	}
 
-	log_level:=os.Getenv("log_level")
+	log_level := os.Getenv("log_level")
 	if log_level != "" {
 		flag.Lookup("stderrthreshold").Value.Set(log_level)
 	} else {
 		flag.Lookup("stderrthreshold").Value.Set("INFO")
 	}
 
-	log_verbosity:=os.Getenv("log_verbosity")
+	log_verbosity := os.Getenv("log_verbosity")
 	if log_verbosity != "" {
 		flag.Lookup("v").Value.Set(log_verbosity)
 	} else {
@@ -90,7 +90,7 @@ func init() {
 		glog.Fatal("Error: env_name variable must be set for api-proxy container or script")
 		os.Exit(1)
 	}
-	
+
 	if IsApiKeyHeaderEnabled() == IsApiKeyCertEnabled() {
 		glog.Fatal("Error: variable 'use_api_key_header' cannot be equal to 'use_api_key_cert'. Only one must be set to true")
 		os.Exit(1)
@@ -98,7 +98,7 @@ func init() {
 }
 
 func load_env_var(env_name string, target *string) {
-	s:=os.Getenv(env_name)
+	s := os.Getenv(env_name)
 	if s != "" {
 		*target = s
 	}
@@ -106,14 +106,14 @@ func load_env_var(env_name string, target *string) {
 }
 
 func load_int_env_var(env_name string, target *int) {
-	s:=os.Getenv(env_name)
+	s := os.Getenv(env_name)
 	if s != "" {
 		*target, _ = strconv.Atoi(s)
 	}
 	glog.Infof("load_int_env_var: %s=%d", env_name, *target)
 }
 
-func LoadEnv(){
+func LoadEnv() {
 	load_env_var("env_name", &env_name)
 	load_env_var("api_key_header", &api_key_header)
 	load_env_var("use_api_key_header", &use_api_key_header)
@@ -167,10 +167,10 @@ func GetDockerApiVer() string {
 	return docker_api_ver
 }
 
-func SetTlsInbound (b bool){
+func SetTlsInbound(b bool) {
 	if b {
 		tls_inbound = "true"
-	}else {
+	} else {
 		tls_inbound = "false"
 	}
 }
@@ -183,10 +183,10 @@ func IsTlsInbound() bool {
 	}
 }
 
-func SetTlsOutbound (b bool){
+func SetTlsOutbound(b bool) {
 	if b {
 		tls_outbound = "true"
-	}else {
+	} else {
 		tls_outbound = "false"
 	}
 }
@@ -202,70 +202,70 @@ func IsTlsOutbound() bool {
 func IsApiKeyHeaderEnabled() bool {
 	if use_api_key_header == "true" {
 		return true
-	} 
+	}
 	return false
 }
 
 func IsApiKeyCertEnabled() bool {
 	if use_api_key_cert == "true" {
 		return true
-	} 
+	}
 	return false
 }
 
-func GetClientCertFile() string{
+func GetClientCertFile() string {
 	return client_cert_file
 }
 
-func GetClientKeyFile() string{
+func GetClientKeyFile() string {
 	return client_key_file
 }
 
-func GetServerCertFile() string{
+func GetServerCertFile() string {
 	return server_cert_file
 }
 
-func GetCaCertFile() string{
+func GetCaCertFile() string {
 	return ca_cert_file
 }
 
-func GetServerKeyFile() string{
+func GetServerKeyFile() string {
 	return server_key_file
 }
 
-func GetStubAuthFile() string{
+func GetStubAuthFile() string {
 	return stub_auth_file
 }
 
-func GetKadminKeyFile() string{
+func GetKadminKeyFile() string {
 	return kube_admin_key_file
 }
 
-func GetKadminCertFile() string{
+func GetKadminCertFile() string {
 	return kube_admin_cert_file
 }
 
-func GetServiceUserTemplate() string{
+func GetServiceUserTemplate() string {
 	return service_user_template
-}	
+}
 
-func GetMaxContainerConn() int{
+func GetMaxContainerConn() int {
 	return max_container_conn
 }
 
-func GetMaxNodeConn() int{
+func GetMaxNodeConn() int {
 	return max_node_conn
 }
 
-func GetMaxRetries() int{
+func GetMaxRetries() int {
 	return max_retries
 }
 
-func GetBackOffTimeout() int{
+func GetBackOffTimeout() int {
 	return back_off_timeout
 }
 
-func IsSurrogateIds() bool{
+func IsSurrogateIds() bool {
 	if surrogate_ids == "true" {
 		return true
 	} else {
@@ -273,46 +273,46 @@ func IsSurrogateIds() bool{
 	}
 }
 
-func GetKubePort() int{
+func GetKubePort() int {
 	return kube_port
 }
 
-func GetKubeAuthzPort() int{
+func GetKubeAuthzPort() int {
 	return kube_authz_port
 }
 
-func GetSwarmMasterPort() int{
+func GetSwarmMasterPort() int {
 	return swarm_master_port
 }
 
-func GetSwarmNodePort() int{
+func GetSwarmNodePort() int {
 	return swarm_node_port
 }
 
-func GetSwarmAuthHeader() string{
+func GetSwarmAuthHeader() string {
 	return swarm_auth_header
 }
 
-func GetSwarmAuthLabel() string{
+func GetSwarmAuthLabel() string {
 	return swarm_auth_label
 }
 
-func GetAnnotationExtLabel() string{
+func GetAnnotationExtLabel() string {
 	return annotation_ext_label
 }
 
-func GetRegAdminPsswd() string{
+func GetRegAdminPsswd() string {
 	return registry_admin_password
 }
 
-func GetRegLocation() string{
+func GetRegLocation() string {
 	return registry_location
 }
 
-func GetConsulIp() string{
+func GetConsulIp() string {
 	return consul_ip
 }
 
-func GetConsulPort() int{
+func GetConsulPort() int {
 	return consul_port
 }

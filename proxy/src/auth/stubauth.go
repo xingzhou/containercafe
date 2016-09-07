@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-var validSpaces = []Creds {
+var validSpaces = []Creds{
 ///*swarmtest*/	{200, "10.140.28.132:2379", "", "", true, "85cdc7e0-32d8-4552-9bae-907c3f1d98d9", "swarm", "c3d87893a5b7f56991fd328f655f25cce286591c3ce4a558","9013217d-0abf-40fe-bd35-bb625066408c", "924fc412d1004528b90007e898aeb0d8", true},
 ///*swarm2test*/	{200, "10.140.179.44:2379", "", "", true, "c6549f25-1003-44c3-977d-09e866c4ea08", "swarm", "df6b2bd22dc7ed47f36f6e10a9f118c10f216ab44fb2863b","9013217d-0abf-40fe-bd35-bb625066408c", "8d174ad3d3a16169-BM_c6549f25-1003-44c3-977d-09e866c4ea08_8c5fd60fc2693a96", true},
 ///*swarm2test1*/	{200, "10.140.179.44:2379", "", "", true, "9994cfb1-cecb-4e17-9371-0c0b4fe5377b", "swarm", "01234567890","9013217d-0abf-40fe-bd35-bb625066408c", "01234567890",true},
