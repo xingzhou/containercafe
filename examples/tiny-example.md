@@ -102,14 +102,21 @@ See
 for the general story.  Following is one concrete realization of that
 story for this example.
 
-If you are running Ubuntu in your host, you may need to install the following
-python packages:
+If you are running Ubuntu on your installer, you may need to install
+the following python packages:
 
 ```bash
 sudo apt-get install python-pip python-dev
 ```
 
-Install ansible and its `netaddr` module:
+OTOH, if you are running MacOS 10 on your installer then you probably
+need to:
+
+```bash
+brew install gnu-tar
+```
+
+In any case, install ansible and its `netaddr` module:
 
 ```bash
 pip install -r requirements.txt
