@@ -80,7 +80,7 @@ backend back-rabac-secure
 #############################
 # Swarm
 #############################
-{% if lb_swarm %}
+{% if lb_swarm and swarm_deploy %}
 frontend lb-swarm
 	bind *:{{vip_swarm_master_port}}
 	mode http
@@ -98,7 +98,7 @@ backend swarm_backend
 #############################
 # Mesos
 #############################
-{% if lb_mesos %}
+{% if lb_mesos and mesos_deploy %}
 frontend lb-mesos
 	bind *:{{vip_mesos_master_port}}
 	mode http
