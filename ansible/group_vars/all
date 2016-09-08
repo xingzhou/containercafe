@@ -93,19 +93,17 @@ kube_proxy_deploy: True
 # from the indicated registries, or if a different build of one of
 # these images is desired.
 
-# These two variables define the image and tag for the `hyperkube`
+# This defines the image (including tag) for the `hyperkube`
 # image, which is used for all the standard kubernetes components if
 # Mesos is not deployed.
 
-k8s_hyperkube_image: gcr.io/google_containers/hyperkube-amd64
-k8s_hyperkube_version: v1.3.5
+k8s_hyperkube_image: gcr.io/google_containers/hyperkube-amd64:v1.3.5
 
-# This defines the image and tag (together in one variable; if no
-# colon is in the value then the usual Docker default --- "latest" ---
-# applies) to use for `km`, which is used for all the standard
-# kubernetes components if Mesos is deployed.
+# This defines the image (including tag) to use for `km`, which is
+# used for all the standard kubernetes components if Mesos is
+# deployed.
 
-kube_image: openradiant/km
+kube_image: openradiant/km:v133_annotlab
 
 kube_podmaster_image: gcr.io/google_containers/podmaster:1.1
 kube_infra_image: gcr.io/google_containers/pause
