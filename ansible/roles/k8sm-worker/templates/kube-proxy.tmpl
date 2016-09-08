@@ -8,7 +8,7 @@ spec:
   hostNetwork: true
   containers:
   - name: kube-proxy
-    image: {{k8s_hyperkube_image}}:{{k8s_hyperkube_version}}
+    image: {{k8s_hyperkube_image}}
     command:
     - /hyperkube
     - proxy

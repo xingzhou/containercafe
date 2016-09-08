@@ -11,7 +11,7 @@ spec:
     {% if kubernetes_on_mesos_deploy|bool %}
     image: {{ kube_image }}
     {% else %}
-    image: {{k8s_hyperkube_image}}:{{k8s_hyperkube_version}}
+    image: {{k8s_hyperkube_image}}
     {% endif %}
     imagePullPolicy: Always
     command:
