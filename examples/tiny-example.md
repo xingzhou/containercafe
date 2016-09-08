@@ -97,26 +97,19 @@ most of the contents of the OpenRadiant repository in `~/openradiant`.
 
 ### Manually create installer
 
-See
+If you have created the installer VM using [Create Installer VM](../tiny-example.md#create-installer-vm), you can skip this section.   To manually create the installer, see
 [the general documentation of the installer machine](../README.md#the-installer-machine)
 for the general story.  Following is one concrete realization of that
 story for this example.
 
-If you are running Ubuntu on your installer, you may need to install
-the following python packages:
+If you are running Ubuntu in your host, you may need to install the following
+python packages:
 
 ```bash
 sudo apt-get install python-pip python-dev
 ```
 
-OTOH, if you are running MacOS 10 on your installer then you probably
-need to:
-
-```bash
-brew install gnu-tar
-```
-
-In any case, install ansible and its `netaddr` module:
+Install ansible and its `netaddr` module:
 
 ```bash
 pip install -r requirements.txt
@@ -136,16 +129,24 @@ pip install --upgrade ansible
 
 Use Ansible on the installer machine to begin the process of deploying
 an environment.  This will create the certificates and keys that are
-common throughout the environment, and deploy the API proxy.
+common throughout the environment.  Someday soon this will also deploy
+the API proxy.   
+
+Use vagrant ssh to ssh into the installer machine:
+```bash
+vagrant ssh installer-tiny
+```
+
+Execute the following ansible scripts as the vagrant user:
 
 ```bash
 ( cd ansible; \
   ansible-playbook -v -i ../examples/envs/dev-vbox/radiant01.hosts env-basics.yml \
-      -e "envs=../examples/envs env_name=dev-vbox" )
+      -e "envs=../examples/envs env_name=dev-vbox cluster_name=dev-vbox-radiant01" )
 ```
 
 Use Ansible on the installer machine to deploy an OpenRadiant shard on
-the target machines.
+the target machines, using the vagrant user.
 
 ```bash
 ( cd ansible; \
