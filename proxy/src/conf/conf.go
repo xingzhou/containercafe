@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/golang/glog"
 )
@@ -101,6 +102,11 @@ func load_env_var(env_name string, target *string) {
 	s := os.Getenv(env_name)
 	if s != "" {
 		*target = s
+	} else {
+		s = os.Getenv(strings.ToUpper(env_name))
+		if s != "" {
+			*target = s
+		}
 	}
 	glog.Infof("load_env_var    : %s=%s", env_name, *target)
 }
@@ -109,7 +115,13 @@ func load_int_env_var(env_name string, target *int) {
 	s := os.Getenv(env_name)
 	if s != "" {
 		*target, _ = strconv.Atoi(s)
+	} else {
+		s = os.Getenv(strings.ToUpper(env_name))
+		if s != "" {
+			*target, _ = strconv.Atoi(s)
+		}
 	}
+
 	glog.Infof("load_int_env_var: %s=%d", env_name, *target)
 }
 
