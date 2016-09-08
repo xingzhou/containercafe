@@ -16,7 +16,7 @@ at least Vagrant 1.8.4 and VirtualBox 5.0.24.
 Checkout this project:
 
 ```bash
-git clone git@github.ibm.com:alchemy-containers/openradiant.git
+git clone --recursive https://github.com/containercafe/containercafe.git
 cd openradiant
 ```
 
@@ -97,7 +97,7 @@ most of the contents of the OpenRadiant repository in `~/openradiant`.
 
 ### Manually create installer
 
-If you have created the installer VM using [Create Installer VM](#create-installer-vm), you can skip this section.   To manually create the installer, see
+If you have created the installer VM using [Create Installer VM](../tiny-example.md#create-installer-vm), you can skip this section.   To manually create the installer, see
 [the general documentation of the installer machine](../README.md#the-installer-machine)
 for the general story.  Following is one concrete realization of that
 story for this example.
@@ -109,7 +109,14 @@ python packages:
 sudo apt-get install python-pip python-dev
 ```
 
-Install ansible and its `netaddr` module:
+OTOH, if you are running MacOS 10 on your installer then you probably
+need to:
+
+```bash
+brew install gnu-tar
+```
+
+In any case, install ansible and its `netaddr` module:
 
 ```bash
 pip install -r requirements.txt
@@ -129,15 +136,14 @@ pip install --upgrade ansible
 
 Use Ansible on the installer machine to begin the process of deploying
 an environment.  This will create the certificates and keys that are
-common throughout the environment.  Someday soon this will also deploy
-the API proxy.   
+common throughout the environment, and deploy the API proxy.
 
-Use vagrant ssh to ssh into the installer machine:
+If installer VM is used, use vagrant ssh to ssh into the installer machine:
 ```bash
 vagrant ssh installer-tiny
 ```
 
-Execute the following ansible scripts as the vagrant user:
+If installer VM is used, execute the following ansible scripts as the vagrant user:
 
 ```bash
 ( cd ansible; \
@@ -146,7 +152,7 @@ Execute the following ansible scripts as the vagrant user:
 ```
 
 Use Ansible on the installer machine to deploy an OpenRadiant shard on
-the target machines, using the vagrant user.
+the target machines.
 
 ```bash
 ( cd ansible; \
