@@ -403,7 +403,10 @@ As noted above, OpenRadiant includes the following networking plugins.
   filtering nor any implicit network filtering for containers created
   through the Docker API.  Provides non-multi-tenant DNS to users via
   the kube DNS application.  Uses kube-proxy to provide implicit load
-  balancers.
+  balancers.  This runs the Flannel daemon on the masters as well as
+  the workers, so that kubernetes api proxying --- which entails the
+  apiserver opening connections directly to service Endpoints ---
+  works.
 
 To create a networking plugin, the developer needs to define three
 Ansible roles.  A networking plugin named `fred` supplies the
