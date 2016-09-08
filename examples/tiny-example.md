@@ -97,7 +97,7 @@ most of the contents of the OpenRadiant repository in `~/openradiant`.
 
 ### Manually create installer
 
-If you have created the installer VM using [Create Installer VM](../tiny-example.md#create-installer-vm), you can skip this section.   To manually create the installer, see
+If you have created the installer VM using [Create Installer VM](#create-installer-vm), you can skip this section.   To manually create the installer, see
 [the general documentation of the installer machine](../README.md#the-installer-machine)
 for the general story.  Following is one concrete realization of that
 story for this example.
