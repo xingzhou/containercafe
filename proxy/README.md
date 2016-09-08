@@ -45,19 +45,39 @@ You can either start the proxy based on the public image or using image based
 on your own code (see above)
 
 When starting the proxy, provide the environment name e.g. _dev-vbox_:
+
 ```bash
 cd openradiant/proxy
 ./rundocker.sh <env_name>
 ```
 
-To run the local proxy image, comment out the public image:
+FOR PROXY DEVELOPERS:
+
+to run the local image of the proxy, use -i <image_name> flag:
 
 ```bash
-# start new container instance using public api proxy image. Map the volume to CERTS
-# docker run -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy containercafe/api-proxy
-# to run your own image, built using `builddocker.sh` script, comment out the line above on un-comment below:
-docker run -v "$CERTS":/opt/tls_certs -p 8087:8087 -e "env_name=$env_name" --name api-proxy api-proxy
+./rundocker.sh <env_name> -i api-proxy
 ```
+
+there is also an option available to start the api proxy in non-secure mode, useful
+for interaction with Nginx. It will run without TLS input and allows passing
+the API key in a header of a request instead of certificate.
+The header name is "X-Tls-Client-Dn". See the manual example below.
+
+A complete syntax rundocker.sh is here:
+
+```bash
+Syntax: rundocker.sh <env_name> [<args>]
+Where:
+    env_name - name of the environment, e.g: dev-vbox
+    args:
+    -d - run api-proxy container in the background (optional)
+    -l [INFO, WARNING, ERROR, FATAL] - set the log level for the proxy (optional)
+    -v [non-negative integer] - set the log verbosity for the proxy (optional)
+    -n - configuration for running with Nginx, no-SSL (optional)
+    -i [image_name] - run local image (optional), instead of public image [containercafe/api-proxy] (default)
+```
+
 
 This will start the Proxy as a container named `api-proxy`, running in the current
 terminal, on port specified in [Dockerfile](dockerize/Dockerfile) e.g:
@@ -110,10 +130,19 @@ curl commands with certs.
 
 
 
-### Step 2: Setting up the tenant
-From another terminal go back to the proxy directory and then execute the script
-to create TLS certificates and API key for the given tenant. The example is
-using tenant `test1`. This script also requires the name and the IP of the shard
+### Step 2: Creating a tenant (account administrator)
+When proxy runs as a container on the same host, just open a new terminal and
+follow the steps below. When proxy runs on a different docker host, ssh to this
+host first:
+
+```bash
+cd examples/vagrant
+vagrant ssh proxy
+```
+
+Go the proxy directory and then execute the script to create TLS certificates
+and API key for the given tenant. The example is using tenant `test1`.
+This script also requires the name and the IP of the shard
 E.g.
 ```
 docker ps
@@ -180,8 +209,9 @@ To modify the value in the running container:
 docker exec -it api-proxy /bin/bash
 ```
 
-To view the content of the current authorization file:
-```
+### To view the content of the current authorization file:
+
+```bash
 docker exec api-proxy cat /opt/tls_certs/creds.json
 ```
 
@@ -193,6 +223,19 @@ Every entry of the `creds.json` has this format:
 
 **NOTE**: All default config options are defined in the [Dockerfile](dockerize/Dockerfile),
 and can be overridden using the docker -e option on [startup](rundocker.sh)
+
+## Running request manually, without the kubectl or docker clients
+API Proxy can be started with non-SSL, using -n flag (see above). Call must include
+the Apikey value in the header. Apikey is the random string in creds.json file
+for your tenant. E.g:
+
+```bash
+export APIKEY=PV9S5hQARFmg0pVJwaPxbP588GdVKeYF1YGOePDvRNAGpyl4
+export PROXY=192.168.10.4:8087
+curl -XGET -H "X-Tls-Client-Dn: /CN=$APIKEY" -H "Content-Type: application/json" $PROXY/api
+```
+
+
 
 ## Running Test Scripts
 There are 2 type of tests:
