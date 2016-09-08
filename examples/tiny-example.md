@@ -16,7 +16,7 @@ at least Vagrant 1.8.4 and VirtualBox 5.0.24.
 Checkout this project:
 
 ```bash
-git clone git@github.ibm.com:alchemy-containers/openradiant.git
+git clone --recursive https://github.com/containercafe/containercafe.git
 cd openradiant
 ```
 
