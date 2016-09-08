@@ -28,9 +28,13 @@ Building is straightforward:
 ```
 cd openradiant/misc/dockerfiles/km
 docker login (with dockerhub creds)
-docker build -t openradiant/km .
-docker push openradiant/km
+docker build -t openradiant/km:$tag .
+docker push openradiant/km:$tag
 ```
+
+... where `$tag` is the value of `K8S_BRANCH` in the Dockerfile ---
+i.e., the git tag or branch of
+https://github.com/ibm-contribs/kubernetes.git that is being built.
 
 The selection of *what* to build is more complicated.  The choice is
 in the Dockerfile.  Documentation needed for the why behind that
