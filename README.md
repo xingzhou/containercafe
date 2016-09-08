@@ -143,12 +143,14 @@ done `brew install gnu-tar`, for mysterious reasons.
 
 ### Installing OpenRadiant
 
-To create/update an OpenRadiant environment, invoke the `ansible/env-basics.yml`
-playbook.  Following is an example invocation.
+To create/update an OpenRadiant environment, invoke the
+`ansible/env-basics.yml` playbook.  This will create the certificates
+and keys that are common throughout the environment, and deploy the
+API proxy.  Following is an example invocation.
 
 ```bash
 cd ansible
-ansible-playbook -v env-basics.yml -e env_name==${env_name} -e envs=${envs}
+ansible-playbook -v env-basics.yml -e env_name==${env_kind}-${env_loc} -e envs=${envs}
 ```
 
 To create/update an OpenRadiant shard, invoke the `ansible/shard.yml`

@@ -136,8 +136,7 @@ pip install --upgrade ansible
 
 Use Ansible on the installer machine to begin the process of deploying
 an environment.  This will create the certificates and keys that are
-common throughout the environment.  Someday soon this will also deploy
-the API proxy.
+common throughout the environment, and deploy the API proxy.
 
 ```bash
 ( cd ansible; \
