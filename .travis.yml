@@ -1,11 +1,18 @@
+sudo: required
+dist: trusty
+services:
+  - docker
 language: python
 python:
   - "2.7"
 
 install:
-  - pip install yamllint
+  - sudo pip install yamllint
+  - sudo apt-get update -qq
 
-script: yamllint -c yamlconf $(find . -path './envs' -prune -o -name '*.yml' -print -o -name '*.yaml' -print)
+script:
+  - yamllint -c yamlconf $(find . -path './envs' -prune -o -name '*.yml' -print -o -name '*.yaml' -print)
+  - gofmt -l .
 
 notifications:
   email: true
