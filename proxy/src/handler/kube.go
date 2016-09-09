@@ -13,12 +13,10 @@ import (
 
 	"auth"
 	"conf"
-	"encoding/json"
 	"httphelper"
-	//	"reflect"
-	"errors"
 
 	"github.com/golang/glog"
+	"k8s"
 )
 
 // supported Kubernetes api uri prefix patterns
@@ -269,6 +267,7 @@ func kubeUpdateBody(r *http.Request, namespace string) (body []byte, err error) 
 		// return the original body
 		return body, nil
 	}
+
 	// convert the body to string
 	bodystr := httphelper.PrettyJson(body)
 	glog.Infof("Original JSON: %s", bodystr)
@@ -313,64 +312,33 @@ func kubeUpdateBody(r *http.Request, namespace string) (body []byte, err error) 
 	// get the label names
 	auth_label := conf.GetSwarmAuthLabel()
 	annot_label := conf.GetAnnotationExtLabel()
+	annotation := k8s.KeyValue{Key: annot_label, Value: "{ \"" + auth_label + "\": \"" + namespace + "\" }"}
 
-	// get the body of the request
-	data := map[string]interface{}{}
-	json.Unmarshal(body, &data)
-
-	// TODO the code below has to be revisited and simplified
-	// there should be a common method for injecting the annotations
-	// I just could get this working yet....
-	//		fmt.Println(reflect.TypeOf(data))
-	//		meta := inject_annotation(data["metadata"])
-
-	// get request type
-	kind := data["kind"]
-
-	var metam map[string]interface{}
-	if kind == "Pod" {
-		meta := data["metadata"]
-		// convert the interface{} to map
-		metam = meta.(map[string]interface{})
-	} else if kind == "Deployment" || kind == "ReplicaSet" || kind == "ReplicationController" || kind == "Job" {
-		spec := data["spec"]
-		specm := spec.(map[string]interface{})
-		templ := specm["template"]
-		templm := templ.(map[string]interface{})
-		meta := templm["metadata"]
-		metam = meta.(map[string]interface{})
-	}
-
-	annot := metam["annotations"]
-	//Log.Printf("Original Annotations: %+v", annot)
-	var annotm map[string]interface{}
-	// annotations might not be provided in the yaml file:
-	if annot == nil {
-		annotm = make(map[string]interface{})
-	} else {
-		// convert the existing annotation interface{} to map
-		annotm = annot.(map[string]interface{})
-	}
-	if annotm[annot_label] == "" || annotm[annot_label] == nil {
-		glog.Infof("Annotation label does not exist")
-	} else {
-		glog.Infof("Annotation label %v already exists: %v", annot_label, annotm[annot_label])
-		err = errors.New("Illegal usage of label ")
-		return nil, err
-	}
-
-	new_value := "{ \"" + auth_label + "\": \"" + namespace + "\" }"
-	annotm[annot_label] = new_value
-	glog.Infof("Injecting annotation: %v with value: %v for kind: %v", annot_label, new_value, kind)
-
-	b, err := json.Marshal(data)
+	kind, err := k8s.KindFromJSON(body)
 	if err != nil {
-		glog.Errorf("Error marshaling the updated json: %v ", err)
+		glog.Warningf("%v", err)
+		return body, nil
+	}
+
+	var bytes []byte
+	if kind.Is("Pod") {
+		bytes, err = kind.Inject(annotation, "metadata", "annotations")
+	} else if kind.Is("Deployment", "ReplicaSet", "ReplicationController", "Job") {
+		bytes, err = kind.Inject(annotation, "spec", "template", "metadata", "annotations")
+	} else {
+		// We don't need injection
+		return body, nil
+	}
+
+	if err != nil {
+		glog.Errorf("Error injecting the annotation: %v ", err)
 		return nil, err
 	}
-	bodystr = httphelper.PrettyJson(b)
+
+	bodystr = httphelper.PrettyJson(bytes)
 	glog.Info("Updated JSON: %s", bodystr)
-	return b, nil
+
+	return bytes, nil
 }
 
 func kubeRewriteUri(reqUri string, namespace string) (redirectUri string) {
