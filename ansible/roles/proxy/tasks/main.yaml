@@ -25,7 +25,7 @@
     register: hjs_pem
 
   - name: create and copy api-proxy-openssl.cnf
-    template: src=../ansible/roles/keygen-env/templates/api-proxy-openssl.cnf dest=/{{ACERTS}}/api-proxy-openssl.cnf
+    template: src=api-proxy-openssl.cnf dest=/{{ACERTS}}/api-proxy-openssl.cnf
     when: not hjs_pem.stat.exists|bool
 
   - name: set PASSWD when generating certs
