@@ -114,9 +114,11 @@ machine.  In the near future we hope to also provide a Docker image of
 a usable installer machine.
 
 All the controller machine really needs is to have a copy of
-OpenRadiant and be able to run Ansible commands using that.  The
-following shows ways to accomplish these using Linux shell commands.
-For other operating systems you could do something analogous.
+OpenRadiant, be able to run Ansible playbooks as the Ansible
+controller machine, and be able to serve an Ansible managed node for
+certain Ansible modules.  The following shows ways to accomplish these
+using Linux shell commands.  For other operating systems you could do
+something analogous.
 
 The controller machine must have git installed.
 
@@ -145,8 +147,12 @@ Another way is to use Python's `easy_install` to install `pip`.
 Another way to get the `netaddr` module is to install `python-netaddr`
 using the operating system's package manager.
 
-If the installer machine is running MacOS 10 then it needs to have
-done `brew install gnu-tar`, for mysterious reasons.
+The Ansible playbooks use Ansible's `unarchive` module with the
+controller also being the managed node.  This requires, as implied by
+the note at
+https://docs.ansible.com/ansible/unarchive_module.html#notes, that the
+controller machines must implement the `gtar` command.  On MacOS 10
+you can accomplish this by `brew install gnu-tar`.
 
 
 ### Installing OpenRadiant
