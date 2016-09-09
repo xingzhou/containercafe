@@ -165,7 +165,11 @@ those groups.
 
 There are also some requirements on the provisioned machines.
 
-* They must run Ubuntu 14.04.
+* They must run Linux with kernel version 3.13 or later, use `apt-get`
+  as the package manager, use upstart as the service manager, and use
+  `ufw` to manage local traffic filtering.  Using Ubuntu 14.04 ---
+  possibly with a kernel upgrade --- is the easiest way to meet all
+  those requirements.
 
 * The Ansible inventory hostname of each machine must be an IPv4
   address.
@@ -195,7 +199,11 @@ the future we will support an HA cohort.
 
 The requirements on machines on that group are as follows.
 
-* They must run Ubuntu 14.04.
+* They must run Linux with kernel version 3.13 or later, use `apt-get`
+  as the package manager, use upstart as the service manager, and use
+  `ufw` to manage local traffic filtering.  Using Ubuntu 14.04 ---
+  possibly with a kernel upgrade --- is the easiest way to meet all
+  those requirements.
 
 * You (the user running the Ansible playbook) must be able to `ssh`
   from the Ansible controller machine to the configured user on the
