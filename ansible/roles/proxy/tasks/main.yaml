@@ -15,10 +15,8 @@
   - name: setting ACERTS
     set_fact: ACERTS="{{CERTS}}/admin-certs"
 
-
   - name: creating CERTS directory
     file: path={{CERTS}} state=directory mode=0755
-
 
   - name: copy local envs directory
     copy: src={{local_CERTS}} dest={{CERTS}}
@@ -26,8 +24,8 @@
   - stat: path={{ACERTS}}/hjserver.pem
     register: hjs_pem
 
-  - name: copy the api-proxy-openssl.cnf
-    copy: src=../ansible/roles/keygen-shard/files/api-proxy-openssl.cnf dest=/{{ACERTS}}/api-proxy-openssl.cnf
+  - name: create and copy api-proxy-openssl.cnf
+    template: src=api-proxy-openssl.cnf dest=/{{ACERTS}}/api-proxy-openssl.cnf
     when: not hjs_pem.stat.exists|bool
 
   - name: set PASSWD when generating certs
@@ -52,7 +50,6 @@
     command: docker ps -aqf "name=api-proxy"
     register: result
 
-
   - name: remove api-proxy container if a previous instance already exists
     become: yes
     shell: docker rm -f api-proxy
@@ -63,7 +60,7 @@
     docker:
      name: api-proxy
      state: reloaded
-     #pull: "{{image_pull_type}}"
+     pull: "{{image_pull_type}}"
      restart_policy: always
      image: "{{proxy_image_name}}"
      ports:
