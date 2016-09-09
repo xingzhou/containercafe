@@ -138,7 +138,7 @@ Use Ansible on the installer machine to begin the process of deploying
 an environment.  This will create the certificates and keys that are
 common throughout the environment, and deploy the API proxy.
 
-If you use the installer VM created from [Create Installer VM](#create-installer-vm) as the installer machine, use *vagrant ssh* to SSH into the installer VM and execute the Ansible scripts as the *vagrant* user, as described in [FYI on SSH to Vagrant/VirtualBox VMs](#fyi-on-ssh-to-vagrantvirtualbox-vms)
+If you use the installer VM created from [Create Installer VM](../tiny-example.md#create-installer-vm) as the installer machine, use *vagrant ssh* to SSH into the installer VM and execute the Ansible scripts as the *vagrant* user, as described in [FYI on SSH to Vagrant/VirtualBox VMs](../tiny-example.md#fyi-on-ssh-to-vagrantvirtualbox-vms)
 
 ```bash
 ( cd ansible; \
