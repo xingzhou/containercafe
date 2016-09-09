@@ -17,13 +17,12 @@ git clone --recursive https://github.com/containercafe/containercafe.git
 cd openradiant
 ```
 
-This example proceeds through five steps, as follows.
+This example proceeds through four steps, as follows.
 
 1. Provision target machines
 2. Prepare the installer machine
-3. Use the installer machine to deploy an OpenRadiant shard on target machines
-4. (Optionally) deploy the OpenRadiant API proxy
-5. Exercise the OpenRadiant shard
+3. Use the installer machine to deploy an OpenRadiant environment on target machines
+4. Exercise the OpenRadiant shard
 
 For OpenRadiant in general, the first two steps can be done in either
 order.
