@@ -105,8 +105,8 @@ the following python packages:
 sudo apt-get install python-pip python-dev
 ```
 
-OTOH, if you are running MacOS 10 on your installer then you probably
-need to:
+Your installer machine must have the `gtar` command.  On MacOS 10 this
+command can be added as follows.
 
 ```bash
 brew install gnu-tar
