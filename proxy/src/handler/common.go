@@ -103,8 +103,8 @@ func redirect_with_cert(r *http.Request, body []byte, redirect_host string, redi
 	req.Header = r.Header
 	req.URL.Host = redirect_host
 	glog.Infof("will forward request to server=%s ...", redirect_host)
-	glog.Infof("***** request URL: %+v", req.URL)
-	glog.Infof("***** all request: %+v", req)
+	glog.Infof("request URL: %+v", req.URL)
+	glog.Infof("all request: %+v", req)
 	resp, err := cc.Do(req)
 	return resp, err, cc
 }
