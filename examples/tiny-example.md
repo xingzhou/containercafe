@@ -2,11 +2,8 @@
 
 This produces a very simple demonstration shard of two VirtualBox VMs,
 one master and one worker, plus another VM for the proxy.  The shard
-has Mesos installed, and Kubernetes and Swarm playing nicely together
-thanks to Mesos.  The networking is Docker bridge networking (which is
-good only for a single-worker deployment; see the documentation of
-[networking plugins](../docs/ansible.md#networking-plugins) for more
-options).  The Swarm master is modified for multi-tenant use.
+has a Kubernetes cluster.  The networking is done by Flannel using its
+`host-gw` "backend" (which uses ordinary IP routing and connectivity).
 
 Install [git](https://git-scm.com/downloads),
 [Vagrant](https://www.vagrantup.com/) and
@@ -212,6 +209,18 @@ ssh -i ~/.vagrant.d/insecure_private_key vagrant@192.168.10.2
 On the master you will find both the `kubectl` and `docker`
 (currently 1.11) commands on your `$PATH`.
 
+### Exercise Kubernetes
+
+You can create a Kubernetes "deployment" with a command like this:
+```bash
+kubectl run k1 --image=busybox sleep 864000
+```
+
+### Exercise SwarmV1
+
+**NB:** IGNORE THIS SECTION.  It is obsolete, retained here only until
+we find a better place to save it until it becomes relevant again.
+
 The Swarm master is configured for multi-tenant use.  To prepare to
 use it as a tenant, do this on the master:
 ```bash
@@ -246,12 +255,12 @@ configuration from inside, like this:
 docker exec s1 ifconfig
 ```
 
-You can create a Kubernetes "deployment" with a command like this:
-```bash
-kubectl run k1 --image=busybox sleep 864000
-```
+### Exercise Kubernetes and SwarmV1 together
 
-The containers in this deployment will be invisible to Swarm because
+**NB:** IGNORE THIS SECTION.  It is obsolete, retained here only until
+we find a better place to save it until it becomes relevant again.
+
+The containers in Kubernetes will be invisible to Swarm because
 they lack the label identifying your tenant.  To make containers
 visible to Swarm, make a kubernetes pod as follows.  Create a YAML
 file prescribing the pod:

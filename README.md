@@ -3,23 +3,31 @@
 [![Travis Build Status](https://travis-ci.org/containercafe/containercafe.svg?branch=master)](https://travis-ci.org/containercafe/containercafe)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-OpenRadiant is a modular platform for enterprise container-native devops. OpenRadiant supports kubernetes and docker APIs on the same infrastructure in a multi-tenant setting. It provides the ability to customize your deployment options in order to select the components to deploy from among Kubernetes, Mesos, and Swarm. Currently it supports Flannel for networking. Soon other networking options will be available to select from.
+OpenRadiant is a modular platform for enterprise container-native
+devops. OpenRadiant supports Kubernetes, and will eventually also
+support the docker APIs on the same infrastructure.  OpenRadiant
+supports multi-tenancy and sharding.  The OpenRadiant platform can be
+extended by additional componentry, such as: support for using Mesos
+(including making Kubernetes act as a Mesos framework), support for
+using a CloudFoundry installation as the source of identities, support
+for using Neutron tenant networks to isolate OpenRadiant tenants in
+the network.
 
 Features of the OpenRadiant platform include:
 * Kubernetes
-* Swarm (original, not "swarm mode" introduced in Docker 1.12)
-* Mesos
+* Eventually Swarm (original, not "swarm mode" introduced in Docker 1.12)
 * Multi-tenancy - with or without Bring-Your-Own-IPv4
 * Multi-sharding
 * HA control plane in each shard
 * Ansible-based create/update/destroy tooling
-* Support for a variety of sources of authentication
+* Openness to a variety of sources of authentication
 * Control plane secured by TLS
-* Support for a variety of Software-Defined-Network technologies
+* Openness to support for a variety of Software-Defined-Network technologies
 * Live container crawling
 
-OpenRadiant is a work in progress.  The above features are not yet
-available in all combinations.
+OpenRadiant is a work in progress, as a collaboration between a
+central OpenRadiant team and other teams that use it to build more
+specific and capable platforms.
 
 * [Architecture Overview](#architecture-overview)
 * [Tiny Example](examples/tiny-example.md)
@@ -40,28 +48,28 @@ available in all combinations.
 
 ### Architecture Overview
 
-OpenRadiant is software that you can subset and/or extend to produce
-software that you use to operate an enterprise container-native
-devops service.
+OpenRadiant is software that you can use, or extend to produce more
+capable software that you use, to operate an enterprise
+container-native devops service.
 
 One operating instantiation of the full platform is called an
 environment, and it contains one or more shards that operate
-independently of each other.  Each shard provides Kubernetes, Swarm,
-and/or Mesos service --- you can pick the subset you want, subject to
-reasonableness constraints.  There is an outer control plane with a
-proxy API server that implements the Kubernetes and Swarm APIs ---
-with appropriate restrictions and extensions --- by appropriately
-transforming each RPC and dispatching it to the appropriate shard.
+independently of each other.  Each shard provides an independent
+installation of Kubernetes, and --- via extension --- additional
+platforms such as Mesos and/or Swarm.  There is an outer control plane
+with a proxy API server that implements the Kubernetes (and eventually
+Docker/SwarmV1) APIs --- with appropriate restrictions and extensions
+--- by appropriately transforming each RPC and dispatching it to the
+appropriate shard.
 
-You can subset OpenRadiant so that it creates just one shard.  You can
-subset OpenRadiant to omit API proxy if you are not interested in
-multi-sharding nor the conveniences it supplies for multi-tenancy.
+You can operate OpenRadiant with just one shard.
 
-In a shard there are worker nodes and control plane nodes.  The
-Kubernetes and Swarm workload is dispatched to the worker nodes.  The
-control plane nodes run the Kubernetes, Swarm, and/or Mesos control
-planes in an HA configuration.  We use Mesos to coordinate resource
-allocation decisions between Kubernetes and Swarm.
+In a shard there are worker nodes and master nodes.  The Kubernetes
+(and eventually Swarm) workload is dispatched to the worker nodes.
+The master nodes run the Kubernetes, eventually Swarm, and any
+extension's master components in an HA configuration.  We are working
+on a better solution than Mesos to coordinate resource allocation
+decisions between Kubernetes and Swarm.
 
 OpenRadiant includes Ansible-based installation technology to
 instantiate an OpenRadiant environment.  An installer machine acts as
@@ -69,9 +77,9 @@ Ansible controller to install OpenRadiant in a target environment.
 The installation is parameterized by some Ansible variables files that
 describe the desired target environment.
 
-OpenRadiant deploys Kubernetes, Swarm, and Mesos in containers.  You
-can choose whatever version of each that you want.  Your configure
-your choice of images and tags.  See the doc about
+OpenRadiant deploys Kubernetes in containers.  You can choose whatever
+version you want.  Your configure your choice of image (including
+tag).  See the doc about
 [the relevant configuration variables](docs/ansible.md#primary-shard-variables-that-have-defaults)
 and
 [where to put your settings for those variables](docs/ansible.md#additional-files-for-setting-ansible-variable-values).
