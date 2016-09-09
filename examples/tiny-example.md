@@ -97,7 +97,7 @@ most of the contents of the OpenRadiant repository in `~/openradiant`.
 
 ### Manually create installer
 
-If you have created the installer VM using [Create Installer VM](../tiny-example.md#create-installer-vm), you can skip this section.   To manually create the installer, see
+If you have created the installer VM using [Create Installer VM](../examples/tiny-example.md#create-installer-vm), you can skip this section.   To manually create the installer, see
 [the general documentation of the installer machine](../README.md#the-installer-machine)
 for the general story.  Following is one concrete realization of that
 story for this example.
@@ -138,7 +138,7 @@ Use Ansible on the installer machine to begin the process of deploying
 an environment.  This will create the certificates and keys that are
 common throughout the environment, and deploy the API proxy.
 
-If you use the installer VM created from [Create Installer VM](../tiny-example.md#create-installer-vm) as the installer machine, use *vagrant ssh* to SSH into the installer VM and execute the Ansible scripts as the *vagrant* user, as described in [FYI on SSH to Vagrant/VirtualBox VMs](../tiny-example.md#fyi-on-ssh-to-vagrantvirtualbox-vms)
+If you use the installer VM created from [Create Installer VM](../examples/tiny-example.md#create-installer-vm) as the installer machine, use *vagrant ssh* to SSH into the installer VM and execute the Ansible scripts as the *vagrant* user, as described in [FYI on SSH to Vagrant/VirtualBox VMs](../examples/tiny-example.md#fyi-on-ssh-to-vagrantvirtualbox-vms)
 
 ```bash
 ( cd ansible; \
