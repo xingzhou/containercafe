@@ -222,45 +222,46 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		httphelper.InitProxyHijack(w, cc, req_id, "TCP") // TCP is the only supported proto now
 		return
 	}
+
 	//If no hijacking, forward full response to client
-	w.WriteHeader(resp.StatusCode)
-
-	if resp.Body == nil {
-		glog.Infof("\n")
-		fmt.Fprint(w, "\n")
-		return
-	}
-
+	
 	_KUBE_CHUNKED_READ_ := false // new feature flag
 
 	if _KUBE_CHUNKED_READ_ {
 		//new code to test
 		//defer resp.Body.Close()   // causes this method to not return to caller IF closing while there is still data in Body!
+		w.WriteHeader(resp.StatusCode)
 		chunkedRWLoop(resp, w, req_id)
 	} else {
+		defer resp.Body.Close()
 		resp_body, err := ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
 		if err != nil {
 			glog.Errorf("Error: error in reading server response body\n")
 			fmt.Fprint(w, "error in reading server response body\n")
 			return
 		}
 
-		resp_body = inboundFilters.ApplyToJSON(resp_body)
+		// Get the filtered body
+		filtered_body, filtered := inboundFilters.ApplyToJSON(resp_body)
 
-		//Printout the response body
-		bodystr := "Dump Body:\n"
-		bodystr += httphelper.PrettyJson(resp_body)
-		glog.Info(bodystr)
-		/*
-			if strings.ToLower(httphelper.GetHeader(resp.Header, "Content-Type")) == "application/json" {
-				httphelper.PrintJson(resp_body)
-			}else {
-				Log.Printf("\n%s\n", string(resp_body))
-			}
-		*/
-		//forward server response to calling client
-		fmt.Fprintf(w, "%s", resp_body)
+		// Printout the response body
+		if filtered {
+			glog.Infof("Filtered Body (%d bytes, %d before filtering):\n%s", len(filtered_body), len(resp_body), httphelper.PrettyJson(filtered_body))
+		} else {
+			glog.Infof("Dump Body (%d bytes):\n%s", len(resp_body), httphelper.PrettyJson(resp_body))
+		}
+
+		// Set the new Content-Length header, this has to be done before the first call
+		// to Write or WriteHeader (see https://golang.org/pkg/net/http/#ResponseWriter)
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(filtered_body)))
+
+		// Forward server response to calling client
+		w.WriteHeader(resp.StatusCode)
+		bytesWritten, err := w.Write(filtered_body)
+		glog.Infof("%d bytes written", bytesWritten)
+		if err != nil {
+			glog.Errorf("Error: error in writing server response body %v", err)
+		}
 	}
 	return
 }

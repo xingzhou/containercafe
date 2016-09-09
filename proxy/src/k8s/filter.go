@@ -50,28 +50,28 @@ func (collection FilterCollection) AddEmptyFilter(kind string, path ...string) {
 	collection.addFilter(kind, filter)
 }
 
-func (collection FilterCollection) ApplyToJSON(body []byte) []byte {
+func (collection FilterCollection) ApplyToJSON(body []byte) ([]byte, bool) {
 	// Get the Kind object, fails gracefully
 	kind, err := KindFromJSON(body)
 	if err != nil {
 		glog.Warningf("%v", err)
-		return body
+		return body, false
 	}
 
 	// Apply filters if necessary
 	if !collection.filter(kind.data) {
 		// No filters applied, don't marshal the JSON and returns the unchanged body
-		return body
+		return body, false
 	}
 
 	// Return the filtered JSON, fails gracefully
 	filteredBody, err := json.Marshal(kind.data)
 	if err != nil {
 		glog.Warningf("%v", err)
-		return body
+		return body, false
 	}
 
-	return filteredBody
+	return filteredBody, true
 }
 
 func (collection FilterCollection) filter(data map[string]interface{}) bool {
@@ -171,7 +171,11 @@ func remove(data map[string]interface{}, path []string) bool {
 		return true
 	}
 
-	return remove(data[path[0]].(map[string]interface{}), path[1:])
+	first, ok := data[path[0]].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	return remove(first, path[1:])
 }
 
 func replace(data map[string]interface{}, value interface{}, path []string) bool {
@@ -190,5 +194,9 @@ func replace(data map[string]interface{}, value interface{}, path []string) bool
 		return false
 	}
 
-	return replace(data[path[0]].(map[string]interface{}), value, path[1:])
+	first, ok := data[path[0]].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	return replace(first, value, path[1:])
 }
