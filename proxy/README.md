@@ -38,6 +38,13 @@ cd proxy
 ```
 To publish the image to Docker Hub see the steps [here](https://github.com/containercafe/containercafe/blob/master/docs/building-images.md#containercafeproxy)
 
+The proxy image is very small but it's slow to build.
+If you are developing on the proxy you can build a bigger image in less time, execute:
+```bash
+cd proxy
+./builddocker.sh -f dockerize/Dockerfile.dev
+```
+
 #### Run proxy as a container
 [*This will be done by ansible install script*]
 Proxy service will be installed as a container on your default docker host.
