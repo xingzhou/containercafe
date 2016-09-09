@@ -46,9 +46,13 @@ var kubeExactPatterns = []string{
 	"/version",
 }
 
+// Collection of filters to apply to responses from the server to the client
+var inboundFilters = k8s.NewFilterCollection()
+
 //called from init() of the package
 func InitKubeHandler() {
-
+	inboundFilters.AddReplaceFilter("host", "Pod", "spec", "nodeName")
+	inboundFilters.AddReplaceFilter("1.1.1.1", "Pod", "status", "hostIP")
 }
 
 // public handler for Kubernetes
@@ -105,7 +109,7 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	if sp[0] == "http" || sp[0] == "https" {
 		redirectTarget = sp[1] + ":" + strconv.Itoa(conf.GetKubePort())
 		// strip out the '//' from http://
-		redirectTarget = redirectTarget[2:len(redirectTarget)]
+		redirectTarget = redirectTarget[2:]
 	} else {
 		redirectTarget = sp[0] + ":" + strconv.Itoa(conf.GetKubePort())
 	}
@@ -223,11 +227,11 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 
 	if resp.Body == nil {
 		glog.Infof("\n")
-		fmt.Fprintf(w, "\n")
+		fmt.Fprint(w, "\n")
 		return
 	}
 
-	_KUBE_CHUNKED_READ_ := true // new feature flag
+	_KUBE_CHUNKED_READ_ := false // new feature flag
 
 	if _KUBE_CHUNKED_READ_ {
 		//new code to test
@@ -242,7 +246,7 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 			return
 		}
 
-		//TODO ***** Filter framework for Interception of commands before returning result to client (2) *****
+		resp_body = inboundFilters.ApplyToJSON(resp_body)
 
 		//Printout the response body
 		bodystr := "Dump Body:\n"

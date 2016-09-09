@@ -27,6 +27,10 @@ func KindFromJSON(body []byte) (*Kind, error) {
 	return &Kind{data: data}, nil
 }
 
+func (k Kind) GetType() string {
+	return k.data["kind"].(string)
+}
+
 func (k Kind) Is(kinds ...string) bool {
 	for _, kind := range kinds {
 		if k.data["kind"] == kind {
