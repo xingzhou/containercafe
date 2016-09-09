@@ -184,19 +184,21 @@ is an installer that deploys the shard as the last startup step.
 ```
 
 
-## Optionally deploy the OpenRadiant API proxy
+## Use the OpenRadiant API proxy
 
-Now you have an option to deploy and use the API proxy.  The shard can
-be used directly or through the proxy.  The proxy enables
-multi-tenancy, multi-sharding and many other
-[features](../docs/proxy.md).  Using the shard directly does not
-involve these features.
+Now you can exercise the shard through the API proxy.  The proxy
+enables multi-tenancy, multi-sharding and other
+[features](../docs/proxy.md).
 
 For details on proxy setup and use, please see
 [Proxy documentation](../proxy/README.md).
 
 
 ## Exercise the shard directly
+
+OpenRadiant is designed for application devops personnel to go through
+the API proxy.  Developers of OpenRadiant or its extensions who are
+interested in gaining a deeper understanding can bypass the proxy.
 
 The following describes how to exercise the shard without using the
 API proxy and the features it provides.
