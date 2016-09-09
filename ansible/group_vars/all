@@ -41,7 +41,7 @@ ca_srl: ca.srl
 ha_deploy: True
 
 # The following variables are details of how the VIP is used.  There
-# is no known reason to vary any of them.
+# is no reason for the operator to change any of them.
 
 vip_k8s_apiserver_ip: "{{master_vip}}"
 vip_k8s_apiserver_port: 443
@@ -64,7 +64,7 @@ vip_swarm_master_port: 2375
 
 # HAProxy is always between master component clients and servers.  The
 # following variables control details of its configuration.  There is
-# no known reason to vary any of them.
+# no reason for the operator to change any of them.
 
 haproxy_image: haproxy:1.5
 haproxy_stats_port: 9000
@@ -108,8 +108,7 @@ kube_image: openradiant/km:v1.3.6
 kube_podmaster_image: gcr.io/google_containers/podmaster:1.1
 kube_infra_image: gcr.io/google_containers/pause
 
-# There is no known reason for the operator to change any of the
-# following.
+# There is no reason for the operator to change any of the following.
 
 k8s_etc_dir: /etc/kubernetes
 k8s_cert_dir: "{{k8s_etc_dir}}/cert"
@@ -174,8 +173,14 @@ zookeeper_port: 2181
 
 mesos_deploy: True
 
+# The following variables identify the image to use for the Mesos
+# master and worker components.
+
 mesos_master_image: mesosphere/mesos-master:1.0.0-rc2
 mesos_slave_image: mesosphere/mesos-slave:1.0.0-rc2
+
+# There is no reason for the operator to change any of the following.
+
 mesos_master_port: 5050
 mesos_slave_port: 5050
 use_mesos_roles: true
@@ -200,9 +205,16 @@ docker_engine_port: 2375
 
 # A boolean controlling whether the SwarmV1 master is deployed.
 
-swarm_deploy: True
+swarm_deploy: False
+
+# The Swarm manager is run in a Docker container, and this variable
+# identifies the image (with the usual default if tag is not
+# specified) to use.
 
 swarm_image: openradiant/swarm
+
+# There is no reason for the operator to change any of the following.
+
 swarm_manager_host_port: 4375
 swarm_manager_port: 4375
 swarm_manager_mesos_host_port: 3376
@@ -250,6 +262,6 @@ proxy_image_name: containercafe/api-proxy
 
 build_proxy_image_locally: False
 
-# There is no known reason for anyone to change the following.
+# There is no reason for the operator to change the following.
 
 proxy_context: dockerize

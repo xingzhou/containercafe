@@ -1,8 +1,8 @@
 # Architecture
 
-OpenRadiant is software that you can subset and/or extend to produce
-software that you use to operate an enterprise container-native devops
-service.
+OpenRadiant is software that you can use, or extend to produce more
+capable software that you use, to operate an enterprise
+container-native devops service.
 
 One operating instantiation of the full platform is called an
 environment, and it contains one or more shards that operate
@@ -16,19 +16,11 @@ to a limited degree; OpenRadiant is not engineered for a large number
 of shards.  OpenRadiant includes an API proxy that proxies each
 request to the appropriate shard.
 
-Each shard provides Kubernetes, Swarm (V1, not the "swarm mode"
-introduced in Docker 1.12), and/or Mesos service.  The service
-operator can pick the subset she wants, subject to constraints.
-Currently SwarmV1 is available only with Mesos; that restriction could
-easily be lifted.  Mesos is needed to make Kubernetes and SwarmV1 work
-together nicely; if using only Kubernetes then Mesos is not needed.
-Mesos does not require Kubernetes nor Swarm, there are other Mesos
-frameworks that the service operator could deploy on her own.  The API
-proxy currently proxies only Kubernetes and SwarmV1 requests.  There
-are currently some issues that arise when using Mesos, such as the
-following.
-
-* [Empty ServiceAccount volumes when using Mesos](https://github.com/kubernetes/kubernetes/issues/31062)
+Each shard provides Kubernetes, eventually Swarm (V1, not the "swarm
+mode" introduced in Docker 1.12), and any platforms added by
+extensions.  The operator adds extensions by deploying them in a shard
+after the OpenRadiant installer does its work.  The API proxy
+currently proxies only Kubernetes and SwarmV1 requests.
 
 The API proxy has two main jobs: multi-sharding and multi-tenancy.
 The API proxy implements the Kubernetes and Swarm APIs --- with
@@ -48,11 +40,12 @@ You can subset OpenRadiant so that it creates just one shard.  You can
 subset OpenRadiant to omit API proxy if you are not interested in
 multi-sharding nor the conveniences it supplies for multi-tenancy.
 
-In a shard there are worker nodes and control plane nodes.  The
-Kubernetes and Swarm workload is run on the worker nodes.  The control
-plane nodes run the Kubernetes, Swarm, and/or Mesos control planes in
-an HA configuration.  We use Mesos to coordinate resource allocation
-decisions between Kubernetes and Swarm.  See
+In a shard there are worker nodes and master nodes.  The Kubernetes
+(and eventually Swarm workload) is run on the worker nodes.  The
+master nodes run the Kubernetes, eventually Swarm, and any extension's
+master components in an HA configuration.  We are working on a better
+solution than Mesos to coordinate resource allocation decisions
+between Kubernetes and Swarm.  See
 [a picture of a shard](media/DeployedShard.svg) for a picture of a
 shard with Kubernetes, SwarmV1, and Mesos.
 
@@ -76,12 +69,12 @@ Ansible controller to install OpenRadiant in a target environment.
 The installation is parameterized by some Ansible variables files that
 describe the desired target environment.
 
-OpenRadiant deploys Kubernetes, Swarm, and Mesos in containers.  You
-can choose whatever version of each that you want.  Your configure
-your choice of images and tags.  See the doc about
-[the relevant configuration variables](#docs/ansible.md#primary-shard-variables-that-have-defaults)
+OpenRadiant deploys Kubernetes in containers.  You can choose whatever
+version you want.  Your configure your choice of image (including
+tag).  See the doc about
+[the relevant configuration variables](docs/ansible.md#primary-shard-variables-that-have-defaults)
 and
-[where to put your settings for those variables](docs/ansible.md#additional-files-for-setting-Ansible-variable-values).
+[where to put your settings for those variables](docs/ansible.md#additional-files-for-setting-ansible-variable-values).
 
 The Ansible playbooks strive to meet the Ansible ideal of achieving a
 prescribed desired state, and can thus be used to update as well as
