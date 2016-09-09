@@ -16,11 +16,14 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     curl \
     git  \
     rsync \
+    mercurial \
     build-essential &&\
     mkdir -p $GOPATH/src && mkdir -p $GOPATH/pkg && mkdir -p $GOPATH/bin &&\
     cd / && curl -O -L $GO_URL &&\
     tar zxvf $(basename $GO_URL) &&\
     rm $(basename $GO_URL) &&\
+    go get -u github.com/tools/godep &&\
+    go get -u github.com/jteeuwen/go-bindata/go-bindata &&\
     git clone https://github.com/ibm-contribs/kubernetes.git $PROJECT_DIR &&\
     cd $PROJECT_DIR && git checkout $K8S_BRANCH &&\
     hack/build-go.sh \

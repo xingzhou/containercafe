@@ -101,12 +101,12 @@ We are using the [GitHub Flow](https://guides.github.com/introduction/flow/) pro
      _Note: if your PR does not merge cleanly or your feature branch needs to be
      updated, follow the steps below:_
 
-        ```bash
-        git checkout issue-nnnn
-        git fetch upstream
-        git rebase upstream/master
-        git push -f origin issue-nnnn
-        ```
+      ```bash
+      git checkout issue-nnnn
+      git fetch upstream
+      git rebase upstream/master
+      git push -f origin issue-nnnn
+      ```
 
   1. Did we mention tests? All code changes should be accompanied by new or modified tests.
 

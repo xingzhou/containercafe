@@ -142,12 +142,12 @@ vagrant ssh proxy
 
 Go the proxy directory and then execute the script to create TLS certificates
 and API key for the given tenant. The example is using tenant `test1`.
-This script also requires the name and the IP of the shard
+This script also requires the name and the IP of the shard and proxy
 E.g.
 ```
 docker ps
-docker exec api-proxy /api-proxy/create_tenant.sh <tenant> <shard_name> <shared_ip>
-docker exec api-proxy /api-proxy/create_tenant.sh test1 radiant01 192.168.10.2
+docker exec api-proxy /api-proxy/create_tenant.sh <tenant> <shard_name> <shared_ip> <api_proxy_ip>
+docker exec api-proxy /api-proxy/create_tenant.sh test1 radiant01 192.168.10.2 192.168.10.4 
 ```
 
 This command will display the details about the newly created TLS certs, including
