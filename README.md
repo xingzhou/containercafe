@@ -4,14 +4,14 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 OpenRadiant is a modular platform for enterprise container-native
-devops. OpenRadiant supports Kubernetes, and will eventually support
-and docker APIs on the same infrastructure.  OpenRadiant supports
-multi-tenancy and sharding.  The OpenRadiant platform can be extended
-by additional componentry, such as: support for using Mesos (including
-making Kubernetes act as a Mesos framework), support for using a
-CloudFoundry installation as the source of identities, support for
-using Neutron tenant networks to isolate OpenRadiant tenants in the
-network.
+devops. OpenRadiant supports Kubernetes, and will eventually also
+support the docker APIs on the same infrastructure.  OpenRadiant
+supports multi-tenancy and sharding.  The OpenRadiant platform can be
+extended by additional componentry, such as: support for using Mesos
+(including making Kubernetes act as a Mesos framework), support for
+using a CloudFoundry installation as the source of identities, support
+for using Neutron tenant networks to isolate OpenRadiant tenants in
+the network.
 
 Features of the OpenRadiant platform include:
 * Kubernetes
@@ -55,16 +55,14 @@ container-native devops service.
 One operating instantiation of the full platform is called an
 environment, and it contains one or more shards that operate
 independently of each other.  Each shard provides an independent
-installation of Kubernetes, and with extension additional platforms
-such as Mesos and/or Swarm.  There is an outer control plane with a
-proxy API server that implements the Kubernetes (and eventually
+installation of Kubernetes, and --- via extension --- additional
+platforms such as Mesos and/or Swarm.  There is an outer control plane
+with a proxy API server that implements the Kubernetes (and eventually
 Docker/SwarmV1) APIs --- with appropriate restrictions and extensions
 --- by appropriately transforming each RPC and dispatching it to the
 appropriate shard.
 
-You can subset OpenRadiant so that it creates just one shard.  You can
-subset OpenRadiant to omit API proxy if you are not interested in
-multi-sharding nor the conveniences it supplies for multi-tenancy.
+You can operate OpenRadiant with just one shard.
 
 In a shard there are worker nodes and master nodes.  The Kubernetes
 (and eventually Swarm) workload is dispatched to the worker nodes.

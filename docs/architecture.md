@@ -36,9 +36,7 @@ keeps track of the credentials needed to do so.
 OpenRadiant currently includes one authentication plugin, which keeps
 its data in files.  This is a very early point-in-time statement.
 
-You can subset OpenRadiant so that it creates just one shard.  You can
-subset OpenRadiant to omit API proxy if you are not interested in
-multi-sharding nor the conveniences it supplies for multi-tenancy.
+You can operate OpenRadiant with just one shard.
 
 In a shard there are worker nodes and master nodes.  The Kubernetes
 (and eventually Swarm workload) is run on the worker nodes.  The
