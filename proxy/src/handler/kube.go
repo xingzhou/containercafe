@@ -32,13 +32,6 @@ var kubePrefixPatterns = []string{
 	"/swaggerapi/",
 }
 
-// TODO
-// There is a problem with /apis, because it's handled by docker endpoint pattern
-//2016/04/18 15:58:51.066842 docker.go:75: ------> DockerEndpointHandler triggered, req_id=2, URI=/apis
-//2016/04/18 15:58:51.066883 docker.go:79: Docker pattern not accepted, req_id=2, URI=/apis
-//2016/04/18 15:58:51.066892 noendpoint.go:10: NoEndpointHandler triggered, URI=/apis, returning error 404
-//2016/04/18 15:58:51.066903 docker.go:81: ------ Completed processing of request req_id=2
-
 // these kube url patterns don't require namespaces
 var kubeExactPatterns = []string{
 	"/api",
@@ -70,16 +63,12 @@ func KubeEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	glog.Infof("This is a AUTH Kube supported pattern %+v", r.RequestURI)
-	// body, _ := ioutil.ReadAll(r.Body)
-	// Log.Printf("**** %+v", r)
-	// Log.Printf("**** This is a request body: %+v", body)
 
 	// read the credentials from the local file first
 	var creds auth.Creds
 	creds = auth.FileAuth(r) // So creds should now hold info FOR THAT space_id.
 	if creds.Status == 200 {
 		glog.Infof("Authentication from FILE succeeded for req_id=%s status=%d", req_id, creds.Status)
-		// Log.Printf("**** Creds %+v", creds)
 	} else {
 		glog.Errorf("Authentication from FILE failed for req_id=%s status=%d", req_id, creds.Status)
 		if creds.Status == 401 {
@@ -140,7 +129,6 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	data, _ := httputil.DumpRequest(r, true)
 	glog.Infof("Request dump of %d bytes:\n%s", len(data), string(data))
 	glog.Infof("Redirect host %v\n", redirect_host)
-	//body, _ := ioutil.ReadAll(r.Body)
 
 	// sometimes body needs to be modify to add custom labels, annotations
 	body, err := kubeUpdateBody(r, namespace)
@@ -164,10 +152,9 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		cc   *httputil.ClientConn
 	)
 	for i := 0; i < maxRetries; i++ {
-		// resp, err, cc = redirect_random (r, body, redirect_host, redirect_resource_id,
 		resp, err, cc = redirect_with_cert(r, body, redirect_host, namespace,
-			kubeRewriteUri, false, cert, key /* override tls setting*/)
-		// kubeRewriteUri, true /* override tls setting*/) TODO MS
+			kubeRewriteUri, false, cert, key)
+
 		if err == nil {
 			break
 		}
@@ -178,8 +165,9 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 		}
 	}
 	if err != nil {
-		glog.Errorf("Error in redirection, will abort req_id=%s ... err=%v\n", req_id, err)
-		ErrorHandlerWithMsg(w, r, 500, "Internal communication error. Check if the redirected host is active")
+		glog.Errorf("Error in redirection to server %v, will abort req_id=%s ... err=%v\n", redirect_host, req_id, err)
+		msg := "Kubernetes service unavailable or disabled for this shard"
+		ErrorHandlerWithMsg(w, r, 503, msg)
 		return
 	}
 
