@@ -154,7 +154,7 @@ E.g.
 ```
 docker ps
 docker exec api-proxy /api-proxy/create_tenant.sh <tenant> <shard_name> <shared_ip> <api_proxy_ip>
-docker exec api-proxy /api-proxy/create_tenant.sh test1 radiant01 192.168.10.2 192.168.10.4 
+docker exec api-proxy /api-proxy/create_tenant.sh test1 radiant01 192.168.10.2 192.168.10.4
 ```
 
 This command will display the details about the newly created TLS certs, including
@@ -199,14 +199,20 @@ kubectl get deployment
 # now you should be able to list all your Kubernetes containers using docker command:
 docker ps
 
-# you can also try ReplicationController and ReplicaSet:
+# you can also try ReplicationController, ReplicaSet and Deployments:
 kubectl create -f ../examples/apps/k8s/nginx-rc.yaml
 kubectl create -f ../examples/apps/k8s/frontend-rs.yaml
+kubectl run test-run --image=mrsabath/web-ms:v3
+
+kubectl get rc
+kubectl get rc
+kubectl get deployments
+
 ```
 To run the proxy against a different OpenRadiant shard, pass the IP of this shard
-as additional parameter of the script `make_TLS_certs`. E.g:
+as additional parameter of the script `create_tenant.sh`. E.g:
 ```
-docker exec api-proxy /api-proxy/make_TLS_certs.sh test2 radiant02 192.168.10.11
+docker exec api-proxy /api-proxy/create_tenant.sh test2 radiant02 192.168.10.11 192.168.10.4
 ```
 
 You can also manually change the values in "/api-proxy/creds.json" file that lists
@@ -241,8 +247,6 @@ export APIKEY=PV9S5hQARFmg0pVJwaPxbP588GdVKeYF1YGOePDvRNAGpyl4
 export PROXY=192.168.10.4:8087
 curl -XGET -H "X-Tls-Client-Dn: /CN=$APIKEY" -H "Content-Type: application/json" $PROXY/api
 ```
-
-
 
 ## Running Test Scripts
 There are 2 type of tests:
