@@ -299,7 +299,8 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 		if err == nil {
 			break
 		}
-		glog.Warningf("redirect failed retry=%d req_id=%s err=%s", i, req_id, err)
+		glog.Warningf("redirect to host %s failed retry=%d req_id=%s err=%s",
+			redirect_host, i, req_id, err)
 		if (i + 1) < maxRetries {
 			glog.Infof("will sleep before retry secs=%d req_id=%s", backOffTimeout, req_id)
 			time.Sleep(time.Duration(backOffTimeout) * time.Second)
@@ -307,7 +308,8 @@ func dockerHandler(w http.ResponseWriter, r *http.Request, body []byte, creds au
 	}
 	if err != nil {
 		glog.Errorf("Error in redirection, will abort req_id=%s err=%v\n", req_id, err)
-		ErrorHandlerWithMsg(w, r, 500, err.Error())
+		msg := "Docker service unavailable or disabled for this shard"
+		ErrorHandlerWithMsg(w, r, 503, msg)
 		return
 	}
 
