@@ -37,8 +37,8 @@ func redirect(r *http.Request, body []byte, redirect_host string, redirect_resou
 
 	c, err := net.Dial("tcp", redirect_host)
 	if err != nil {
-               		// handle error
-	                                  	glog.Errorf("Error connecting to server=%s, %v", redirect_host, err)
+		// handle error
+		glog.Errorf("Error connecting to server=%s, %v", redirect_host, err)
 		return nil, err, nil
 	}
 
