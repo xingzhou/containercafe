@@ -128,9 +128,8 @@ and only contain lower case letters, numbers, and the hyphen ('-').
 ### The inventory contract for a shard
 
 The contract for a shard specifies that certain inventory groups
-exist.  All these groups are required, even if their purpose is
-related to a component that is not being deployed.  The groups are as
-follows.
+exist.  The groups are as follows.  A group that is for a component
+not being deployed can be omitted from the inventory.
 
 * `cluster-{{cluster_name}}`: all the machines in the cluster ---
   i.e., the union of the following groups

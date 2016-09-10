@@ -50,7 +50,7 @@
   tasks:
   - fail:
       msg: ha_deploy must be True when there are multiple hosts in the mesos_master-{{ cluster_name }} group in your Ansible inventory
-    when: groups['mesos_master-' ~ cluster_name]|length > 1 and not ha_deploy|bool
+    when: mesos_deploy and groups['mesos_master-' ~ cluster_name]|length > 1 and not ha_deploy|bool
 
 - hosts: localhost
   roles:
@@ -91,7 +91,7 @@
   become: yes
   roles:
   - lb
-  - { role: vip, when: "groups['mesos_master-' ~ cluster_name]|length > 1 or ha_deploy|bool" }
+  - { role: vip, when: "mesos_deploy and (groups['mesos_master-' ~ cluster_name]|length > 1 or ha_deploy|bool)" }
 
 - hosts: k8s_auth-{{cluster_name}}
   become: yes
