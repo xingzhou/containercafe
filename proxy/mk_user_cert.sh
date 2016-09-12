@@ -3,7 +3,6 @@
 # this script is invoked as ./mk_user_cert.sh "$API_KEY" "$SHARD_NAME"
 
 # Required parameters
-# Moving stuff to the dockerize directory...for now...
 CA_PASSWORD="thesecret"
 API_KEY="$1"
 SHARD_NAME="$2"

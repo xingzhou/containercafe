@@ -42,7 +42,7 @@ The proxy image is very small but it's slow to build.
 If you are developing on the proxy you can build a bigger image in less time, execute:
 ```bash
 cd proxy
-./builddocker.sh -f dockerize/Dockerfile.dev
+./builddocker.sh -f Dockerfile.dev
 ```
 
 #### Run proxy as a container
@@ -87,7 +87,7 @@ Where:
 
 
 This will start the Proxy as a container named `api-proxy`, running in the current
-terminal, on port specified in [Dockerfile](dockerize/Dockerfile) e.g:
+terminal, on port specified in [Dockerfile](Dockerfile) e.g:
 ```
 EXPOSE 8087
 CMD ["/api-proxy/bin/api-proxy", "8087"]
@@ -121,7 +121,7 @@ To set a custom log level and/or log verbosity use the `-l` and `-v` flags:
 If you don't want to run the Proxy as a container, you can run directly as GoLang
 application. This requires Go libraries installed, proxy code compiled and added
 to go path.
-Review [Dockerfile](dockerize/Dockerfile) for more details.
+Review [Dockerfile](Dockerfile) for more details.
 Setup the environment and start the application:
 ```bash
 source ./set_local_env.sh
@@ -234,7 +234,7 @@ Every entry of the `creds.json` has this format:
 ```
 
 
-**NOTE**: All default config options are defined in the [Dockerfile](dockerize/Dockerfile),
+**NOTE**: All default config options are defined in the [Dockerfile](Dockerfile),
 and can be overridden using the docker -e option on [startup](rundocker.sh)
 
 ## Running request manually, without the kubectl or docker clients
@@ -272,6 +272,6 @@ There are 2 type of tests:
  * `docker: Error response from daemon: driver failed programming external connectivity on endpoint hjproxy (0910f89f1b27f3b05081a0bcec3ceadb6d335873d191b3f055ff82257cf77e5d): Error starting userland proxy: write /port/tcp:0.0.0.0:8087:tcp:172.17.0.2:8087/ctl: errno 526.` Please make sure no
  other process is running on port specified for proxy. Standalone proxy test on 8087?
 
-  * `Could not read CA certificate "dockerize/OpenRadiant/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem": open dockerize/OpenRadiant/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem: no such file or directory`
-  Are you sure you are running your docker commands from `openradiant/proxy/`
-  directory?
+ * `Could not read CA certificate "~/.openradiant/<env>/<shard>/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem": open ~/.openradiant/<env>/<shard>/fprVv76aAWfrmxboOxsO6dbzfZcITidkIwBslPgMAchFfwZI/ca.pem: no such file or directory`
+ Are you sure you are running your docker commands from `openradiant/proxy/`
+ directory?

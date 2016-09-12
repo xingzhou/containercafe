@@ -14,7 +14,3 @@ mk_user_cert.sh~*
 mylog.txt
 env_containers_ng_research.sh
 logs/*
-dockerize/*
-!dockerize/Dockerfile*
-!dockerize/build.info
-!dockerize/updateEnv.sh
