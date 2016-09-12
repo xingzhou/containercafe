@@ -1,16 +1,7 @@
 # Building the proxy image:
 
-  - name: copy src into dockerFile directory
-    shell: cp -r ../proxy/src ../proxy/{{proxy_context}}
-
-  - name: copy scripts into Dockerfile directory
-    copy: src=../proxy/{{item}} dest=../proxy/{{proxy_context}}
-    with_items:
-     - create_tenant.sh
-     - mk_user_cert.sh
-     - mk_kubeconfig.sh
-
   - name: build the {{proxy_image_name}} image (this may take a few minutes)
-    command: docker build -t "{{proxy_image_name}}" "../proxy/{{proxy_context}}"
+    become: true
+    command: docker build -t "{{proxy_image_name}}" "{{playbook_dir | dirname}}/proxy"
 
   - debug: msg="Finished Building the image, now building the container"
