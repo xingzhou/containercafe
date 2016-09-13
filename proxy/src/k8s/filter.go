@@ -8,15 +8,15 @@ import (
 
 type filterObject struct {
 	filterType string
-	path []string
-	value interface{}
+	path       []string
+	value      interface{}
 }
 
 type FilterCollection struct {
 	filters map[string][]filterObject
 }
 
-func NewFilterCollection() (*FilterCollection) {
+func NewFilterCollection() *FilterCollection {
 	return &FilterCollection{filters: make(map[string][]filterObject)}
 }
 
