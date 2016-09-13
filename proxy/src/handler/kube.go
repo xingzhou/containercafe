@@ -212,7 +212,7 @@ func kubeHandler(w http.ResponseWriter, r *http.Request, redirect_host string,
 	}
 
 	//If no hijacking, forward full response to client
-	
+
 	_KUBE_CHUNKED_READ_ := false // new feature flag
 
 	if _KUBE_CHUNKED_READ_ {

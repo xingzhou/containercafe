@@ -39,7 +39,7 @@ func InitProxyHijack(w http.ResponseWriter, cc *httputil.ClientConn, req_id stri
 }
 
 //implement tcp hijack loop forwarding raw tcp messages between cli and srv
-func tcpHijack (client, server io.ReadWriter, req_id string) {
+func tcpHijack(client, server io.ReadWriter, req_id string) {
 	//start 2 blocking read/forward loops, BUT exit as soon as one of them exits
 	var wg sync.WaitGroup
 

@@ -3,8 +3,8 @@ package k8s
 import (
 	"encoding/json"
 	"errors"
-	"github.com/golang/glog"
 	"fmt"
+	"github.com/golang/glog"
 )
 
 func (kind Kind) Inject(keyValue KeyValue, path ...string) ([]byte, error) {

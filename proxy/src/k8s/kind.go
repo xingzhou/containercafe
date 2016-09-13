@@ -6,7 +6,7 @@ import (
 )
 
 type KeyValue struct {
-	Key string
+	Key   string
 	Value interface{}
 }
 
