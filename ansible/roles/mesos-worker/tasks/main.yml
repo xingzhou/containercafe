@@ -47,9 +47,9 @@
     pid: host
     volumes:
       - /openstack/docker:/openstack/docker:rw
-      - /var/tmp/hermes:/tmp/hermes:rw
+      - /var/tmp/hermes:/tmp/hermes:rw,rslave
       - /root/stackrc:/root/stackrc:ro
-      - /var/tmp/mesos:/var/tmp/mesos:rw
+      - /var/tmp/mesos:/var/tmp/mesos:rw,rslave
       - /var/log/mesos:/var/log/mesos:rw
       - /var/run:/var/run:rw
       - /var/lib/docker:/var/lib/docker:rw
