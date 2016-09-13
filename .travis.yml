@@ -13,6 +13,7 @@ install:
 script:
   - yamllint -c yamlconf $(find . -path './envs' -prune -o -name '*.yml' -print -o -name '*.yaml' -print)
   - gofmt -l .
+  - ./test-gofmt.sh
   - find . -name "*.sh" | grep -v "\.\/remoteabac\/tests\/run.sh" | xargs -L1 bash -n
 
 notifications:
